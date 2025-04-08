@@ -7,7 +7,7 @@ Presentación sobre el inicio del problema.
 Design Thinking y presentación.
 
 ## Avance 2  
-*(Descripción pendiente)*
+Aplicación del Design Thinking
 
 ## Corte 2  
-*(Descripción pendiente)*
+Captura de requisitos 
