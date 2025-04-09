@@ -1,45 +1,44 @@
 /* --- Colores --- */
 :root {
-    --color-primary: #38333;  
-    --color-secondary: #61533F;
-    --color-tertiary: #846860;
-    --color-quaternary: #A06F42;
-    --color-quinary: #A3896F;
-    --color-senary: #ACA497;
-    --color-septenary: #BFB6AC;
-    --color-octonary: #D5C3A7;
+  --color-primary: #839A2D;       
+  --color-secondary: #2AA68F;     
+  --color-tertiary: #84C8C0;      
+  --color-quaternary: #C9E8F5;    
+  --color-quinary: #2B5CA8;     
+  --color-senary: #374666;        
+  --color-septenary: #83A4CC;    
+  --color-octonary: #B1D1EB;     
 }
 
 /* --- Tipografías --- */
 @font-face {
-    font-family: 'Archivo Black';
-    src: url('./fonts/ArchivoBlack-Regular.ttf') format('truetype');
-  }
-  
-  @font-face {
-    font-family: 'Kollektif';
-    src: url('./fonts/Kollektif.ttf') format('truetype'); /* Para la fuente normal */
-  }
-  
-  @font-face {
-    font-family: 'Kollektif';
-    src: url('./fonts/Kollektif-Bold.ttf') format('truetype'); /* Para la versión Bold */
-    font-weight: bold;
-  }
-  
-  @font-face {
-    font-family: 'Kollektif';
-    src: url('./fonts/Kollektif-Italic.ttf') format('truetype'); /* Para la versión Italic */
-    font-style: italic;
-  }
-  
-  @font-face {
-    font-family: 'Kollektif';
-    src: url('./fonts/Kollektif-BoldItalic.ttf') format('truetype'); /* Para la versión Bold Italic */
-    font-weight: bold;
-    font-style: italic;
-  }
-  
+  font-family: 'Archivo Black';
+  src: url('./fonts/ArchivoBlack-Regular.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'Kollektif';
+  src: url('./fonts/Kollektif.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'Kollektif';
+  src: url('./fonts/Kollektif-Bold.ttf') format('truetype');
+  font-weight: bold;
+}
+
+@font-face {
+  font-family: 'Kollektif';
+  src: url('./fonts/Kollektif-Italic.ttf') format('truetype');
+  font-style: italic;
+}
+
+@font-face {
+  font-family: 'Kollektif';
+  src: url('./fonts/Kollektif-BoldItalic.ttf') format('truetype');
+  font-weight: bold;
+  font-style: italic;
+}
 
 /* --- Estilos generales --- */
 body {
@@ -69,4 +68,3 @@ button {
 button:hover {
   background-color: var(--color-quaternary);
 }
-

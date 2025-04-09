@@ -1,25 +1,23 @@
 <template>
   <div id="app">
-  
-    
-    <HelloWorld msg="Bienvenido Abril Uniformes y Bordados" />
+    <LoginView />
   </div>
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld.vue'
-
-
-import './assets/styles.css'
+import LoginView from './components/login.vue';
 
 export default {
   name: 'App',
   components: {
-    HelloWorld
-  }
-}
+    LoginView,
+  },
+};
 </script>
 
 <style>
-
+@import './assets/styles.css';
 </style>
+
+
+
