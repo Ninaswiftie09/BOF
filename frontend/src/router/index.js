@@ -3,6 +3,7 @@ import LoginView from '../components/login.vue';
 import HomeView from '../components/home.vue';
 import ForgotPassView from '../components/forgotpass.vue';
 import RegisterView from '../components/register.vue';
+import Mi_inventario from '@/components/mi_inventario.vue';
 
 const routes = [
   {
@@ -14,6 +15,11 @@ const routes = [
     path: '/home',
     name: 'home',
     component: HomeView
+  },
+  {
+    path: '/mi_inventrio',
+    name: 'mi_inventario',
+    component: Mi_inventario
   },
   {
     path: '/forgot-password',
