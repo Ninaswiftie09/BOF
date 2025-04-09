@@ -1,6 +1,6 @@
 # views.py
 from django.contrib.auth import authenticate
-from django.contrib.auth.models import User  # Usamos el modelo User predeterminado de Django
+from django.contrib.auth.models import User  
 from django.http import JsonResponse
 import json
 from django.views.decorators.csrf import csrf_exempt
