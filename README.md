@@ -1,13 +1,13 @@
 # Organización de Carpetas
 
-## Avance 1  
-Presentación sobre el inicio del problema.
+## Avances y Cortes 
+En esta carpeta se encuentran todos los cortes y avances que hemos presentado.
 
-## Corte 1  
-Design Thinking y presentación.
+## Backend 
+El backend del software, utilizamos Django con python.
 
-## Avance 2  
-Aplicación del Design Thinking
+## Frontend
+El frontend del software, utilizamos Vue con javascript.
 
-## Corte 2  
+## Docker 
 Captura de requisitos 
