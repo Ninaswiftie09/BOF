@@ -6,7 +6,7 @@
       <table>
         <thead>
           <tr>
-            <th>Telas azules</th>
+            <th>Materiales</th>
             <th>Cantidad</th>
             <th>En Escasez</th>
             <th>Usados</th>

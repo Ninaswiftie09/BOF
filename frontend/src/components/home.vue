@@ -43,7 +43,7 @@
             'Telas negras'
           ],
           datasets: [{
-            data: [5, 15, 4, 10, 6, 11],
+            data: [6, 15, 4, 10, 6, 11],
             backgroundColor: [
               '#839A2D', // primario
               '#2AA68F', // secundario
