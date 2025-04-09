@@ -1,5 +1,12 @@
 {
   "dependencies": {
+    "chart.js": "^4.4.8",
     "vue-router": "^4.5.0"
+  },
+  "devDependencies": {
+    "@types/bonjour": "^3.5.13",
+    "@types/connect-history-api-fallback": "^1.5.4",
+    "@types/json-schema": "^7.0.15",
+    "@types/node": "^22.14.0"
   }
 }
