@@ -27,6 +27,15 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
+AUTHENTICATION_BACKENDS = [
+    'users.backends.EmailAuthBackend',  
+    'django.contrib.auth.backends.ModelBackend', 
+]
+
+
+
+
+
 
 # Application definition
 
@@ -37,6 +46,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'users',
+    'rest_framework',
+    'corsheaders',
 ]
 
 MIDDLEWARE = [
@@ -47,9 +59,15 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
+]
+
+CORS_ORIGIN_WHITELIST = [
+    'http://localhost:8080',
 ]
 
 ROOT_URLCONF = 'config.urls'
+CORS_ALLOW_ALL_ORIGINS = True
 
 TEMPLATES = [
     {
@@ -75,14 +93,14 @@ WSGI_APPLICATION = 'config.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'HOST': 'aws-0-us-east-1.pooler.supabase.com',
-        'NAME': 'postgres',
-        'PORT': '6543',
-        'USER': 'postgres.ftxzdbyueqhtcczvetcy',
-        'PASSWORD': 'fpZ&V$RX9SzF$&!',
-        
+        'NAME': 'AbrilUniformesyBordados',
+        'USER': 'postgres',
+        'PASSWORD': 'taylorswift',
+        'HOST': 'localhost',
+        'PORT': '5432',
     }
 }
+
 
 
 # Password validation

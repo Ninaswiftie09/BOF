@@ -30,6 +30,10 @@
           <a href="#">¿Olvidaste tu contraseña?</a>
         </div>
       </form>
+
+      <div v-if="message" class="success-message">
+        <p>{{ message }}</p>
+      </div>
     </div>
   </div>
 </template>
@@ -40,14 +44,40 @@ export default {
   data() {
     return {
       email: "",
-      password: ""
+      password: "",
+      message: "" 
     };
   },
   methods: {
-    handleSubmit() {
+    async handleSubmit() {
       console.log("Email:", this.email);
       console.log("Contraseña:", this.password);
-      this.$emit("login-success");
+
+      const loginData = {
+        email: this.email,
+        password: this.password
+      };
+
+      try {
+        const response = await fetch('http://127.0.0.1:8000/api/login/', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(loginData)
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          console.log("Respuesta del servidor:", data);
+
+          this.message = "Hola, si funciono xd"; 
+        } else {
+          alert('Credenciales incorrectas. Intenta de nuevo.');
+        }
+      } catch (error) {
+        console.error("Error de login:", error);
+      }
     }
   }
 };
@@ -70,7 +100,7 @@ export default {
   width: 100%;
   max-width: 400px;
   padding: 30px;
-  background: rgba(255, 255, 255, 0.1); /* Transparente */
+  background: rgba(255, 255, 255, 0.1); 
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   border-radius: 12px;
@@ -135,5 +165,13 @@ button:hover {
 
 .forgot-password a:hover {
   color: var(--color-primary);
+}
+
+.success-message {
+  margin-top: 20px;
+  text-align: center;
+  font-family: 'Kollektif', sans-serif;
+  color: rgb(0, 0, 0);
+  font-weight: bold;
 }
 </style>

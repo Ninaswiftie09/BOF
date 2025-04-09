@@ -8,6 +8,3 @@ El backend del software, utilizamos Django con python.
 
 ## Frontend
 El frontend del software, utilizamos Vue con javascript.
-
-## Docker 
-Captura de requisitos 
