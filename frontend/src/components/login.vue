@@ -6,7 +6,6 @@
         <div class="input-group">
           <label for="email">Correo electrónico</label>
           <input 
-          
             type="email" 
             id="email" 
             v-model="email" 
