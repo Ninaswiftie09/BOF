@@ -16,6 +16,11 @@ const routes = [
     component: HomeView
   },
   {
+    path: '/mi_inventrio',
+    name: 'mi_inventario',
+    component: Mi_inventario
+  },
+  {
     path: '/forgot-password',
     name: 'forgot-password',
     component: ForgotPassView
