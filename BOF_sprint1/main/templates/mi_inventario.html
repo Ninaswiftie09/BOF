@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventario</title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid #000;
+            padding: 8px;
+            text-align: center;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        h1 {
+            text-align: center;
+            display: inline-block;
+            margin: 0;
+        }
+        .button {
+            display: inline-block;
+            margin-left: 20px;
+            padding: 10px 15px;
+            background-color: #007BFF;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+        .button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Inventario</h1>
+    <a href="/" class="button">BOF</a>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Materiales</th>
+                <th>Cantidad de Materiales</th>
+                <th>Materiales en Escasez</th>
+                <th>Materiales Usados en Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for material, cantidad in materiales.items %}
+            <tr>
+                <td>{{ material }}</td>
+                <td>{{ cantidad }}</td>
+                <td>{% if cantidad < 10 %}Sí, se necesita comprar{% else %}No{% endif %}</td>
+                <td><!-- Aquí puedes agregar la lógica para los materiales usados en total si es necesario --></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+</body>
+</html>

@@ -1,0 +1,156 @@
+    <!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Página de Inventario</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            background-color: #f8f8f8;
+            border-bottom: 1px solid #ccc;
+        }
+        .menu {
+            cursor: pointer;
+            position: relative;
+        }
+        .menu-content {
+            display: none;
+            position: absolute;
+            background-color: white;
+            border: 1px solid #ccc;
+            z-index: 1;
+            padding: 10px;
+            width: 200px;
+        }
+        .menu:hover .menu-content {
+            display: block;
+        }
+        .left, .right {
+            width: 50%;
+            padding: 20px;
+        }
+        .right {
+            display: flex;
+            flex-direction: column;
+        }
+        .division {
+            flex: 1;
+            margin: 10px 0;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            text-align: center;
+        }
+        canvas {
+            max-width: 100%;
+            width: 300px; /* Ajusta el ancho de la gráfica */
+            height: 300px; /* Ajusta la altura de la gráfica */
+        }
+        a {
+            text-decoration: none;
+            color: black;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="menu">
+            ☰
+            <div class="menu-content">
+                <h4>Opciones de Ayuda</h4>
+                <ul>
+                    <li>Ayuda de Funcionamiento</li>
+                    <li>Ayuda con Proveedor</li>
+                    <li>Chat Directo con Proveedores</li>
+                    <li>Información General de la Página</li>
+                </ul>
+            </div>
+        </div>
+        <div>
+            <a href="#" style="text-decoration: none; color: black;">Perfil del Usuario</a>
+        </div>
+    </header>
+
+    <div style="display: flex;">
+        <div class="left">
+            <h2>Inventario <a href="/mi_inventario" style="font-size: 14px;">(Ver mi inventario)</a></h2>
+            <canvas id="myPieChart"></canvas>
+        </div>
+
+        <div class="right">
+            <div class="division" id="clientes">
+                <h3><a href="/clientes">Clientes</a></h3>
+            </div>
+            <div class="division" id="facturas">
+                <h3><a href="/facturas">Facturas</a></h3>
+            </div>
+            <div class="division" id="reportes-venta">
+                <h3><a href="/reportes_venta">Reportes de Ventas</a></h3>
+            </div>
+            <div class="division" id="calculadora-materia">
+                <h3><a href="/calculadora_materia">Calculadora de Materia Prima</a ></h3>
+            </div>
+            <div class="division" id="contabilidad">
+                <h3><a href="/contabilidad">Contabilidad</a></h3>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const ctx = document.getElementById('myPieChart').getContext('2d');
+        const myPieChart = new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: {{ labels|safe }},
+                datasets: [{
+                    label: 'Inventario',
+                    data: {{ data|safe }},
+                    backgroundColor: [
+                        'rgba(255, 99, 132, 0.2)',
+                        'rgba(54, 162, 235, 0.2)',
+                        'rgba(255, 206, 86, 0.2)',
+                        'rgba(75, 192, 192, 0.2)',
+                        'rgba(153, 102, 255, 0.2)',
+                        'rgba(255, 159, 64, 0.2)'
+                    ],
+                    borderColor: [
+                        'rgba(255, 99, 132, 1)',
+                        'rgba(54, 162, 235, 1)',
+                        'rgba(255, 206, 86, 1)',
+                        'rgba(75, 192, 192, 1)',
+                        'rgba(153, 102, 255, 1)',
+                        'rgba(255, 159, 64, 1)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    title: {
+                        display: true,
+                        text: 'Inventario'
+                    }
+                }
+            }
+        });
+    </script>
+
+</body>
+</html> 
