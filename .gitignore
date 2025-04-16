@@ -1,0 +1,52 @@
+# === PYTHON / DJANGO ===
+__pycache__/
+*.py[cod]
+*.sqlite3
+*.log
+.env
+env/
+venv/
+.venv/
+db.sqlite3
+
+# === NODE / VUE ===
+node_modules/
+dist/
+.vitepress/
+.vite/
+*.local
+
+# === DOCKER ===
+*.pid
+*.seed
+*.bak
+*.tar
+*.gz
+
+# === SYSTEM FILES ===
+.DS_Store
+Thumbs.db
+
+# === VS CODE ===
+.vscode/
+
+# antes en el repoo
+
+# local env files
+.env.local
+.env.*.local
+
+# Log files
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Editor directories and files
+.idea
+.vscode
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
