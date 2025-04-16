@@ -66,4 +66,4 @@ Recuerda agregar un servidor nuevo y usar estos datos para conectarte a PostgreS
 - Contraseña: `pass`
 - Nombre de la base de datos: `proyecto`
 
-Hecho con 💻 por el equipo de BOF.
+Hecho por el equipo de BOF 💻.
