@@ -1,20 +1,25 @@
 <template>
   <div class="dashboard-container">
     <aside class="sidebar">
-      <div class="logo">LOGO</div>
+      <img src= "@/assets/logo_bof_blanco.png" alt="logo del cliente" class="logo" />
       <nav class="nav-links">
-        <div class="nav-item" v-for="item in navItems" :key="item.label">
+        <router-link
+          v-for="item in navItems"
+          :key="item.label"
+          :to="item.route"
+          class="nav-item"
+        >
           <div class="icon-circle">
             <img :src="item.icon" alt="icon" />
           </div>
           <span>{{ item.label }}</span>
-        </div>
+        </router-link>
       </nav>
     </aside>
 
     <main class="main-area">
       <header class="topbar">
-        <div class="view-name">NOMBRE VISTA</div>
+        <div class="view-name"> HOME</div>
         <input class="search" placeholder="Buscar elementos exactos" />
         <div class="user-circle"></div>
       </header>
@@ -25,9 +30,9 @@
         </div>
 
         <div class="side-panels">
-          <div class="panel"> Calendario</div>
-          <div class="panel"> Gráfica del mejor mes</div>
-          <div class="panel"> Algún otro apartado</div>
+          <div class="panel">📅 Calendario</div>
+          <div class="panel">📈 Gráfica del mejor mes</div>
+          <div class="panel">💡 Algún otro apartado</div>
         </div>
       </section>
     </main>
@@ -35,13 +40,45 @@
 </template>
 
 <script setup>
+import { onMounted } from 'vue'
+import Chart from 'chart.js/auto'
+
 const navItems = [
-  { label: 'Clientes', icon: '/icons/clientes.svg' },
-  { label: 'Facturas', icon: '/icons/facturas.svg' },
-  { label: 'Reportes', icon: '/icons/reportes.svg' },
-  { label: 'Calculadora', icon: '/icons/calculadora.svg' },
-  { label: 'Inventario', icon: '/icons/inventario.svg' }
+  { label: 'Clientes', icon: '/icons/clientes.svg', route: '/clientes' },
+  { label: 'Facturas', icon: '/icons/facturas.svg', route: '/billpage' },
+  { label: 'contabilidad', icon: '/icons/contabilidad.svg', route: '/accounting' },
+  { label: 'Calculadora', icon: '/icons/calculadora.svg', route: '/calculadora' },
+  { label: 'Inventario', icon: '/icons/inventario.svg', route: '/mi_inventario' },
+  { label: 'Reporte de ventas', icon: '/icons/ReporteVentas.svg', route: '/ReporteVentas' }
+
 ]
+
+onMounted(() => {
+  const ctx = document.getElementById('myPieChart').getContext('2d')
+  new Chart(ctx, {
+    type: 'pie',
+    data: {
+      labels: ['Libro de Matemáticas', 'Cuaderno de Dibujo', 'Marcadores', 'Pinturas', 'Tijeras'],
+      datasets: [{
+        data: [5, 15, 4, 10, 6],
+        backgroundColor: ['#839A2D', '#2AA68F', '#84C8C0', '#C9E8F5', '#2B5CA8'],
+        borderColor: '#fff',
+        borderWidth: 1
+      }]
+    },
+    options: {
+      plugins: {
+        legend: {
+          position: 'top'
+        },
+        title: {
+          display: true,
+          text: 'Inventario'
+        }
+      }
+    }
+  })
+})
 </script>
 
 <style scoped>
@@ -83,9 +120,12 @@ const navItems = [
   border-radius: 8px;
   cursor: pointer;
   transition: background 0.2s;
+  color: white;
+  text-decoration: none;
 }
 
-.nav-item:hover {
+.nav-item:hover,
+.router-link-exact-active {
   background-color: #334155;
 }
 
@@ -167,5 +207,12 @@ const navItems = [
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.logo{
+  width: 250;
+  height: 150px;
+  margin-bottom: 1rem;
+
 }
 </style>

@@ -8,6 +8,8 @@ import forgotpass from '../views/forgotpass.vue'
 import login from '../views/login.vue'
 import register from '../views/register.vue'
 import ReporteVentas from '../views/ReporteVentas.vue'
+import clientes from '../views/clientes.vue'
+
 
 const routes = [
   { path: '/', name: 'home', component: home },
@@ -18,7 +20,9 @@ const routes = [
   { path: '/forgotpass', name: ',orgotpass', component: forgotpass },
   { path: '/login', name: 'login', component: login },
   { path: '/register', name: 'register', component: register },
-  { path: '/ReporteVentas', name: 'ReporteVentas', component: ReporteVentas }
+  { path: '/ReporteVentas', name: 'ReporteVentas', component: ReporteVentas },
+  { path: '/clientes', name: 'clientes', component: clientes }
+
 ]
 
 const router = createRouter({
