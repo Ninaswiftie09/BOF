@@ -1,0 +1,71 @@
+/* --- Colores --- */
+:root {
+    --color-primary: #839A2D;       
+    --color-secondary: #2AA68F;     
+    --color-tertiary: #84C8C0;      
+    --color-quaternary: #C9E8F5;    
+    --color-quinary: #2B5CA8;     
+    --color-senary: #374666;        
+    --color-septenary: #83A4CC;    
+    --color-octonary: #B1D1EB;   
+    --color-novenary: #ffffff;   
+  }
+  
+  /* --- Tipografías --- */
+  @font-face {
+    font-family: 'Archivo Black';
+    src: url('./fonts/ArchivoBlack-Regular.ttf') format('truetype');
+  }
+  
+  @font-face {
+    font-family: 'Kollektif';
+    src: url('./fonts/Kollektif.ttf') format('truetype');
+  }
+  
+  @font-face {
+    font-family: 'Kollektif';
+    src: url('./fonts/Kollektif-Bold.ttf') format('truetype');
+    font-weight: bold;
+  }
+  
+  @font-face {
+    font-family: 'Kollektif';
+    src: url('./fonts/Kollektif-Italic.ttf') format('truetype');
+    font-style: italic;
+  }
+  
+  @font-face {
+    font-family: 'Kollektif';
+    src: url('./fonts/Kollektif-BoldItalic.ttf') format('truetype');
+    font-weight: bold;
+    font-style: italic;
+  }
+  
+  /* --- Estilos generales --- */
+  body {
+    font-family: 'Kollektif', sans-serif;
+    background-color: var(--color-octonary);
+    color: var(--color-primary);
+    margin: 0;
+    padding: 0;
+  }
+  
+  /* --- Encabezados --- */
+  h1, h2, h3, h4 {
+    font-family: 'Archivo Black', sans-serif;
+    color: var(--color-primary);
+  }
+  
+  /* --- Botones --- */
+  button {
+    background-color: var(--color-secondary);
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    cursor: pointer;
+    font-family: 'Kollektif', sans-serif;
+  }
+  
+  button:hover {
+    background-color: var(--color-quaternary);
+  }
