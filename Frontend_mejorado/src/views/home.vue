@@ -1,159 +1,173 @@
 <template>
-  <div class="container">
-    <header class="header">
-      <div class="menu">☰</div>
-      <div><a href="#" class="profile-link">Perfil del Usuario</a></div>
-    </header>
+  <div class="dashboard-container">
+    <aside class="sidebar">
+      <div class="logo">LOGO</div>
+      <nav class="nav-links">
+        <div class="nav-item" v-for="item in navItems" :key="item.label">
+          <div class="icon-circle">
+            <img :src="item.icon" alt="icon" />
+            
+          </div>
+          <span>{{ item.label }}</span>
+        </div>
+      </nav>
+    </aside>
 
-    <div class="content">
-      <div class="left">
-        <h2 class="title">
-          Inventario
-          <router-link class="view-link" to="/mi_inventario">(Ver mi inventario)</router-link>
-        </h2>
-        <canvas id="myPieChart"></canvas>
-      </div>
+    <main class="main-area">
+      <header class="topbar">
+        <div class="view-name">NOMBRE VISTA</div>
+        <input class="search" placeholder="Buscar elementos exactos" />
+        <div class="user-circle"></div>
+      </header>
 
-      <div class="right">
-        <router-link class="division" to="/clientes"><h3>Clientes</h3></router-link>
-        <router-link class="division" to="/billpage"><h3>Facturas</h3></router-link>
-        <router-link class="division" to="/ReporteVentas"><h3>Reportes de Ventas</h3></router-link>
-        <router-link class="division" to="/calculadora"><h3>Calculadora de Materia Prima</h3></router-link>
-        <router-link class="division" to="/accounting"><h3>Contabilidad</h3></router-link>
-      </div>
-    </div>
+      <section class="content">
+        <div class="chart-area">
+          <!-- Aquí puedes insertar tu gráfico de Chart.js -->
+          <canvas id="myPieChart"></canvas>
+        </div>
+
+        <div class="side-panels">
+          <div class="panel">📅 Calendario</div>
+          <div class="panel">📈 Gráfica del mejor mes</div>
+          <div class="panel">💡 Algún otro apartado</div>
+        </div>
+      </section>
+    </main>
   </div>
 </template>
 
-<script>
-import Chart from 'chart.js/auto';
-
-export default {
-  name: 'HomeView',
-  mounted() {
-    const ctx = document.getElementById('myPieChart').getContext('2d');
-    new Chart(ctx, {
-      type: 'pie',
-      data: {
-        labels: ['Libro de Matemáticas', 'Cuaderno de Dibujo', 'Marcadores', 'Pinturas', 'Tijeras'],
-        datasets: [{
-          data: [5, 15, 4, 10, 6],
-          backgroundColor: ['#839A2D', '#2AA68F', '#84C8C0', '#C9E8F5', '#2B5CA8'],
-          borderColor: '#fff',
-          borderWidth: 1
-        }]
-      },
-      options: {
-        plugins: {
-          legend: {
-            position: 'top',
-            labels: {
-              color: '#374666',
-              font: {
-                family: 'Kollektif'
-              }
-            }
-          },
-          title: {
-            display: true,
-            text: 'Inventario',
-            color: '#839A2D',
-            font: {
-              size: 18,
-              family: 'Archivo Black'
-            }
-          }
-        }
-      }
-    });
-  }
-};
+<script setup>
+const navItems = [
+  { label: 'Clientes', icon: '/icons/clientes.svg' },
+  { label: 'Facturas', icon: '/icons/facturas.svg' },
+  { label: 'Reportes', icon: '/icons/reportes.svg' },
+  { label: 'Calculadora', icon: '/icons/calculadora.svg' },
+  { label: 'Inventario', icon: '/icons/inventario.svg' }
+]
 </script>
 
 <style scoped>
-.container {
-  background-color: var(--color-novenary);
-  padding: 20px;
-  font-family: 'Kollektif', sans-serif;
+.dashboard-container {
+  display: flex;
   height: 100vh;
-
-  /* Agregado para compensar el header fijo */
-  padding-top: 70px;
+  background: #0a0f2c;
+  color: white;
+  font-family: 'Segoe UI', sans-serif;
 }
 
-.header {
-  background-color: var(--color-senary);
-  color: white;
-  padding: 10px 20px;
+.sidebar {
+  width: 240px;
+  background-color: #1e293b;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2rem;
+}
+
+.logo {
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+.nav-links {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.nav-item:hover {
+  background-color: #334155;
+}
+
+.icon-circle {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background-color: #64748b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.icon-circle img {
+  width: 20px;
+  height: 20px;
+}
+
+.main-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.topbar {
+  background-color: #1e293b;
+  padding: 1rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
-
-  /* 🔒 Fijar la barra en la parte superior */
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  z-index: 1000;
 }
 
-.profile-link {
-  text-decoration: none;
-  color: white;
+.view-name {
+  font-size: 1.25rem;
   font-weight: bold;
-  margin-right: 25px;
+}
+
+.search {
+  padding: 0.5rem;
+  border-radius: 8px;
+  border: none;
+  width: 250px;
+}
+
+.user-circle {
+  width: 36px;
+  height: 36px;
+  background-color: white;
+  border-radius: 50%;
 }
 
 .content {
   display: flex;
-  margin-top: 20px;
-  height: 90%;
+  padding: 2rem;
+  gap: 2rem;
 }
 
-.left {
-  width: 50%;
+.chart-area {
+  flex: 2;
+  background-color: #1e293b;
+  padding: 2rem;
+  border-radius: 16px;
+}
+
+.side-panels {
+  flex: 1;
   display: flex;
   flex-direction: column;
+  gap: 1rem;
+}
+
+.panel {
+  background-color: #334155;
+  padding: 1rem;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 500;
+  height: 100px;
+  display: flex;
   align-items: center;
-}
-
-.right {
-  width: 50%;
-  display: flex;
-  flex-direction: column;
   justify-content: center;
-  gap: 10px;
-}
-
-.title {
-  color: var(--color-primary);
-}
-
-.view-link {
-  font-size: 14px;
-  margin-left: 10px;
-  color: var(--color-tertiary);
-  font-weight: bold;
-  text-decoration: none;
-}
-
-canvas {
-  width: 500px !important;
-  height: 500px !important;
-}
-
-.division {
-  background-color: var(--color-quaternary);
-  color: var(--color-senary);
-  padding: 15px;
-  text-align: center;
-  border-radius: 10px;
-  text-decoration: none;
-  font-weight: bold;
-  transition: background-color 0.3s;
-}
-
-.division:hover {
-  background-color: var(--color-secondary);
 }
 </style>
