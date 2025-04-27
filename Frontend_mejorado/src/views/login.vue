@@ -55,37 +55,46 @@ export default {
     };
   },
   methods: {
-    async handleSubmit() {
-      console.log("Email:", this.email);
-      console.log("Contraseña:", this.password);
+  async handleSubmit() {
+    const loginData = {
+      email: this.email,
+      password: this.password
+    };
 
-      const loginData = {
-        email: this.email,
-        password: this.password
-      };
+    try {
+      const response = await fetch('http://localhost:8000/api/login/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(loginData)
+      });
 
-      try {
-        const response = await fetch('http://127.0.0.1:8000/api/login/', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify(loginData)
-        });
+      if (response.ok) {
+        const data = await response.json();
+        console.log("Respuesta del servidor:", data);
 
-        if (response.ok) {
-          const data = await response.json();
-          console.log("Respuesta del servidor:", data);
+        this.message = "¡Bienvenido! Inicio de sesión exitoso.";
+        this.messageType = "success";
+        
+        this.email = ''; 
+        this.password = '';
+        
+        this.$router.push('/home'); 
 
-          this.message = "Hola, si funciono xd"; 
-        } else {
-          alert('Credenciales incorrectas. Intenta de nuevo.');
-        }
-      } catch (error) {
-        console.error("Error de login:", error);
+      } else {
+        const data = await response.json();
+        this.message = data.message || 'Credenciales incorrectas. Intenta de nuevo.';
+        this.messageType = "error";
       }
+    } catch (error) {
+      console.error("Error de login:", error);
+      this.message = 'Error al conectar con el servidor. Intenta nuevamente más tarde.';
+      this.messageType = "error";
     }
   }
+}
+
 };
 </script>
 

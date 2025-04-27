@@ -4,6 +4,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth.hashers import make_password
 import json
 from django.contrib.auth.models import Group
+from django.contrib.auth import authenticate, login
 
 def ping(request):
     return JsonResponse({"message": "pong"})
@@ -49,5 +50,31 @@ def register_user(request):
 
         except Exception as e:
             return JsonResponse({'message': f'Error: {str(e)}'}, status=500)
+    else:
+        return JsonResponse({'message': 'Método no permitido'}, status=405)
+    
+@csrf_exempt
+def login_user(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            email = data.get('email')
+            password = data.get('password')
+
+            if not email or not password:
+                return JsonResponse({'message': 'El correo y la contraseña son requeridos'}, status=400)
+
+            user = authenticate(request, username=email, password=password)
+
+            if user is not None:
+                login(request, user)
+                return JsonResponse({'message': 'Inicio de sesión exitoso'}, status=200)
+
+            else:
+                return JsonResponse({'message': 'Credenciales incorrectas'}, status=400)
+
+        except Exception as e:
+            return JsonResponse({'message': f'Error: {str(e)}'}, status=500)
+
     else:
         return JsonResponse({'message': 'Método no permitido'}, status=405)
