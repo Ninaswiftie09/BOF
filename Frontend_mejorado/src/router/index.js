@@ -20,7 +20,6 @@ const routes = [
   { path: '/login', name: 'login', component: login },
   { path: '/register', name: 'register', component: register },
   { path: '/ReporteVentas', name: 'ReporteVentas', component: ReporteVentas },
-  { path: '/clientes', name: 'clientes', component: clientes }
 
 ]
 
@@ -30,3 +29,5 @@ const router = createRouter({
 })
 
 export default router
+
+
