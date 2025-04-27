@@ -1,12 +1,17 @@
-# Usamos una imagen base de Node para construir la app
-FROM node:18 AS build
+# frontend/Dockerfile
+
+FROM node:22-alpine
 
 WORKDIR /app
-COPY . .
-RUN npm install
-RUN npm run build
 
-# Ahora usamos nginx para servir la app ya construida
-FROM nginx:alpine
-COPY --from=build /app/dist /usr/share/nginx/html
-EXPOSE 80
+# Copia los archivos de dependencias primero (para usar la cache)
+COPY package*.json ./
+
+# Instala dependencias
+RUN npm install
+
+# Copia el resto del código del proyecto
+COPY . .
+
+# Inicia el servidor de desarrollo (Vue CLI)
+CMD ["npm", "run", "serve"]

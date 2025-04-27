@@ -18,10 +18,10 @@ services:
       - DB_PORT=5432
 
   frontend:
-    build: ./frontend
+    build: ./Frontend_mejorado
     container_name: vue_frontend
     volumes:
-      - ./frontend:/app
+      - ./Frontend_mejorado:/app
       - /app/node_modules
     ports:
       - "5173:5173"
