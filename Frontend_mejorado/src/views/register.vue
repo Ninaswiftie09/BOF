@@ -96,6 +96,7 @@
   
           if (response.ok) {
             alert('Usuario creado exitosamente');
+            this.$router.push('/login')
           } else {
             alert(result.message || 'Error al crear usuario');
           }
