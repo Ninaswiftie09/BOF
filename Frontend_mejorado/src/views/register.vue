@@ -51,7 +51,7 @@
             <label for="position">Cargo</label>
             <select id="position" v-model="position" required>
               <option value="admin">Administrador</option>
-              <option value="employee">Empleado</option>
+              <option value="Empleado">Empleado</option>
             </select>
           </div>
   
@@ -84,7 +84,7 @@
         };
   
         try {
-          const response = await fetch('http://127.0.0.1:8000/api/register/', {
+          const response = await fetch('http://localhost:8000/api/register/', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -96,6 +96,7 @@
   
           if (response.ok) {
             alert('Usuario creado exitosamente');
+            this.$router.push('/login')
           } else {
             alert(result.message || 'Error al crear usuario');
           }

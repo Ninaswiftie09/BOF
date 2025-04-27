@@ -10,19 +10,18 @@ import register from '../views/register.vue'
 import ReporteVentas from '../views/ReporteVentas.vue'
 import clientes from '../views/clientes.vue'
 
-
 const routes = [
-  { path: '/', name: 'home', component: home },
-  { path: '/mi_inventario', name: 'mi_nventario', component: mi_inventario },
+  { path: '/', name: 'login', component: login }, 
+  { path: '/home', name: 'home', component: home }, 
+  { path: '/mi_inventario', name: 'mi_inventario', component: mi_inventario },
   { path: '/accounting', name: 'accounting', component: accounting },
   { path: '/billpage', name: 'billpage', component: billpage },
   { path: '/calculadora', name: 'calculadora', component: calculadora },
-  { path: '/forgotpass', name: ',orgotpass', component: forgotpass },
-  { path: '/login', name: 'login', component: login },
+  { path: '/forgotpass', name: 'forgotpass', component: forgotpass },
+  { path: '/login', name: 'login-explicit', component: login }, 
   { path: '/register', name: 'register', component: register },
   { path: '/ReporteVentas', name: 'ReporteVentas', component: ReporteVentas },
   { path: '/clientes', name: 'clientes', component: clientes }
-
 ]
 
 const router = createRouter({
@@ -31,5 +30,4 @@ const router = createRouter({
 })
 
 export default router
-
 
