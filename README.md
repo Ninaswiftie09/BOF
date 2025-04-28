@@ -3,7 +3,7 @@
 
 Este proyecto es una aplicación web compuesta por un backend en Django con Django Rest Framework y un frontend hecho en Vue.js. Utiliza PostgreSQL como base de datos y está completamente dockerizado para facilitar su despliegue y ejecución.
 
-## 🚀 Requisitos
+## 🚀 Requisitos...
 
 Antes de comenzar, asegúrate de tener instalado lo siguiente:
 
@@ -67,4 +67,4 @@ Recuerda agregar un servidor nuevo y usar estos datos para conectarte a PostgreS
 - Contraseña: `pass`
 - Nombre de la base de datos: `proyecto`
 
-Hecho por el equipo de BOF 💻.
+Hecho por el equipo de BOF 💻..
