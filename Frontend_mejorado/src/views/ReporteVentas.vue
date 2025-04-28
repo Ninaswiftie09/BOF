@@ -17,7 +17,8 @@
       <button class="btn-filtrar" @click="filtrarDatos">Filtrar</button>
       <button class="btn-reset" @click="resetFiltros">Limpiar</button>
     </div>
-    
+
+      // comentariosprueba
     <!-- Sección 1:  -->
     <div class="kpi-container">
       <div class="kpi-card principal">
