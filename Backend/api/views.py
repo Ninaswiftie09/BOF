@@ -6,6 +6,14 @@ import json
 from django.contrib.auth.models import Group
 from django.contrib.auth import authenticate, login
 
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from django.db.models import Sum, Count
+from django.db.models.functions import TruncDate
+from .models import Venta, DetalleVenta, Producto
+from .serializers import VentaSerializer
+
 def ping(request):
     return JsonResponse({"message": "pong"})
 
@@ -78,3 +86,47 @@ def login_user(request):
 
     else:
         return JsonResponse({'message': 'Método no permitido'}, status=405)
+
+class VentasPorFechaAPIView(APIView):
+    def get(self, request):
+        fecha_inicio = request.query_params.get('fecha_inicio')
+        fecha_fin = request.query_params.get('fecha_fin')
+        
+        ventas = Venta.objects.filter(fecha__range=[fecha_inicio, fecha_fin])
+
+        total_ventas = ventas.aggregate(total=Sum('total'))['total'] or 0
+        numero_facturas = ventas.count()
+
+        serializer = VentaSerializer(ventas, many=True)
+
+        return Response({
+            'total_ventas': total_ventas,
+            'numero_facturas': numero_facturas,
+            'ventas': serializer.data
+        }, status=status.HTTP_200_OK)
+
+class EvolucionVentasAPIView(APIView):
+    def get(self, request):
+        fecha_inicio = request.query_params.get('fecha_inicio')
+        fecha_fin = request.query_params.get('fecha_fin')
+
+        ventas = Venta.objects.filter(fecha__range=[fecha_inicio, fecha_fin])
+        ventas_por_dia = ventas.annotate(dia=TruncDate('fecha')).values('dia').annotate(total=Sum('total')).order_by('dia')
+
+        return Response(list(ventas_por_dia), status=status.HTTP_200_OK)
+
+class ProductosMasVendidosAPIView(APIView):
+    def get(self, request):
+        productos = DetalleVenta.objects.values('producto__nombre').annotate(total_vendido=Sum('cantidad')).order_by('-total_vendido')[:5]
+        return Response(list(productos), status=status.HTTP_200_OK)
+
+class MetodosPagoUsadosAPIView(APIView):
+    def get(self, request):
+        metodos = Venta.objects.values('metodo_pago').annotate(cantidad=Count('metodo_pago')).order_by('-cantidad')
+        return Response(list(metodos), status=status.HTTP_200_OK)
+
+class DetalleVentasAPIView(APIView):
+    def get(self, request):
+        ventas = Venta.objects.all()
+        serializer = VentaSerializer(ventas, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
