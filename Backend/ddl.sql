@@ -58,3 +58,31 @@ CREATE TABLE cuentas_pagadas (
     fecha_pago TIMESTAMP DEFAULT NOW(),
     monto_pagado DECIMAL(12,2)
 );
+
+-- Tabla de Proveedores
+CREATE TABLE proveedores (
+    id SERIAL PRIMARY KEY,
+    nombre VARCHAR(255) NOT NULL,
+    contacto VARCHAR(255),
+    telefono VARCHAR(50),
+    email VARCHAR(255),
+    direccion TEXT,
+    nit VARCHAR(50) UNIQUE
+);
+
+-- Tabla de Compras a Proveedores
+CREATE TABLE compras (
+    id SERIAL PRIMARY KEY,
+    proveedor_id INTEGER REFERENCES proveedores(id) ON DELETE CASCADE,
+    fecha TIMESTAMP NOT NULL DEFAULT NOW(),
+    monto_total DECIMAL(12,2) NOT NULL
+);
+
+-- Detalle de Compras
+CREATE TABLE compra_detalle (
+    id SERIAL PRIMARY KEY,
+    compra_id INTEGER REFERENCES compras(id) ON DELETE CASCADE,
+    descripcion_producto TEXT,
+    cantidad INTEGER,
+    precio_unitario DECIMAL(12,2)
+);
