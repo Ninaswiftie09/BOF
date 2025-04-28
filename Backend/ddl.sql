@@ -41,3 +41,20 @@ CREATE TABLE pedido_detalle (
     cantidad INTEGER,
     precio_unitario DECIMAL(12,2)
 );
+
+-- Tabla de Cuentas a Pagar
+CREATE TABLE cuentas_pagar (
+    id SERIAL PRIMARY KEY,
+    cliente_id INTEGER REFERENCES clientes(id) ON DELETE CASCADE,
+    monto DECIMAL(12,2),
+    fecha_vencimiento DATE,
+    estado_pago BOOLEAN DEFAULT FALSE -- FALSE = pendiente, TRUE = pagado
+);
+
+-- Tabla de Cuentas Pagadas
+CREATE TABLE cuentas_pagadas (
+    id SERIAL PRIMARY KEY,
+    cuenta_pagar_id INTEGER REFERENCES cuentas_pagar(id) ON DELETE CASCADE,
+    fecha_pago TIMESTAMP DEFAULT NOW(),
+    monto_pagado DECIMAL(12,2)
+);
