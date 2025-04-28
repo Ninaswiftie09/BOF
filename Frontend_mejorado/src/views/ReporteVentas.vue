@@ -17,7 +17,8 @@
       <button class="btn-filtrar" @click="filtrarDatos">Filtrar</button>
       <button class="btn-reset" @click="resetFiltros">Limpiar</button>
     </div>
-    
+
+      // comentariosprueba
     <!-- Sección 1:  -->
     <div class="kpi-container">
       <div class="kpi-card principal">
@@ -117,6 +118,8 @@ export default {
       totalPaginas: 1,
       
       // Datos  (estos deberán ser calculados por el backend)
+        // Comentario de prueba commit 
+      
       totalVentas: '0.00',
       numeroFacturas: 0
     };
@@ -489,3 +492,5 @@ tr:hover {
   }
 }
 </style>
+
+
