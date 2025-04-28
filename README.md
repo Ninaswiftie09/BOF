@@ -61,6 +61,7 @@ Y deberías recibir una respuesta como:
 - Contraseña: `admin`
 
 Recuerda agregar un servidor nuevo y usar estos datos para conectarte a PostgreSQL:
+
 - Host: `db`
 - Usuario: `user`
 - Contraseña: `pass`
