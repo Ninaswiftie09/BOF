@@ -9,6 +9,9 @@ import login from '../views/login.vue'
 import register from '../views/register.vue'
 import ReporteVentas from '../views/ReporteVentas.vue'
 import clientes from '../views/clientes.vue'
+import clientesregistro from '../views/clientesregistro.vue'
+import proveedores from '../views/proveedores.vue'
+
 
 const routes = [
   { path: '/', name: 'login', component: login }, 
@@ -21,7 +24,11 @@ const routes = [
   { path: '/login', name: 'login-explicit', component: login }, 
   { path: '/register', name: 'register', component: register },
   { path: '/ReporteVentas', name: 'ReporteVentas', component: ReporteVentas },
-  { path: '/clientes', name: 'clientes', component: clientes }
+  { path: '/clientes', name: 'clientes', component: clientes },
+  { path: '/clientesregistro', name: 'clientesregistro', component: clientesregistro },
+  { path: '/proveedores', name: 'proveedores', component: proveedores }
+
+
 ]
 
 const router = createRouter({

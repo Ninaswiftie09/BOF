@@ -1,97 +1,112 @@
+<script setup>
+import { useRouter } from 'vue-router'
+const router = useRouter()
+
+function go (path) {
+  router.push(path)
+}
+</script>
+
 <template>
-    <div class="clientes-container">
-      <h1>Clientes</h1>
-      <router-link to="/" class="back-button">Regresar</router-link>
-  
-      <table>
-        <thead>
-          <tr>
-            <th>Nombre</th>
-            <th>Apellidos</th>
-            <th>telefono</th>
-            <th>CUI</th>
-            <th>NIT</th>
-            <th>fecha de entrega</th>
+  <div class="crm-home">
 
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>Abner Gabriel</td>
-            <td>Mejicanos Hernandez</td>
-            <td>36902623</td>
-            <td>3729283343</td>
-            <td>8515948</td>
-            <td>12/Marzo/2026</td>
+    <!-- Barra superior (idéntica a Home) -->
+    <header class="top-bar">
+      
+      <h1>CLIENTES</h1>
 
-          
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </template>
-  
-  <style scoped>
-  .inventory-container {
-    padding: 40px;
-    background-color: var(--color-octonary);
-    min-height: 100vh;
+      <input placeholder="Buscar elementos exactos" class="search"/>
+
+      <button class="avatar-btn"></button>
+    </header>
+
+    <!-- Contenedor central -->
+    <main class="cards-wrapper">
+      <button class="big-card" @click="go('/clientesregistro')">
+        <span>CLIENTES</span>
+      </button>
+      <button class="big-card" @click="go('/proveedores')">
+        <span>PROVEEDORES</span>
+      </button>
+    </main>
+
+  </div>
+</template>
+
+
+<style scoped>
+.crm-home{
+  min-height:100vh;
+  background: #0a0f2c;
+  display:flex;
+  flex-direction:column;
+}
+
+
+/* Top Bar*/
+.top-bar{
+  display:flex;
+  align-items:center;
+  justify-content: space-between;
+  gap:1.5rem;
+  padding:.75rem 2rem;
+  background: #1e293b;
+  color:var(--color-novenary);
+}
+
+
+h1{
+  font-family:'Segoe UI', sans-serif;
+  color:#ffffff;
+  letter-spacing:.5px;
   }
-  
-  h1 {
-    font-size: 36px;
-    font-weight: bold;
-    color: var(--color-primary);
-    margin-bottom: 30px;
-  }
-  
-  .back-button {
-    background-color: var(--color-secondary);
-    color: white;
-    padding: 10px 20px;
-    border-radius: 10px;
-    font-weight: bold;
-    text-decoration: none;
-    float: right;
-    margin-top: -60px;
-  }
-  
-  .back-button:hover {
-    background-color: var(--color-tertiary);
-  }
-  
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    background-color: white;
-    border-radius: 12px;
-    overflow: hidden;
-    box-shadow: 0 0 10px rgba(0,0,0,0.05);
-  }
-  
-  th {
-    background-color: var(--color-secondary);
-    color: white;
-    font-weight: bold;
-    padding: 16px;
-    font-size: 18px;
-  }
-  
-  td {
-    text-align: center;
-    padding: 12px;
-    font-size: 16px;
-    color: var(--color-senary);
-  }
-  
-  tr:nth-child(even) {
-    background-color: #f9f9f9;
-  }
-  
-  .en-escasez {
-    background-color: #fff2f2;
-    color: #b00020;
-    font-weight: bold;
-  }
-  </style>
-  
+
+.search{
+  flex:1 1 420px;
+  max-width:420px;
+  margin:0 auto;
+  padding:.4rem .8rem;
+  border-radius:6px;
+  border:none;
+  background:var(--color-novenary);
+  color:var(--color-senary);
+}
+.avatar-btn{
+  width:36px; height:36px;
+  border-radius:50%;
+  background:var(--color-novenary);
+  border:none; cursor:pointer;
+}
+
+
+/* Tarjetas */
+.cards-wrapper{
+  flex:1; display:flex; justify-content:center; align-items:center;
+  gap:3rem; flex-wrap:wrap; padding:2rem;
+}
+
+.big-card{
+  width:400px;
+  height:440px;
+  background:rgba(255,255,255,.08);  /* Para la transparencia */
+  border:2px solid rgba(255,255,255,.15);
+  border-radius:18px; cursor:pointer;
+  backdrop-filter:blur(4px);
+  box-shadow:0 4px 20px rgba(0,0,0,.25);
+  display:flex; justify-content:center; align-items:center;
+  transition:background .2s , transform .2s;
+
+  font-family:'Segoe UI', sans-serif;
+  font-size:1.4rem; color:#fff;
+}
+.big-card:hover{
+  background:rgba(0,0,0,.25);                    /* Para oscurecer cuando mi cursor está arriba */
+  transform:translateY(-6px) scale(1.03);
+}
+.big-card span{ pointer-events:none; }
+
+@media (max-width:600px){
+  .big-card{ width:180px; height:220px; font-size:1.2rem; }
+  .cards-wrapper{ gap:1.5rem; }
+}
+</style>
