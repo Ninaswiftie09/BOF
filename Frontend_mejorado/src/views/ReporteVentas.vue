@@ -117,6 +117,8 @@ export default {
       totalPaginas: 1,
       
       // Datos  (estos deberán ser calculados por el backend)
+        // Comentario de prueba commit 
+      
       totalVentas: '0.00',
       numeroFacturas: 0
     };
@@ -491,4 +493,3 @@ tr:hover {
 </style>
 
 
-  <!-- Comentarios de prueba para commits -->
