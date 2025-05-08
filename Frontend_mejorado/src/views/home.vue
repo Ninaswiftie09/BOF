@@ -1,7 +1,7 @@
 <template>
   <div class="dashboard-container">
     <aside class="sidebar">
-      <img src= "@/assets/logo_bof_blanco.png" alt="logo del cliente" class="logo" />
+      <img src="@/assets/logo_bof_blanco.png" alt="logo del cliente" class="logo" />
       <nav class="nav-links">
         <router-link
           v-for="item in navItems"
@@ -10,7 +10,8 @@
           class="nav-item"
         >
           <div class="icon-circle">
-            <img :src="item.icon" alt="icon" />
+            <component v-if="item.icon" :is="item.icon" />
+            <span v-else>🔸</span>
           </div>
           <span>{{ item.label }}</span>
         </router-link>
@@ -43,14 +44,23 @@
 import { onMounted } from 'vue'
 import Chart from 'chart.js/auto'
 
-const navItems = [
-  { label: 'Clientes', icon: '/icons/clientes.svg', route: '/clientes' },
-  { label: 'Facturas', icon: '/icons/facturas.svg', route: '/billpage' },
-  { label: 'contabilidad', icon: '/icons/contabilidad.svg', route: '/accounting' },
-  { label: 'Calculadora', icon: '/icons/calculadora.svg', route: '/calculadora' },
-  { label: 'Inventario', icon: '/icons/inventario.svg', route: '/mi_inventario' },
-  { label: 'Reporte de ventas', icon: '/icons/ReporteVentas.svg', route: '/ReporteVentas' }
+// Importación de íconos SVG para menu flotante
+import IconCalculadora from '@/components/icons/IconCalculadora.vue'
+import IconClientes from '@/components/icons/IconClientes.vue'
+import IconFacturas from '@/components/icons/IconFacturas.vue'
+import IconContabilidad from '@/components/icons/IconContabilidad.vue'
+import IconInventario from '@/components/icons/IconInventario.vue'
+import IconReporteVentas from '@/components/icons/IconRVentas.vue'
 
+
+// Lista de elementos de navegación
+const navItems = [
+  { label: 'Clientes', icon: IconClientes, route: '/clientes' },
+  { label: 'Facturas', icon: IconFacturas, route: '/billpage' },
+  { label: 'contabilidad', icon: IconContabilidad, route: '/accounting' },
+  { label: 'Calculadora', icon: IconCalculadora, route: '/calculadora' },
+  { label: 'Inventario', icon: IconInventario, route: '/mi_inventario' },
+  { label: 'Reporte de ventas', icon: IconReporteVentas, route: '/ReporteVentas' }
 ]
 
 onMounted(() => {
@@ -101,8 +111,9 @@ onMounted(() => {
 }
 
 .logo {
-  font-size: 1.5rem;
-  font-weight: bold;
+  width: 250px;
+  height: 150px;
+  margin-bottom: 1rem;
 }
 
 .nav-links {
@@ -137,11 +148,6 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-}
-
-.icon-circle img {
-  width: 20px;
-  height: 20px;
 }
 
 .main-area {
@@ -207,12 +213,5 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-}
-
-.logo{
-  width: 250;
-  height: 150px;
-  margin-bottom: 1rem;
-
 }
 </style>

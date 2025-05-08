@@ -3,7 +3,6 @@ import home from '../views/home.vue'
 import mi_inventario from '../views/mi_inventario.vue'
 import accounting from '../views/accounting.vue'
 import billpage from '../views/billpage.vue'
-import calculadora from '../views/calculadora.vue'
 import forgotpass from '../views/forgotpass.vue'
 import login from '../views/login.vue'
 import register from '../views/register.vue'
@@ -19,7 +18,6 @@ const routes = [
   { path: '/mi_inventario', name: 'mi_inventario', component: mi_inventario },
   { path: '/accounting', name: 'accounting', component: accounting },
   { path: '/billpage', name: 'billpage', component: billpage },
-  { path: '/calculadora', name: 'calculadora', component: calculadora },
   { path: '/forgotpass', name: 'forgotpass', component: forgotpass },
   { path: '/login', name: 'login-explicit', component: login }, 
   { path: '/register', name: 'register', component: register },

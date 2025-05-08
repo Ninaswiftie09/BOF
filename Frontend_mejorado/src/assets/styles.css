@@ -69,3 +69,19 @@
   button:hover {
     background-color: var(--color-quaternary);
   }
+
+  /* --- Íconos SVG en la navegación --- */
+.icon-circle svg {
+  width: 20px;
+  height: 20px;
+  stroke: currentColor;
+  fill: none;
+}
+
+.icon-circle {
+  color: var(--color-novenary); /* Blanco */
+}
+
+.nav-item:hover .icon-circle {
+  color: var(--color-secondary); /* Verde agua al pasar el mouse */
+}
