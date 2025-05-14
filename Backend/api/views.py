@@ -1,18 +1,28 @@
+# estándar de Python
+import json
+
+# Django
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group
 from django.contrib.auth.hashers import make_password
-import json
-from django.contrib.auth.models import Group
 from django.contrib.auth import authenticate, login
+from django.shortcuts import get_object_or_404
+from django.contrib.contenttypes.models import ContentType
 
+# DRF
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
+
+# Django ORM
 from django.db.models import Sum, Count
 from django.db.models.functions import TruncDate
-from .models import Venta, DetalleVenta, Producto
-from .serializers import VentaSerializer
+
+# App local
+from .models import Venta, DetalleVenta, Producto, Inventario
+from .serializers import VentaSerializer, InventarioSerializer
+
 
 def ping(request):
     return JsonResponse({"message": "pong"})
@@ -130,4 +140,5 @@ class DetalleVentasAPIView(APIView):
         ventas = Venta.objects.all()
         serializer = VentaSerializer(ventas, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
-    
+
+

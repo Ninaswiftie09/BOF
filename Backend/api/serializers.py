@@ -28,13 +28,3 @@ class VentaSerializer(serializers.ModelSerializer):
         model = Venta
         fields = '__all__'
 
-
-class InventarioSerializer(serializers.ModelSerializer):
-    descripcion = serializers.SerializerMethodField()
-    
-    class Meta:
-        model = Inventario
-        fields = ['id', 'tipo', 'objeto_id', 'cantidad', 'fecha_actualizacion', 'descripcion']
-    
-    def get_descripcion(self, obj):
-        return str(obj.content_object)

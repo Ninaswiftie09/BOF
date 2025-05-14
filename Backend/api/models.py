@@ -51,7 +51,9 @@ class DetalleVenta(models.Model):
         return f"Detalle {self.id} de Venta {self.venta.id}"
 
 # tabals para el inventario
+
 class Material(models.Model):
+    id = models.AutoField(primary_key=True)  
     nombre = models.CharField(max_length=100)
     color = models.CharField(max_length=50)
     codigo = models.CharField(max_length=50, unique=True)
@@ -61,36 +63,20 @@ class Material(models.Model):
         abstract = True
 
 class Hilo(Material):
-    material = models.CharField(max_length=50)  
-    calibre = models.CharField(max_length=20) 
+    material = models.CharField(max_length=50)
+    codigo_color = models.CharField(max_length=20)
+    stock = models.PositiveIntegerField(default=0)
 
 class Tela(Material):
-    tipo = models.CharField(max_length=50)  
-    composicion = models.CharField(max_length=100) 
+    tipo = models.CharField(max_length=50)
+    composicion = models.CharField(max_length=100)
+    stock = models.PositiveIntegerField(default=0)
+
 
 class Uniforme(models.Model):
-    tipo = models.CharField(max_length=100)  
+    id = models.AutoField(primary_key=True)
+    tipo = models.CharField(max_length=100)
     talla = models.CharField(max_length=10)
     color = models.CharField(max_length=50)
     material = models.ForeignKey(Tela, on_delete=models.SET_NULL, null=True, blank=True)
-    descripcion = models.TextField(blank=True, null=True)
-
-    def __str__(self):
-        return f"{self.tipo} - Talla {self.talla} - {self.color}"
-
-class Inventario(models.Model):
-    tipo = models.CharField(max_length=20, choices=[
-        ('hilo', 'Hilo'),
-        ('tela', 'Tela'),
-        ('uniforme', 'Uniforme'),
-    ])
-
-    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
-    objeto_id = models.PositiveIntegerField()
-    content_object = GenericForeignKey('content_type', 'objeto_id')
-
-    cantidad = models.PositiveIntegerField()
-    fecha_actualizacion = models.DateTimeField(auto_now=True)
-
-    def __str__(self):
-        return f"{self.content_object} - {self.cantidad} en stock"
+    stock = models.PositiveIntegerField(default=0)
