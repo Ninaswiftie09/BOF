@@ -21,7 +21,6 @@
     <main class="main-area">
       <header class="topbar">
         <div class="view-name"> HOME</div>
-        <input class="search" placeholder="Buscar elementos exactos" />
         <div class="user-circle"></div>
       </header>
 
@@ -45,7 +44,6 @@ import { onMounted } from 'vue'
 import Chart from 'chart.js/auto'
 
 // Importación de íconos SVG para menu flotante
-import IconCalculadora from '@/components/icons/IconCalculadora.vue'
 import IconClientes from '@/components/icons/IconClientes.vue'
 import IconFacturas from '@/components/icons/IconFacturas.vue'
 import IconContabilidad from '@/components/icons/IconContabilidad.vue'
@@ -58,7 +56,6 @@ const navItems = [
   { label: 'Clientes y Proveedores', icon: IconClientes, route: '/clientes' },
   { label: 'Facturas', icon: IconFacturas, route: '/billpage' },
   { label: 'contabilidad', icon: IconContabilidad, route: '/accounting' },
-  { label: 'Calculadora', icon: IconCalculadora, route: '/calculadora' },
   { label: 'Inventario', icon: IconInventario, route: '/mi_inventario' },
   { label: 'Reporte de ventas', icon: IconReporteVentas, route: '/ReporteVentas' }
 ]
