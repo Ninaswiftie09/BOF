@@ -55,7 +55,7 @@ import IconReporteVentas from '@/components/icons/IconRVentas.vue'
 
 // Lista de elementos de navegación
 const navItems = [
-  { label: 'Clientes', icon: IconClientes, route: '/clientes' },
+  { label: 'Clientes y Proveedores', icon: IconClientes, route: '/clientes' },
   { label: 'Facturas', icon: IconFacturas, route: '/billpage' },
   { label: 'contabilidad', icon: IconContabilidad, route: '/accounting' },
   { label: 'Calculadora', icon: IconCalculadora, route: '/calculadora' },

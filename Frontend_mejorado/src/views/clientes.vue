@@ -10,13 +10,14 @@ function go (path) {
 <template>
   <div class="crm-home">
 
-    <!-- Barra superior (idéntica a Home) -->
+    <!-- Barra superior -->
     <header class="top-bar">
-      
-      <h1>CLIENTES</h1>
+      <!-- Logo como botón -->
+      <img src="@/assets/logo_bof_blanco.png" alt="Logo del cliente" class="logo" @click="go('/')"/>
 
-      <input placeholder="Buscar elementos exactos" class="search"/>
+      <h1>CLIENTES Y PROVEEDORES</h1>
 
+      <!-- Botón de avatar -->
       <button class="avatar-btn"></button>
     </header>
 
@@ -33,7 +34,6 @@ function go (path) {
   </div>
 </template>
 
-
 <style scoped>
 .crm-home{
   min-height:100vh;
@@ -42,8 +42,7 @@ function go (path) {
   flex-direction:column;
 }
 
-
-/* Top Bar*/
+/* Top Bar */
 .top-bar{
   display:flex;
   align-items:center;
@@ -52,32 +51,39 @@ function go (path) {
   padding:.75rem 2rem;
   background: #1e293b;
   color:var(--color-novenary);
+  position: relative; /* Para que el logo y texto se ubiquen bien */
 }
 
+.logo {
+  width: 250px;
+  height: 150px;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+}
 
-h1{
+.logo:hover {
+  transform: scale(1.05); /* Efecto de hover en el logo */
+}
+
+/* Centrado y tamaño del texto */
+h1 {
   font-family:'Segoe UI', sans-serif;
   color:#ffffff;
   letter-spacing:.5px;
-  }
-
-.search{
-  flex:1 1 420px;
-  max-width:420px;
-  margin:0 auto;
-  padding:.4rem .8rem;
-  border-radius:6px;
-  border:none;
-  background:var(--color-novenary);
-  color:var(--color-senary);
+  font-size: 2rem; /* Aumenté el tamaño de la letra */
+  flex-grow: 1; /* Asegura que el texto ocupe el espacio y se centre */
+  text-align: center; /* Centrado del texto */
 }
+
+/* Barra de búsqueda eliminada */
+
+/* Avatar Button */
 .avatar-btn{
   width:36px; height:36px;
   border-radius:50%;
   background:var(--color-novenary);
   border:none; cursor:pointer;
 }
-
 
 /* Tarjetas */
 .cards-wrapper{
@@ -99,10 +105,12 @@ h1{
   font-family:'Segoe UI', sans-serif;
   font-size:1.4rem; color:#fff;
 }
+
 .big-card:hover{
   background:rgba(0,0,0,.25);                    /* Para oscurecer cuando mi cursor está arriba */
   transform:translateY(-6px) scale(1.03);
 }
+
 .big-card span{ pointer-events:none; }
 
 @media (max-width:600px){
