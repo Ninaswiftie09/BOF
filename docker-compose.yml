@@ -1,11 +1,9 @@
-version: '3.9'
-
 services:
   backend:
-    build: ./backend
+    build: ./Backend
     container_name: django_backend
     volumes:
-      - ./backend:/app
+      - ./Backend:/app
     ports:
       - "8000:8000"
     depends_on:
