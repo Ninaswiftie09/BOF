@@ -130,3 +130,4 @@ class DetalleVentasAPIView(APIView):
         ventas = Venta.objects.all()
         serializer = VentaSerializer(ventas, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+    
