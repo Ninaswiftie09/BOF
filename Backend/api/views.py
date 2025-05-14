@@ -1,4 +1,4 @@
-# estándar de Python
+# Estándar de Python
 import json
 
 # Django
@@ -8,20 +8,17 @@ from django.contrib.auth.models import User, Group
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth import authenticate, login
 from django.shortcuts import get_object_or_404
-from django.contrib.contenttypes.models import ContentType
+from django.db.models import Sum, Count
+from django.db.models.functions import TruncDate
 
 # DRF
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 
-# Django ORM
-from django.db.models import Sum, Count
-from django.db.models.functions import TruncDate
-
 # App local
-from .models import Venta, DetalleVenta, Producto, Inventario
-from .serializers import VentaSerializer, InventarioSerializer
+from .models import Venta, DetalleVenta, Hilo, Tela, Uniforme
+from .serializers import VentaSerializer, HiloSerializer, TelaSerializer, UniformeSerializer
 
 
 def ping(request):
@@ -140,5 +137,59 @@ class DetalleVentasAPIView(APIView):
         ventas = Venta.objects.all()
         serializer = VentaSerializer(ventas, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+    
+
+#logica para agregar, quitar stock y agregar nuevo producto al inventario
+
+# Funciones para agregar stock
+
+
+
+# Funciones para quitar stock
+
+
+
+# Funciones para agregar nuevos productos
+class AgregarNuevoHilo(APIView):
+    def post(self, request):
+        serializer = HiloSerializer(data=request.data)
+        if serializer.is_valid():
+            if Hilo.objects.filter(codigo=serializer.validated_data['codigo']).exists():
+                return Response({'error': 'Ya existe un hilo con ese código'}, status=status.HTTP_400_BAD_REQUEST)
+
+            hilo = serializer.save()
+            return Response({'message': 'Hilo agregado exitosamente', 'hilo': hilo.nombre}, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class AgregarNuevaTela(APIView):
+    def post(self, request):
+        serializer = TelaSerializer(data=request.data)
+        if serializer.is_valid():
+            if Tela.objects.filter(codigo=serializer.validated_data['codigo']).exists():
+                return Response({'error': 'Ya existe una tela con ese código'}, status=status.HTTP_400_BAD_REQUEST)
+
+            tela = serializer.save()
+            return Response({'message': 'Tela agregada exitosamente', 'tela': tela.nombre}, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class AgregarNuevoUniforme(APIView):
+    def post(self, request):
+        material_id = request.data.get('material')
+        try:
+            material = Tela.objects.get(id=material_id)
+        except Tela.DoesNotExist:
+            return Response({'error': 'Material no encontrado'}, status=status.HTTP_400_BAD_REQUEST)
+
+        serializer = UniformeSerializer(data=request.data)
+        if serializer.is_valid():
+            if Uniforme.objects.filter(tipo=serializer.validated_data['tipo'], talla=serializer.validated_data['talla'], color=serializer.validated_data['color']).exists():
+                return Response({'error': 'Ya existe un uniforme con esas características'}, status=status.HTTP_400_BAD_REQUEST)
+
+            uniforme = serializer.save(material=material)
+            return Response({'message': 'Uniforme agregado exitosamente', 'uniforme': uniforme.tipo}, status=status.HTTP_201_CREATED)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
 
 

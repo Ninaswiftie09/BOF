@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from .models import Categoria, Producto, Venta, DetalleVenta
-from .models import Inventario, Hilo, Tela, Uniforme
+from .models import Hilo, Tela, Uniforme
 
 class CategoriaSerializer(serializers.ModelSerializer):
     class Meta:
@@ -27,4 +27,41 @@ class VentaSerializer(serializers.ModelSerializer):
     class Meta:
         model = Venta
         fields = '__all__'
+
+#inventario
+
+class HiloSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Hilo
+        fields = ['id', 'material', 'codigo_color', 'stock', 'nombre', 'codigo', 'descripcion']
+
+    def update(self, instance, validated_data):
+        if 'stock' in validated_data:
+            instance.stock = validated_data['stock']
+        instance.save()
+        return instance
+
+
+class TelaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Tela
+        fields = ['id', 'tipo', 'composicion', 'color', 'stock', 'nombre', 'codigo', 'descripcion']
+
+    def update(self, instance, validated_data):
+        if 'stock' in validated_data:
+            instance.stock = validated_data['stock']
+        instance.save()
+        return instance
+
+class UniformeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Uniforme
+        fields = ['id', 'tipo', 'talla', 'color', 'material']
+
+    def update(self, instance, validated_data):
+        if 'stock' in validated_data:
+            instance.stock = validated_data['stock']
+        instance.save()
+        return instance
+
 

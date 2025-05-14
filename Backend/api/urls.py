@@ -8,15 +8,21 @@ from .views import (
     ProductosMasVendidosAPIView,
     MetodosPagoUsadosAPIView,
     DetalleVentasAPIView,
-    AgregarNuevoInventario,
-    AgregarStock,
-    SacarStock
+    AgregarStockHilo,
+    AgregarStockTela,
+    AgregarStockUniforme,
+    QuitarStockHilo,
+    QuitarStockTela,
+    QuitarStockUniforme,
+    AgregarNuevoHilo,
+    AgregarNuevaTela,
+    AgregarNuevoUniforme
 )
 
 urlpatterns = [
     path("ping/", ping), 
     path('register/', register_user),  
-    path('login/', login_user),
+    path('login/', login_user),  
 
     # Ventas
     path('ventas/por-fecha/', VentasPorFechaAPIView.as_view(), name='ventas_por_fecha'),
@@ -26,7 +32,13 @@ urlpatterns = [
     path('ventas/detalles/', DetalleVentasAPIView.as_view(), name='detalle_ventas'),
 
     # Inventario
-    path('inventario/agregar-nuevo', AgregarNuevoInventario.as_view()),
-    path('inventario/agregar-stock/<int:pk>', AgregarStock.as_view()),
-    path('inventario/sacar-stock/<int:pk>', SacarStock.as_view()),
+    path('inventario/agregar-stock/hilo/<int:pk>', AgregarStockHilo.as_view()),
+    path('inventario/agregar-stock/tela/<int:pk>', AgregarStockTela.as_view()),
+    path('inventario/agregar-stock/uniforme/<int:pk>', AgregarStockUniforme.as_view()),
+    path('inventario/quitar-stock/hilo/<int:pk>', QuitarStockHilo.as_view()),
+    path('inventario/quitar-stock/tela/<int:pk>', QuitarStockTela.as_view()),
+    path('inventario/quitar-stock/uniforme/<int:pk>', QuitarStockUniforme.as_view()),
+    path('inventario/agregar-nuevo-hilo/', AgregarNuevoHilo.as_view()),
+    path('inventario/agregar-nuevo-tela/', AgregarNuevaTela.as_view()),
+    path('inventario/agregar-nuevo-uniforme/', AgregarNuevoUniforme.as_view()),
 ]
