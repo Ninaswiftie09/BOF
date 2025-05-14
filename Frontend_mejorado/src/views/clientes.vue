@@ -2,8 +2,9 @@
 import { useRouter } from 'vue-router'
 const router = useRouter()
 
+// Función de navegación
 function go (path) {
-  router.push(path)
+  router.push(path) // Redirige a la ruta que recibe como argumento
 }
 </script>
 
@@ -12,8 +13,8 @@ function go (path) {
 
     <!-- Barra superior -->
     <header class="top-bar">
-      <!-- Logo como botón -->
-      <img src="@/assets/logo_bof_blanco.png" alt="Logo del cliente" class="logo" @click="go('/')"/>
+      <!-- Logo como botón, redirigiendo al Home -->
+      <img src="@/assets/logo_bof_blanco.png" alt="Logo del cliente" class="logo" @click="go('/home')"/>
 
       <h1>CLIENTES Y PROVEEDORES</h1>
 

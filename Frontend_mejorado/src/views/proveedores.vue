@@ -3,6 +3,12 @@ import { reactive, ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
+
+// Método para redirigir al home
+function goHome() {
+  router.push({ name: 'home' }) // Redirige directamente al home
+}
+
 const open = t => { 
   modal.type = t;  // Cambia el tipo de modal (proveedor o compra)
   modal.visible = true; // Muestra el modal
@@ -82,7 +88,7 @@ function saveDetalleCompra() {
   <div class="crm-home">
     <header class="top-bar">
       <!-- Logo con redirección al Home -->
-      <img src="@/assets/logo_bof_blanco.png" alt="Logo del cliente" class="logo" @click="router.push('/')"/>
+      <img src="@/assets/logo_bof_blanco.png" alt="Logo del cliente" class="logo" @click="goHome"/>
       <h1>PROVEEDORES</h1>
       <button class="avatar-btn"></button>
     </header>
