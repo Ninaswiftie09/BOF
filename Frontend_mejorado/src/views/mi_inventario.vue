@@ -38,6 +38,44 @@
           {{ mostrarLimitado(tipo) ? 'Ver Todos' : 'Ver Menos' }}
         </button>
       </div>
+
+      <!-- Formularios por tipo -->
+      <div v-if="formVisible && tipoFormulario === tipo" class="formulario">
+        <h3>Agregar nuevo {{ tipo }}</h3>
+
+        <div v-if="tipo === 'Telas'">
+          <input v-model="nuevoProducto.nombre" placeholder="Nombre">
+          <input v-model="nuevoProducto.tipo" placeholder="Tipo">
+          <input v-model="nuevoProducto.composicion" placeholder="Composición">
+          <input v-model="nuevoProducto.color" placeholder="Color">
+          <input v-model="nuevoProducto.codigo" placeholder="Código">
+          <input v-model.number="nuevoProducto.stock" type="number" placeholder="Stock">
+          <textarea v-model="nuevoProducto.descripcion" placeholder="Descripción"></textarea>
+          <button @click="enviarNuevo('telas')">Guardar</button>
+        </div>
+
+        <div v-else-if="tipo === 'Hilos'">
+          <input v-model="nuevoProducto.nombre" placeholder="Nombre">
+          <input v-model="nuevoProducto.material" placeholder="Material">
+          <input v-model="nuevoProducto.codigo_color" placeholder="Código de color">
+          <input v-model="nuevoProducto.color" placeholder="Color">
+          <input v-model="nuevoProducto.codigo" placeholder="Código">
+          <input v-model.number="nuevoProducto.stock" type="number" placeholder="Stock">
+          <textarea v-model="nuevoProducto.descripcion" placeholder="Descripción"></textarea>
+          <button @click="enviarNuevo('hilos')">Guardar</button>
+        </div>
+
+        <div v-else-if="tipo === 'Uniformes'">
+          <input v-model="nuevoProducto.tipo" placeholder="Tipo">
+          <input v-model="nuevoProducto.talla" placeholder="Talla">
+          <input v-model="nuevoProducto.color" placeholder="Color">
+          <input v-model.number="nuevoProducto.material" placeholder="ID de Tela relacionada">
+          <input v-model.number="nuevoProducto.stock" type="number" placeholder="Stock">
+          <button @click="enviarNuevo('uniformes')">Guardar</button>
+        </div>
+
+        <button @click="formVisible = false">Cancelar</button>
+      </div>
     </div>
   </div>
 </template>
@@ -47,36 +85,20 @@ export default {
   data() {
     return {
       vistaExtendida: {},
+      formVisible: false,
+      tipoFormulario: '',
       inventarios: {
-        Telas: [
-          { material: 'Telas blancas', descripcion: 'Tela de algodón', cantidad: 15, usados: 50 },
-          { material: 'Telas verdes', descripcion: 'Tela poliéster', cantidad: 4, usados: 15 },
-          { material: 'Telas negras', descripcion: 'Tela licra', cantidad: 10, usados: 30 },
-          { material: 'Telas rojas', descripcion: 'Tela sintética', cantidad: 6, usados: 5 },
-          { material: 'Telas cafés', descripcion: 'Tela de lino', cantidad: 11, usados: 10 },
-          { material: 'Telas azules', descripcion: 'Tela denim', cantidad: 3, usados: 8 },
-          { material: 'Telas grises', descripcion: 'Tela mezclilla', cantidad: 7, usados: 6 },
-        ],
-        Hilos: [
-          { material: 'Hilo blanco', descripcion: 'Hilo algodón', cantidad: 12, usados: 30 },
-          { material: 'Hilo rojo', descripcion: 'Hilo sintético', cantidad: 3, usados: 10 },
-          { material: 'Hilo negro', descripcion: 'Hilo grueso', cantidad: 6, usados: 25 },
-          { material: 'Hilo azul', descripcion: 'Hilo de poliéster', cantidad: 5, usados: 18 },
-          { material: 'Hilo gris', descripcion: 'Hilo licra', cantidad: 7, usados: 11 },
-          { material: 'Hilo verde', descripcion: 'Hilo lino', cantidad: 8, usados: 9 },
-          { material: 'Hilo marrón', descripcion: 'Hilo elástico', cantidad: 2, usados: 7 },
-        ],
-        Uniformes: [
-          { material: 'Uniforme escolar', descripcion: 'Niño/a primaria', cantidad: 8, usados: 20 },
-          { material: 'Uniforme médico', descripcion: 'Scrub clínico', cantidad: 2, usados: 5 },
-          { material: 'Uniforme policía', descripcion: 'Oficial urbano', cantidad: 10, usados: 12 },
-          { material: 'Uniforme chef', descripcion: 'Cocina profesional', cantidad: 4, usados: 3 },
-          { material: 'Uniforme empresa', descripcion: 'Oficina/industrial', cantidad: 6, usados: 14 },
-          { material: 'Uniforme militar', descripcion: 'Camuflaje', cantidad: 9, usados: 11 },
-          { material: 'Uniforme seguridad', descripcion: 'Privada', cantidad: 5, usados: 6 },
-        ],
+        Telas: [],
+        Hilos: [],
+        Uniformes: []
       },
-    }
+      nuevoProducto: {}
+    };
+  },
+  mounted() {
+    this.obtenerInventario('Telas', 'telas');
+    this.obtenerInventario('Hilos', 'hilos');
+    this.obtenerInventario('Uniformes', 'uniformes');
   },
   methods: {
     mostrarLimitado(tipo) {
@@ -92,10 +114,50 @@ export default {
       alert(`Sacar stock de: ${tipo}`);
     },
     agregarProducto(tipo) {
-      alert(`Agregar nuevo producto a: ${tipo}`);
+      this.tipoFormulario = tipo;
+      this.formVisible = true;
+      this.nuevoProducto = {}; // reiniciar formulario
+    },
+    async obtenerInventario(tipo, endpoint) {
+      try {
+        const res = await fetch(`http://localhost:8000/api/${endpoint}/`);
+        const data = await res.json();
+        const items = data.map(item => ({
+          material: item.nombre || item.tipo || 'Sin nombre',
+          descripcion: item.descripcion || '—',
+          cantidad: item.stock || 0,
+          usados: item.usados || 0
+        }));
+        this.inventarios[tipo] = items;
+      } catch (error) {
+        console.error(`Error al obtener ${tipo}:`, error);
+      }
+    },
+    async enviarNuevo(endpoint) {
+      try {
+        const res = await fetch(`http://localhost:8000/api/${endpoint}/nuevo/`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(this.nuevoProducto)
+        });
+
+        const result = await res.json();
+
+        if (!res.ok) {
+          alert('Error: ' + (result.error || 'Error al guardar'));
+          return;
+        }
+
+        alert(`${this.tipoFormulario.slice(0, -1)} agregado correctamente`);
+        this.formVisible = false;
+        this.obtenerInventario(this.tipoFormulario, endpoint);
+      } catch (error) {
+        alert('Error de red');
+        console.error(error);
+      }
     }
   }
-}
+};
 </script>
 
 <style scoped>
@@ -172,7 +234,7 @@ tr:nth-child(even) {
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
-  margin-bottom: 40px;
+  margin-bottom: 20px;
 }
 
 .button-row button {
@@ -189,4 +251,57 @@ tr:nth-child(even) {
 .button-row button:hover {
   background-color: var(--color-tertiary);
 }
+
+.formulario {
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  margin-bottom: 30px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+.formulario input,
+.formulario textarea {
+  display: block;
+  width: 100%;
+  margin-bottom: 10px;
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+
+.formulario {
+  background: var(--colo-texto-blanco); 
+  padding: 20px;
+  border-radius: 12px;
+  margin-bottom: 30px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+.formulario input,
+.formulario textarea {
+  display: block;
+  width: 100%;
+  margin-bottom: 10px;
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+
+.formulario button {
+  background-color: var(--color-senary); 
+  color: var(--colo-texto-blanco); 
+  padding: 10px 20px;
+  font-weight: bold;
+  border: none;
+  border-radius: 6px;
+  margin-right: 10px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.formulario button:hover {
+  opacity: 0.9;
+}
+
 </style>
