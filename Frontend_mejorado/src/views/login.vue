@@ -197,6 +197,10 @@ button:hover {
   color: var(--colo-texto-negro);
 }
 
+.create-account p {
+  color: #ffffff;
+}
+
 .success-message {
   margin-top: 20px;
   text-align: center;

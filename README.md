@@ -67,4 +67,8 @@ Recuerda agregar un servidor nuevo y usar estos datos para conectarte a PostgreS
 - Contraseña: `pass`
 - Nombre de la base de datos: `proyecto`
 
+
+Se creo una pagina web usando Domain, AWS y Cloudflare
+el nombre del dominio es "abriluniformes.shop"
+
 Hecho por el equipo de BOF 💻..
