@@ -182,10 +182,61 @@ class AgregarStockUniforme(APIView):
         return Response({'message': 'Stock de uniforme actualizado', 'uniforme': serializer.data}, status=status.HTTP_200_OK)
 
 
-
 # Funciones para quitar stock
+class QuitarStockHilo(APIView):
+    def patch(self, request, pk):
+        cantidad = request.data.get('cantidad')
+        if not cantidad:
+            return Response({'error': 'Cantidad requerida'}, status=status.HTTP_400_BAD_REQUEST)
 
+        hilo = get_object_or_404(Hilo, pk=pk)
+        cantidad = int(cantidad)  
+        
+        if hilo.stock < cantidad:
+            return Response({'error': 'Stock insuficiente'}, status=status.HTTP_400_BAD_REQUEST)
 
+        hilo.stock -= cantidad
+        hilo.save()
+
+        serializer = HiloSerializer(hilo)
+        return Response({'message': 'Stock de hilo reducido', 'hilo': serializer.data}, status=status.HTTP_200_OK)
+
+class QuitarStockTela(APIView):
+    def patch(self, request, pk):
+        cantidad = request.data.get('cantidad')
+        if not cantidad:
+            return Response({'error': 'Cantidad requerida'}, status=status.HTTP_400_BAD_REQUEST)
+
+        tela = get_object_or_404(Tela, pk=pk)
+        cantidad = int(cantidad)  
+        
+        if tela.stock < cantidad:
+            return Response({'error': 'Stock insuficiente'}, status=status.HTTP_400_BAD_REQUEST)
+
+        tela.stock -= cantidad
+        tela.save()
+
+        serializer = TelaSerializer(tela)
+        return Response({'message': 'Stock de tela reducido', 'tela': serializer.data}, status=status.HTTP_200_OK)
+
+class QuitarStockUniforme(APIView):
+    def patch(self, request, pk):
+        cantidad = request.data.get('cantidad')
+        if not cantidad:
+            return Response({'error': 'Cantidad requerida'}, status=status.HTTP_400_BAD_REQUEST)
+
+        uniforme = get_object_or_404(Uniforme, pk=pk)
+        cantidad = int(cantidad)  
+        
+        if uniforme.stock < cantidad:
+            return Response({'error': 'Stock insuficiente'}, status=status.HTTP_400_BAD_REQUEST)
+
+        uniforme.stock -= cantidad
+        uniforme.save()
+
+        serializer = UniformeSerializer(uniforme)
+        return Response({'message': 'Stock de uniforme reducido', 'uniforme': serializer.data}, status=status.HTTP_200_OK)
+    
 # Funciones para agregar nuevos productos
 class AgregarNuevoHilo(APIView):
     def post(self, request):
