@@ -75,7 +75,7 @@
   
   h1 {
     font-family: 'Archivo Black', sans-serif;
-    color: var(--color-primary);
+    color: var(--colo-texto-negro);
     text-align: center;
     margin-bottom: 20px;
   }
@@ -86,7 +86,7 @@
   
   .input-group label {
     font-family: 'Kollektif', sans-serif;
-    color: var(--color-primary);
+    color: var(--colo-texto-negro);
     font-weight: bold;
     display: block;
     margin-bottom: 5px;
@@ -97,7 +97,7 @@
     padding: 10px;
     font-family: 'Kollektif', sans-serif;
     font-size: 16px;
-    color: var(--color-primary);
+    color: var(--colo-texto-negro);
     background-color: var(--color-septenary);
     border: 1px solid var(--color-quinary);
     border-radius: 4px;
@@ -129,7 +129,7 @@
   }
   
   .back-to-login a:hover {
-    color: var(--color-primary);
+    color: var(--colo-texto-negro);
   }
   </style>
   

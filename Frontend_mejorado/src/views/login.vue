@@ -125,7 +125,7 @@ export default {
 
 h1 {
   font-family: 'Archivo Black', sans-serif;
-  color: var(--color-primary);
+  color: var(--colo-texto-negro);
   text-align: center;
   margin-bottom: 20px;
 }
@@ -136,7 +136,7 @@ h1 {
 
 .input-group label {
   font-family: 'Kollektif', sans-serif;
-  color: var(--color-primary);
+  color: var(--colo-texto-negro);
   font-weight: bold;
   display: block;
   margin-bottom: 5px;
@@ -147,7 +147,7 @@ h1 {
   padding: 10px;
   font-family: 'Kollektif', sans-serif;
   font-size: 16px;
-  color: var(--color-primary);
+  color: var(--colo-texto-negro);
   background-color: var(--color-septenary);
   border: 1px solid var(--color-quinary);
   border-radius: 4px;
@@ -179,7 +179,7 @@ button:hover {
 }
 
 .forgot-password a:hover {
-  color: var(--color-primary);
+  color: var(--colo-texto-negro);
 }
 
 .create-account {
@@ -194,7 +194,7 @@ button:hover {
 }
 
 .create-account a:hover {
-  color: var(--color-primary);
+  color: var(--colo-texto-negro);
 }
 
 .success-message {

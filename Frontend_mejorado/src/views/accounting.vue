@@ -112,6 +112,10 @@ export default {
   min-height: 100vh;
   background-color: var(--color-octonary);
   padding-top: 120px;
+  .operations-table tr:nth-child(even) {
+  background-color: var(--color-senary);
+}
+
 }
 .upper-rectangle {
   background-color: var(--color-primary);
@@ -142,27 +146,28 @@ export default {
   flex-wrap: wrap;
   gap: 20px;
   margin-bottom: 30px;
+  
 }
 .summary-card {
   flex: 1 1 200px;
-  background-color: var(--color-quaternary);
+  background-color: var(--color-primary);
   border-radius: 8px;
   padding: 20px;
   text-align: center;
   transition: background-color 0.3s;
 }
 .summary-card:hover {
-  background-color: var(--color-tertiary);
+  background-color: var(--color-senary);
 }
 .summary-card h3 {
   margin: 0;
   text-transform: uppercase;
-  color: var(--color-primary);
+  color: var(--colo-texto-blanco);
 }
 .summary-card p {
   font-size: 1.5rem;
   margin-top: 10px;
-  color: var(--color-primary);
+  color: var(--colo-texto-blanco);
   font-weight: bold;
 }
 .actions-row {
@@ -170,24 +175,45 @@ export default {
   flex-wrap: wrap;
   gap: 20px;
   margin-bottom: 30px;
+  color: var(--colo-texto-blanco);
+
+}
+.actions-row h3 {
+  margin: 0;
+  text-transform: uppercase;
+  color: var(--colo-texto-blanco);
 }
 .action-box {
   flex: 1 1 200px;
-  background-color: var(--color-quaternary);
+  background-color: var(--color-primary);
   border-radius: 8px;
   padding: 20px;
   text-align: center;
   cursor: pointer;
   transition: background-color 0.3s;
+  
 }
 .action-box:hover {
-  background-color: var(--color-tertiary);
+  background-color: var(--color-senary);
 }
 .operations-section {
-  background-color: #fff;
+
+  background-color: #1e293b;
   border-radius: 8px;
   padding: 20px;
+  color: var(--colo-texto-blanco);
+
 }
+.operations-table th {
+  background-color: var(--color-primary);
+  color: var(--colo-texto-blanco); /* antes estaba #fff */
+  text-transform: uppercase;
+}
+
+.operations-table td {
+  color: var(--colo-texto-blanco);
+}
+
 .section-title {
   margin-bottom: 20px;
   text-transform: uppercase;
@@ -213,10 +239,10 @@ export default {
   background-color: var(--color-quaternary);
 }
 .operations-table tr:hover {
-  background-color: #8cafdc;
+  background-color: #2B5CA8;
 }
 .btn-view {
-  background-color: var(--color-secondary);
+  background-color: var(--color-senary);
   color: #fff;
   border: none;
   padding: 8px 16px;
@@ -226,6 +252,6 @@ export default {
   transition: background-color 0.3s;
 }
 .btn-view:hover {
-  background-color: var(--color-tertiary);
+  background-color: var(--color-primary);
 }
 </style>
