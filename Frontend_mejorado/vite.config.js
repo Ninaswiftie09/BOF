@@ -16,6 +16,7 @@ export default defineConfig({
   },
   server: {
     host: true,
+    allowedHosts: ['abriluniformes.shop'],
     proxy: {
       '/api': {
         target: 'http://backend:8000',
