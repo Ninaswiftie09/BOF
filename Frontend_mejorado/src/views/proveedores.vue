@@ -3,23 +3,34 @@ import { reactive, ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
-const open = t => { modal.type = t; modal.visible = true }
-const close = () => { modal.visible = false }
+const open = t => { 
+  modal.type = t;  // Cambia el tipo de modal (proveedor o compra)
+  modal.visible = true; // Muestra el modal
+}
+const close = () => { 
+  modal.visible = false; // Cierra el modal
+}
 
 const modal = reactive({ visible: false, type: '' })
 
 const proveedorForm = reactive({
-  codigo: '', estado: 'Activo', nombre: '', contacto: '', nit: '',
-  direccion: '', telefono: '', email: ''
+  id: '', nombre: '', contacto: '', nit: '', telefono: '',
+  email: '', direccion: '', fecha_registro: ''
 })
 
 const proveedores = ref([])
 
 const compraForm = reactive({
-  proveedor: '', fecha: '', insumos: '', costo: 0
+  proveedor_id: '', fecha_compra: '', metodo_pago: '', monto_total: 0
 })
 
 const compras = ref([])
+
+const detalleCompraForm = reactive({
+  compra_id: '', nombre_producto: '', cantidad: 0, precio_unitario: 0, subtotal: 0
+})
+
+const detalleCompra = ref([])
 
 const searchQuery = ref('')  // Barra de búsqueda para proveedores
 const searchReportQuery = ref('')  // Barra de búsqueda para el historial de compras
@@ -31,20 +42,39 @@ const filteredProveedores = computed(() => {
 
 // Método para filtrar las compras utilizando computed
 const filteredCompras = computed(() => {
-  return compras.value.filter(c => c.proveedor.toLowerCase().includes(searchReportQuery.value.toLowerCase()))
+  return compras.value.filter(c => c.proveedor_id.toLowerCase().includes(searchReportQuery.value.toLowerCase()))
 })
 
 function saveProveedor() {
-  if (!proveedorForm.codigo || !proveedorForm.nombre) return alert('Código y nombre')
-  proveedores.value.push({ ...proveedorForm })
-  Object.keys(proveedorForm).forEach(k => proveedorForm[k] = k === 'estado' ? 'Activo' : '')
-  close()
+  if (!proveedorForm.id || !proveedorForm.nombre) return alert('ID y nombre son obligatorios');
+  proveedores.value.push({ ...proveedorForm });
+  Object.keys(proveedorForm).forEach(k => proveedorForm[k] = '');  // Limpiar formulario
+  close();
 }
 
 function saveCompra() {
-  compras.value.push({ id: Date.now(), proveedor: compraForm.proveedor, costo: compraForm.costo, fecha: compraForm.fecha })
-  Object.keys(compraForm).forEach(k => compraForm[k] = '')
-  close()
+  compras.value.push({
+    id: Date.now(),
+    proveedor_id: compraForm.proveedor_id,
+    fecha_compra: compraForm.fecha_compra,
+    metodo_pago: compraForm.metodo_pago,
+    monto_total: compraForm.monto_total
+  });
+  Object.keys(compraForm).forEach(k => compraForm[k] = '');  // Limpiar formulario
+  close();
+}
+
+function saveDetalleCompra() {
+  detalleCompra.value.push({
+    id: Date.now(),
+    compra_id: detalleCompraForm.compra_id,
+    nombre_producto: detalleCompraForm.nombre_producto,
+    cantidad: detalleCompraForm.cantidad,
+    precio_unitario: detalleCompraForm.precio_unitario,
+    subtotal: detalleCompraForm.subtotal
+  });
+  Object.keys(detalleCompraForm).forEach(k => detalleCompraForm[k] = '');  // Limpiar formulario
+  close();
 }
 </script>
 
@@ -70,19 +100,27 @@ function saveCompra() {
           <table>
             <thead>
               <tr>
-                <th>Código</th>
+                <th>ID</th>
                 <th>Nombre</th>
                 <th>Contacto</th>
-                <th>Estado</th>
+                <th>NIT</th>
+                <th>Teléfono</th>
+                <th>Email</th>
+                <th>Dirección</th>
+                <th>Fecha Registro</th>
                 <th>Acciones</th>
               </tr>
             </thead>
             <tbody>
               <tr v-for="(proveedor, index) in filteredProveedores" :key="index">
-                <td>{{ proveedor.codigo }}</td>
+                <td>{{ proveedor.id }}</td>
                 <td>{{ proveedor.nombre }}</td>
                 <td>{{ proveedor.contacto }}</td>
-                <td>{{ proveedor.estado }}</td>
+                <td>{{ proveedor.nit }}</td>
+                <td>{{ proveedor.telefono }}</td>
+                <td>{{ proveedor.email }}</td>
+                <td>{{ proveedor.direccion }}</td>
+                <td>{{ proveedor.fecha_registro }}</td>
                 <td>
                   <button @click="open('historial')">Ver Historial</button>
                 </td>
@@ -93,7 +131,6 @@ function saveCompra() {
         <!-- Botón de Agregar Proveedor -->
         <div class="new-order-wrapper">
           <button class="new-order-btn" @click="open('proveedor')">AGREGAR PROVEEDOR</button>
-          <button class="new-order-btn" @click="open('compra')">NUEVA COMPRA</button>
         </div>
       </div>
 
@@ -108,19 +145,59 @@ function saveCompra() {
           <table>
             <thead>
               <tr>
-                <th>Id</th><th>Proveedor</th><th>Costo</th><th>Fecha</th>
+                <th>Id</th><th>Proveedor</th><th>Fecha de Compra</th><th>Metodo de Pago</th><th>Monto Total</th>
               </tr>
             </thead>
             <tbody>
               <tr v-for="(compra, index) in filteredCompras" :key="index">
                 <td>{{ compra.id }}</td>
-                <td>{{ compra.proveedor }}</td>
-                <td>{{ compra.costo }}</td>
-                <td>{{ compra.fecha }}</td>
+                <td>{{ compra.proveedor_id }}</td>
+                <td>{{ compra.fecha_compra }}</td>
+                <td>{{ compra.metodo_pago }}</td>
+                <td>{{ compra.monto_total }}</td>
               </tr>
             </tbody>
           </table>
         </div>
+        <!-- Mover el botón de Nueva Compra aquí -->
+        <div class="new-order-wrapper">
+          <button class="new-order-btn" @click="open('compra')">NUEVA COMPRA</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal de Nuevo Proveedor -->
+    <div v-if="modal.visible && modal.type === 'proveedor'" class="modal-overlay" @click.self="close">
+      <div class="modal-window">
+        <h3>Nuevo Proveedor</h3>
+        <form class="modal-form grid-two" @submit.prevent="saveProveedor">
+          <label>ID
+            <input v-model="proveedorForm.id" />
+          </label>
+          <label>Nombre
+            <input v-model="proveedorForm.nombre" />
+          </label>
+          <label>Contacto
+            <input v-model="proveedorForm.contacto" />
+          </label>
+          <label>NIT
+            <input v-model="proveedorForm.nit" />
+          </label>
+          <label>Teléfono
+            <input v-model="proveedorForm.telefono" />
+          </label>
+          <label>Email
+            <input v-model="proveedorForm.email" />
+          </label>
+          <label>Dirección
+            <input v-model="proveedorForm.direccion" />
+          </label>
+          <label>Fecha Registro
+            <input type="date" v-model="proveedorForm.fecha_registro" />
+          </label>
+          <button class="save-big" type="submit">Guardar</button>
+          <button class="cancel-btn" type="button" @click="close">Cancelar</button>
+        </form>
       </div>
     </div>
 
@@ -130,13 +207,43 @@ function saveCompra() {
         <h3>Nueva Compra</h3>
         <form class="modal-form grid-two" @submit.prevent="saveCompra">
           <label>Proveedor
-            <select v-model="compraForm.proveedor">
-              <option v-for="p in proveedores" :key="p.codigo" :value="p.nombre">{{p.nombre}}</option>
+            <select v-model="compraForm.proveedor_id">
+              <option v-for="p in proveedores" :key="p.id" :value="p.id">{{p.nombre}}</option>
             </select>
           </label>
-          <label>Fecha <input type="date" v-model="compraForm.fecha" /></label>
-          <label>Insumos adquiridos <input v-model="compraForm.insumos" /></label>
-          <label>Costo total <input type="number" min="0" v-model.number="compraForm.costo" /></label>
+          <label>Fecha de Compra <input type="date" v-model="compraForm.fecha_compra" /></label>
+          <label>Metodo de Pago
+            <input v-model="compraForm.metodo_pago" />
+          </label>
+          <label>Monto Total
+            <input type="number" min="0" v-model.number="compraForm.monto_total" />
+          </label>
+          <button class="save-big" type="submit">Guardar</button>
+          <button class="cancel-btn" type="button" @click="close">Cancelar</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Modal de Detalle de Compra -->
+    <div v-if="modal.visible && modal.type === 'detalleCompra'" class="modal-overlay" @click.self="close">
+      <div class="modal-window">
+        <h3>Detalle de Compra</h3>
+        <form class="modal-form grid-two" @submit.prevent="saveDetalleCompra">
+          <label>Compra ID
+            <input v-model="detalleCompraForm.compra_id" />
+          </label>
+          <label>Nombre del Producto
+            <input v-model="detalleCompraForm.nombre_producto" />
+          </label>
+          <label>Cantidad
+            <input type="number" v-model="detalleCompraForm.cantidad" />
+          </label>
+          <label>Precio Unitario
+            <input type="number" v-model="detalleCompraForm.precio_unitario" />
+          </label>
+          <label>Subtotal
+            <input type="number" v-model="detalleCompraForm.subtotal" />
+          </label>
           <button class="save-big" type="submit">Guardar</button>
           <button class="cancel-btn" type="button" @click="close">Cancelar</button>
         </form>
@@ -162,7 +269,7 @@ h1{font-family:'Segoe UI', sans-serif;color:#ffffff;font-size:2rem;flex-grow: 1;
 }
 
 .search {
-  padding:.4rem .8rem;
+  padding:.6rem 1rem;
   border-radius:6px;
   border:none;
   background:#fff;
