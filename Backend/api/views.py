@@ -142,11 +142,48 @@ class DetalleVentasAPIView(APIView):
 #logica para agregar, quitar stock y agregar nuevo producto al inventario
 
 # Funciones para agregar stock
+class AgregarStockHilo(APIView):
+    def patch(self, request, pk):
+        cantidad = request.data.get('cantidad')
+        if not cantidad:
+            return Response({'error': 'Cantidad requerida'}, status=status.HTTP_400_BAD_REQUEST)
+
+        hilo = get_object_or_404(Hilo, pk=pk)
+        hilo.stock += int(cantidad)
+        hilo.save()
+
+        serializer = HiloSerializer(hilo)
+        return Response({'message': 'Stock de hilo actualizado', 'hilo': serializer.data}, status=status.HTTP_200_OK)
+
+class AgregarStockTela(APIView):
+    def patch(self, request, pk):
+        cantidad = request.data.get('cantidad')
+        if not cantidad:
+            return Response({'error': 'Cantidad requerida'}, status=status.HTTP_400_BAD_REQUEST)
+
+        tela = get_object_or_404(Tela, pk=pk)
+        tela.stock += int(cantidad)
+        tela.save()
+
+        serializer = TelaSerializer(tela)
+        return Response({'message': 'Stock de tela actualizado', 'tela': serializer.data}, status=status.HTTP_200_OK)
+
+class AgregarStockUniforme(APIView):
+    def patch(self, request, pk):
+        cantidad = request.data.get('cantidad')
+        if not cantidad:
+            return Response({'error': 'Cantidad requerida'}, status=status.HTTP_400_BAD_REQUEST)
+
+        uniforme = get_object_or_404(Uniforme, pk=pk)
+        uniforme.stock += int(cantidad)
+        uniforme.save()
+
+        serializer = UniformeSerializer(uniforme)
+        return Response({'message': 'Stock de uniforme actualizado', 'uniforme': serializer.data}, status=status.HTTP_200_OK)
 
 
 
 # Funciones para quitar stock
-
 
 
 # Funciones para agregar nuevos productos

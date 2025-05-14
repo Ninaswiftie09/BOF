@@ -32,12 +32,12 @@ urlpatterns = [
     path('ventas/detalles/', DetalleVentasAPIView.as_view(), name='detalle_ventas'),
 
     # Inventario
-    path('inventario/agregar-stock/hilo/<int:pk>', AgregarStockHilo.as_view()),
-    path('inventario/agregar-stock/tela/<int:pk>', AgregarStockTela.as_view()),
-    path('inventario/agregar-stock/uniforme/<int:pk>', AgregarStockUniforme.as_view()),
-    path('inventario/quitar-stock/hilo/<int:pk>', QuitarStockHilo.as_view()),
-    path('inventario/quitar-stock/tela/<int:pk>', QuitarStockTela.as_view()),
-    path('inventario/quitar-stock/uniforme/<int:pk>', QuitarStockUniforme.as_view()),
+    path('inventario/agregar-stock/hilo/<int:pk>/', AgregarStockHilo.as_view()),
+    path('inventario/agregar-stock/tela/<int:pk>/', AgregarStockTela.as_view()),
+    path('inventario/agregar-stock/uniforme/<int:pk>/', AgregarStockUniforme.as_view()),
+    path('inventario/quitar-stock/hilo/<int:pk>/', QuitarStockHilo.as_view()),
+    path('inventario/quitar-stock/tela/<int:pk>/', QuitarStockTela.as_view()),
+    path('inventario/quitar-stock/uniforme/<int:pk>/', QuitarStockUniforme.as_view()),
     path('inventario/agregar-nuevo-hilo/', AgregarNuevoHilo.as_view()),
     path('inventario/agregar-nuevo-tela/', AgregarNuevaTela.as_view()),
     path('inventario/agregar-nuevo-uniforme/', AgregarNuevoUniforme.as_view()),
