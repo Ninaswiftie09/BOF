@@ -78,3 +78,24 @@ class Uniforme(models.Model):
     color = models.CharField(max_length=50)
     material = models.ForeignKey(Tela, on_delete=models.SET_NULL, null=True, blank=True)
     stock = models.PositiveIntegerField(default=0)
+
+class Proveedor(models.Model):
+    id = models.AutoField(primary_key=True)
+    nombre = models.CharField(max_length=200, unique=True)
+    correo = models.EmailField(max_length=254, blank=True, null=True)
+    telefono = models.CharField(max_length=20, blank=True, null=True)
+    direccion = models.TextField(blank=True, null=True)
+
+    def __str__(self):
+        return self.nombre
+
+
+class Compra(models.Model):
+    id = models.AutoField(primary_key=True)
+    proveedor = models.ForeignKey(Proveedor, related_name='compras', on_delete=models.CASCADE)
+    fecha = models.DateField(auto_now_add=True)
+    descripcion = models.TextField()
+    monto = models.DecimalField(max_digits=10, decimal_places=2)
+
+    def __str__(self):
+        return f'Compra {self.id} a {self.proveedor.nombre}'

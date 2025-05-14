@@ -1,4 +1,5 @@
-from django.urls import path
+from rest_framework import routers
+from django.urls import path, include
 from .views import (
     ping,
     register_user,
@@ -16,8 +17,14 @@ from .views import (
     QuitarStockUniforme,
     AgregarNuevoHilo,
     AgregarNuevaTela,
-    AgregarNuevoUniforme
+    AgregarNuevoUniforme,
+    ProveedorViewSet,
+    CompraViewSet,
 )
+
+router = routers.DefaultRouter()
+router.register(r'proveedores', ProveedorViewSet, basename='proveedor')
+router.register(r'compras', CompraViewSet, basename='compra')
 
 urlpatterns = [
     path("ping/", ping), 
@@ -41,4 +48,7 @@ urlpatterns = [
     path('inventario/agregar-nuevo-hilo/', AgregarNuevoHilo.as_view()),
     path('inventario/agregar-nuevo-tela/', AgregarNuevaTela.as_view()),
     path('inventario/agregar-nuevo-uniforme/', AgregarNuevoUniforme.as_view()),
+
+    # Rutas automáticas de Proveedores y Compras
+    path('', include(router.urls)),
 ]

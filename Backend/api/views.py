@@ -12,11 +12,17 @@ from django.db.models import Sum, Count
 from django.db.models.functions import TruncDate
 
 # DRF
+from rest_framework import viewsets
+from rest_framework.filters import SearchFilter
+
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 
 # App local
+from .models import Proveedor, Compra
+from .serializers import ProveedorSerializer, CompraSerializer
+
 from .models import Venta, DetalleVenta, Hilo, Tela, Uniforme
 from .serializers import VentaSerializer, HiloSerializer, TelaSerializer, UniformeSerializer
 
@@ -278,6 +284,17 @@ class AgregarNuevoUniforme(APIView):
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+
+class ProveedorViewSet(viewsets.ModelViewSet):
+    queryset = Proveedor.objects.all().order_by('nombre')
+    serializer_class = ProveedorSerializer
+    filter_backends = [SearchFilter]
+    search_fields = ['nombre', 'correo', 'telefono']
+
+
+class CompraViewSet(viewsets.ModelViewSet):
+    queryset = Compra.objects.all().order_by('-fecha')
+    serializer_class = CompraSerializer
 
 
 

@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from .models import Categoria, Producto, Venta, DetalleVenta
 from .models import Hilo, Tela, Uniforme
+from .models import Proveedor, Compra
 
 class CategoriaSerializer(serializers.ModelSerializer):
     class Meta:
@@ -27,6 +28,23 @@ class VentaSerializer(serializers.ModelSerializer):
     class Meta:
         model = Venta
         fields = '__all__'
+        
+#para proveedores
+        
+class CompraSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Compra
+        fields = ['id', 'proveedor', 'fecha', 'descripcion', 'monto']
+        read_only_fields = ['id', 'fecha']
+
+
+class ProveedorSerializer(serializers.ModelSerializer):
+    compras = CompraSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Proveedor
+        fields = ['id', 'nombre', 'correo', 'telefono', 'direccion', 'compras']
+        read_only_fields = ['id']
 
 #inventario
 
