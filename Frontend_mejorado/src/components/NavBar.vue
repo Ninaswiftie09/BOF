@@ -53,6 +53,11 @@ defineProps({
   
 }
 
+.navbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 5rem;
+}
 
 
 </style>
