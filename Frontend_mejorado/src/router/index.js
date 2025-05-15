@@ -11,22 +11,25 @@ import clientes from '../views/clientes.vue'
 import clientesregistro from '../views/clientesregistro.vue'
 import proveedores from '../views/proveedores.vue'
 
-
 const routes = [
-  { path: '/', name: 'login', component: login }, 
-  { path: '/home', name: 'home', component: home }, 
+  { path: '/', name: 'login', component: login },
+  { path: '/home', name: 'home', component: home },
   { path: '/mi_inventario', name: 'mi_inventario', component: mi_inventario },
   { path: '/accounting', name: 'accounting', component: accounting },
   { path: '/billpage', name: 'billpage', component: billpage },
   { path: '/forgotpass', name: 'forgotpass', component: forgotpass },
-  { path: '/login', name: 'login-explicit', component: login }, 
+  { path: '/login', name: 'login-explicit', component: login },
   { path: '/register', name: 'register', component: register },
   { path: '/ReporteVentas', name: 'ReporteVentas', component: ReporteVentas },
   { path: '/clientes', name: 'clientes', component: clientes },
   { path: '/clientesregistro', name: 'clientesregistro', component: clientesregistro },
-  { path: '/proveedores', name: 'proveedores', component: proveedores }
 
-
+  // Ruta para Proveedores
+  {
+    path: '/proveedores',
+    name: 'proveedores',
+    component: proveedores
+  }
 ]
 
 const router = createRouter({
@@ -35,4 +38,3 @@ const router = createRouter({
 })
 
 export default router
-
