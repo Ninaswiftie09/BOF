@@ -12,9 +12,14 @@
     <!-- Título -->
     <h1 class="title">{{ title }}</h1>
 
-    <!-- Acciones a la derecha (avatar, switch, etc.) -->
+    <!-- Acciones a la derecha -->
     <div class="ml-auto flex items-center">
-      <slot name="actions" />
+      <button class = "avatar-btn">
+        <img
+          :src="profileImg"
+          class="avatar-img"
+        />
+      </button>
     </div>
 
   </header>
@@ -24,6 +29,8 @@
 defineProps({
   title: { type: String, required: true }
 })
+
+import profileImage from '@/assets/profileImg.png'
 </script>
 
 <style scoped>
@@ -37,11 +44,11 @@ defineProps({
 
 /* ====== logo añadido ====== */
 .logo{
-  height:80px;          /* grosor similar a la barra */
+  height:80px;
   width:auto;
-  cursor:pointer;
-  
+  cursor:pointer; 
 }
+
 
 /* ====== título ====== */
 .title{
@@ -50,7 +57,28 @@ defineProps({
   font-weight:700;
   color:#ffffff;
   letter-spacing:.5px;
-  
+}
+
+/* ====== Foto de Perfil ====== */
+.avatar-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background-color: var(--color-novenary);
+  overflow: hidden;
+  border: none;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+
+.avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .navbar-actions {

@@ -99,7 +99,6 @@ const porPagar = ref([])
             <h2>REPORTES</h2>
             <ul>
               <li @click="open('historial')">Historial de pedidos</li>
-              <li @click="open('pagar')">Cuentas a pagar</li>
               <li @click="open('pagadas')">Cuentas pagadas</li>
             </ul>
           </section>
@@ -114,8 +113,6 @@ const porPagar = ref([])
         <template v-if="modal.type==='clientes'">
           <h3>Clientes</h3>
           <form class="modal-form grid-two" @submit.prevent="saveCliente">
-            <label>Código<input v-model="clienteForm.codigo" required/></label>
-            <label>Estado<select v-model="clienteForm.estado"><option>Activo</option><option>Inactivo</option></select></label>
             <label>Nombre<input v-model="clienteForm.nombre" required/></label>
             <label>Contacto<input v-model="clienteForm.contacto"/></label>
             <label>NIT<input v-model="clienteForm.nit"/></label>
@@ -123,7 +120,6 @@ const porPagar = ref([])
             <label>Entrega<input v-model="clienteForm.direccionEntrega"/></label>
             <label>Teléfono<input v-model="clienteForm.telefono"/></label>
             <label>E-mail<input type="email" v-model="clienteForm.email"/></label>
-            <label>Cartera<input type="number" v-model.number="clienteForm.cartera" min="0"/></label>
             <button type="submit" class="save-big">Guardar</button>
             <button type="button" class="cancel-btn" @click="close">Cancelar</button>
           </form>
@@ -131,7 +127,7 @@ const porPagar = ref([])
 
         <!-- Historial / Pagar / Pagadas -->
         <template v-else-if="['historial','pagar','pagadas'].includes(modal.type)">
-          <h3>{{ {historial:'Historial de pedidos',pagar:'Cuentas a pagar',pagadas:'Cuentas pagadas'}[modal.type] }}</h3>
+          <h3>{{ {historial:'Historial de pedidos',pagadas:'Cuentas pagadas'}[modal.type] }}</h3>
           <div class="table-wrapper">
             <table>
               <thead>

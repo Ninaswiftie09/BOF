@@ -12,9 +12,6 @@ const go = path => router.push(path)
 
     <!-- Barra superior -->
     <NavBar title="CLIENTES Y PROVEEDORES">
-      <template #actions>
-        <button class="avatar-btn"></button>
-      </template>
     </NavBar>
 
     <!-- Tarjetas -->
@@ -36,13 +33,6 @@ const go = path => router.push(path)
   min-height:100vh;
   background:#0a0f2c;
   display:flex; flex-direction:column;
-}
-
-/* Avatar en la NavBar */
-.avatar-btn{
-  width:36px;height:36px;border-radius:50%;
-  background:var(--color-novenary);
-  border:none;cursor:pointer;
 }
 
 /* Tarjetas */
