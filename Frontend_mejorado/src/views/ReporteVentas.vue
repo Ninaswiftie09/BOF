@@ -1,25 +1,32 @@
 <template>
   <div class="reporte-ventas">
-    <div class="header-container">
-      <router-link to="/" class="back-button">← Regresar a Inicio</router-link>
-      <h1>Reporte de Ventas</h1>
-    </div>
-    
+    <!-- HEADER unificado -->
+    <header class="top-bar">
+      <img
+        src="@/assets/logo_bof_blanco.png"
+        alt="Logo del cliente"
+        class="logo"
+        @click="goHome"
+      />
+      <h1>REPORTE DE VENTAS</h1>
+      <button class="avatar-btn"></button>
+    </header>
+
+    <!-- FILTROS -->
     <div class="filtros-container">
       <div class="filtro">
         <label for="fecha-inicio">Desde:</label>
-        <input type="date" id="fecha-inicio" v-model="filtroFechaInicio">
+        <input type="date" id="fecha-inicio" v-model="filtroFechaInicio" />
       </div>
       <div class="filtro">
         <label for="fecha-fin">Hasta:</label>
-        <input type="date" id="fecha-fin" v-model="filtroFechaFin">
+        <input type="date" id="fecha-fin" v-model="filtroFechaFin" />
       </div>
       <button class="btn-filtrar" @click="filtrarDatos">Filtrar</button>
       <button class="btn-reset" @click="resetFiltros">Limpiar</button>
     </div>
 
-      // comentariosprueba
-    <!-- Sección 1:  -->
+    <!-- KPIs -->
     <div class="kpi-container">
       <div class="kpi-card principal">
         <h3>Total de Ventas</h3>
@@ -32,35 +39,30 @@
         <p class="descripcion">Tickets de venta emitidos</p>
       </div>
     </div>
-    
-    <!-- Sección 2: Gráfica de evolución de ventas -->
+
+    <!-- Gráficas -->
     <div class="chart-container">
       <h2>Evolución de Ventas</h2>
       <div class="chart-placeholder">
-        <!-- Integrar las gráficas de línea o barras -->
         <div class="chart-overlay">Gráfica de evolución de ventas por días, semanas o meses</div>
       </div>
     </div>
-    
-    <!-- Sección 3: Productos más vendidos -->
+
     <div class="chart-container">
       <h2>Productos más vendidos</h2>
       <div class="chart-placeholder">
-        <!-- integrar las gráficas de barras horizontales -->
         <div class="chart-overlay">Top 5 o 10 productos más vendidos</div>
       </div>
     </div>
-    
-    <!-- Sección 4: Métodos de pago -->
+
     <div class="chart-container">
       <h2>Métodos de pago utilizados</h2>
       <div class="chart-placeholder shorter">
-        <!-- agregar aca gráfica de pastel -->
         <div class="chart-overlay">Distribución de pagos (efectivo, tarjeta, transferencia)</div>
       </div>
     </div>
-    
-    <!-- Sección 5: Tabla de Ventas Detalladas -->
+
+    <!-- Tabla -->
     <div class="table-container">
       <h2>Tabla de Ventas Detalladas</h2>
       <table v-if="ventas.length">
@@ -94,64 +96,60 @@
         <p>Cargando ventas...</p>
       </div>
       <p v-else class="no-data">No se encontraron ventas para el periodo seleccionado</p>
-      
+
       <div class="pagination">
-        <button :disabled="paginaActual === 1" @click="cambiarPagina(paginaActual - 1)">&laquo; Anterior</button>
+        <button :disabled="paginaActual === 1" @click="cambiarPagina(paginaActual - 1)">
+          &laquo; Anterior
+        </button>
         <span>Página {{ paginaActual }} de {{ totalPaginas }}</span>
-        <button :disabled="paginaActual === totalPaginas" @click="cambiarPagina(paginaActual + 1)">Siguiente &raquo;</button>
+        <button :disabled="paginaActual === totalPaginas" @click="cambiarPagina(paginaActual + 1)">
+          Siguiente &raquo;
+        </button>
       </div>
     </div>
   </div>
 </template>
 
 <script>
+import { useRouter } from 'vue-router'
+
 export default {
   name: 'ReporteVentas',
+  setup() {
+    const router = useRouter()
+    const goHome = () => {
+      router.push({ name: 'home' })
+    }
+    return { goHome }
+  },
   data() {
     return {
-      // Datos que serán proporcionados por el backend
       ventas: [],
       cargando: true,
       filtroFechaInicio: '',
       filtroFechaFin: '',
       paginaActual: 1,
       totalPaginas: 1,
-      
-      // Datos  (estos deberán ser calculados por el backend)
-        // Comentario de prueba commit 
-      
       totalVentas: '0.00',
       numeroFacturas: 0
     };
   },
   methods: {
-    // Método para formatear fechas (frontend)
     formatearFecha(fecha) {
       return new Date(fecha).toLocaleDateString();
     },
-    
-    // BACKEND: Implementar lógica de filtrado de datos por fechas
     filtrarDatos() {
       console.log('Filtrando datos:', this.filtroFechaInicio, this.filtroFechaFin);
-      // Aquí el backend debe implementar la petición a la API con los filtros
     },
-    
-    // BACKEND: Implementar reinicio de filtros
     resetFiltros() {
       this.filtroFechaInicio = '';
       this.filtroFechaFin = '';
-      // Aquí  recargar los datos originales
     },
-    
-    // BACKEND: Implementar paginación
     cambiarPagina(pagina) {
       this.paginaActual = pagina;
-      // implementar la petición para la página específica
     }
   },
   mounted() {
-    // BACKEND: Implementar carga inicial de datos
-    // Por ahora es data quemada 
     setTimeout(() => {
       this.ventas = [
         {
@@ -175,7 +173,6 @@ export default {
           fecha: '2025-04-21'
         }
       ];
-      
       this.totalVentas = '550.00';
       this.numeroFacturas = 2;
       this.cargando = false;
@@ -185,312 +182,184 @@ export default {
 </script>
 
 <style scoped>
+/* Header unificado */
+.top-bar {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 0.75rem 2rem;
+  background: #1e293b;
+  justify-content: space-between;
+  position: relative;
+  top: 0;
+  left: 0;
+  z-index: 1000;
+}
+.logo {
+  width: 150px;
+  height: auto;
+  cursor: pointer;
+}
+.top-bar h1 {
+  font-family: 'Segoe UI', sans-serif;
+  color: #ffffff;
+  font-size: 2rem;
+  flex-grow: 1;
+  text-align: center;
+}
+.avatar-btn {
+  width: 40px;
+  height: 40px;
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+}
+
+/* Página general */
 .reporte-ventas {
+  background-color: #0a0f2c; /* fondo oscuro */
+  color: #ffffff; /* texto claro */
   padding: 20px;
+  padding-top: 120px; /* espacio para header */
   font-family: 'Kollektif', sans-serif;
-  background-color: var(--color-octonary); /* B1D1EB - azul claro */
-  color: var(--color-senary); /* 374666 - azul oscuro para texto */
   min-height: 100vh;
 }
 
-.header-container {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-}
-
-.back-button {
-  padding: 8px 16px;
-  background-color: var(--color-secondary); /* 2AA68F - verde turquesa */
-  color: white;
-  text-decoration: none;
-  border-radius: 4px;
-  transition: background-color 0.3s;
-  font-family: 'Kollektif', sans-serif;
-}
-
-.back-button:hover {
-  background-color: var(--color-quaternary); /* C9E8F5 - celeste claro */
-  color: var(--color-senary);
-}
-
-h1 {
-  margin: 0;
-  color: var(--color-primary); /* 839A2D - verde oliva */
-  font-family: 'Archivo Black', sans-serif;
-}
-
-h2 {
-  color: var(--color-primary);
-  border-bottom: 1px solid var(--color-secondary);
-  padding-bottom: 8px;
-  margin-top: 30px;
-  font-family: 'Archivo Black', sans-serif;
-}
-
+/* Filtros */
 .filtros-container {
   display: flex;
   gap: 15px;
   margin-bottom: 30px;
   flex-wrap: wrap;
-  background-color: var(--color-novenary); /* blanco */
+  background-color: #1e293b;
   padding: 15px;
   border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
-
-.filtro {
-  display: flex;
-  flex-direction: column;
-}
-
 .filtro label {
   margin-bottom: 5px;
-  color: var(--color-senary);
   font-weight: bold;
+  color: #ffffff;
 }
-
 .filtro input {
   padding: 8px;
   border-radius: 4px;
-  border: 1px solid var(--color-septenary);
-  background-color: var(--color-novenary);
-  color: var(--color-senary);
+  border: none;
+  background-color: #ffffff;
+  color: #000000;
 }
-
 .btn-filtrar, .btn-reset {
   padding: 8px 16px;
   border: none;
   border-radius: 4px;
+  font-weight: bold;
   cursor: pointer;
-  align-self: flex-end;
   margin-top: auto;
-  font-family: 'Kollektif', sans-serif;
 }
-
 .btn-filtrar {
-  background-color: var(--color-secondary);
-  color: white;
+  background-color: #2aa68f;
+  color: #fff;
 }
-
 .btn-reset {
-  background-color: var(--color-tertiary);
-  color: var(--color-senary);
+  background-color: #839a2d;
+  color: #fff;
 }
 
-/* KPIs */
+/* KPI */
 .kpi-container {
   display: flex;
   gap: 20px;
-  margin-bottom: 30px;
   flex-wrap: wrap;
+  margin-bottom: 30px;
 }
-
 .kpi-card {
-  background-color: var(--color-novenary);
+  background-color: #1e2236;
   padding: 20px;
   border-radius: 8px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
-
 .kpi-card.principal {
   flex: 1;
   min-width: 250px;
-  border-left: 4px solid var(--color-primary);
 }
-
 .kpi-card h3 {
-  margin-top: 0;
-  color: var(--color-quinary); /* 2B5CA8 - azul fuerte */
-  font-size: 1rem;
-  font-family: 'Archivo Black', sans-serif;
+  margin: 0;
+  color: #2b5ca8;
 }
-
 .kpi-card .valor {
   font-size: 2rem;
   font-weight: bold;
-  margin: 10px 0;
-  color: var(--color-primary);
+  color: #ffffff;
 }
-
 .kpi-card .descripcion {
-  font-size: 0.8rem;
-  color: var(--color-senary);
-  margin: 0;
+  font-size: 0.9rem;
+  color: #ccc;
 }
 
-/* Charts */
+/* Chart */
 .chart-container {
-  background-color: var(--color-novenary);
+  background-color: #1e2236;
   padding: 20px;
   border-radius: 8px;
   margin-bottom: 20px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
-
 .chart-placeholder {
-  height: 300px;
-  background-color: var(--color-quaternary);
-  border-radius: 4px;
+  background-color: #2c3148;
+  border-radius: 6px;
+  height: 250px;
   display: flex;
   align-items: center;
   justify-content: center;
-  position: relative;
 }
-
 .chart-placeholder.shorter {
-  height: 200px;
+  height: 180px;
 }
-
 .chart-overlay {
-  color: var(--color-senary);
-  text-align: center;
+  color: #ccc;
   font-style: italic;
 }
 
-/* Table */
+/* Tabla */
 .table-container {
-  background-color: var(--color-novenary);
+  background-color: #1e2236;
   padding: 20px;
   border-radius: 8px;
-  margin-bottom: 20px;
   overflow-x: auto;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
-
 table {
   width: 100%;
   border-collapse: collapse;
 }
-
 th, td {
   padding: 10px;
-  border: 1px solid var(--color-octonary);
-  text-align: left;
+  border: 1px solid #2c3148;
+  color: #ffffff;
 }
-
 th {
-  background-color: var(--color-secondary);
-  position: sticky;
-  top: 0;
-  color: white;
-  font-family: 'Archivo Black', sans-serif;
-  font-weight: normal;
+  background-color: #2aa68f;
 }
-
 tr:nth-child(even) {
-  background-color: var(--color-quaternary);
+  background-color: #2b2f40;
 }
-
 tr:hover {
-  background-color: var(--color-tertiary);
+  background-color: #3c4c6e;
 }
 
-.loading {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin: 40px 0;
-}
-
-.spinner {
-  border: 4px solid rgba(0, 0, 0, 0.1);
-  border-radius: 50%;
-  border-top: 4px solid var(--color-secondary);
-  width: 40px;
-  height: 40px;
-  animation: spin 1s linear infinite;
-  margin-bottom: 10px;
-}
-
-.no-data {
-  text-align: center;
-  margin: 40px 0;
-  color: var(--color-senary);
-}
-
+/* Paginación */
 .pagination {
   display: flex;
   justify-content: center;
-  align-items: center;
   gap: 10px;
   margin-top: 20px;
 }
-
 .pagination button {
-  padding: 8px 16px;
-  background-color: var(--color-secondary);
-  border: none;
-  border-radius: 4px;
+  background-color: #2aa68f;
   color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
   cursor: pointer;
-  font-family: 'Kollektif', sans-serif;
 }
-
 .pagination button:disabled {
-  background-color: var(--color-septenary);
+  background-color: #666;
   cursor: not-allowed;
 }
-
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-/* Media queries para responsividad */
-@media (max-width: 768px) {
-  .header-container {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-  
-  .back-button {
-    margin-bottom: 10px;
-  }
-  
-  .kpi-container {
-    flex-direction: column;
-  }
-  
-  .kpi-card {
-    min-width: 100%;
-  }
-  
-  th, td {
-    padding: 8px 5px;
-    font-size: 0.9rem;
-  }
-}
-
-@media (max-width: 480px) {
-  .filtros-container {
-    flex-direction: column;
-  }
-  
-  .filtro {
-    width: 100%;
-  }
-  
-  .btn-filtrar, .btn-reset {
-    width: 100%;
-    margin-top: 10px;
-  }
-  
-  th, td {
-    padding: 6px 3px;
-    font-size: 0.8rem;
-  }
-  
-  .pagination {
-    flex-direction: column;
-    gap: 5px;
-  }
-  
-  .chart-placeholder {
-    height: 200px;
-  }
-}
 </style>
-
-

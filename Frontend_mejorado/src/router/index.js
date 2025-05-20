@@ -24,12 +24,9 @@ const routes = [
   { path: '/clientes', name: 'clientes', component: clientes },
   { path: '/clientesregistro', name: 'clientesregistro', component: clientesregistro },
 
-  // Ruta para Proveedores
+  
   {
-    path: '/proveedores',
-    name: 'proveedores',
-    component: proveedores
-  }
+    path: '/proveedores',name: 'proveedores',component: proveedores}
 ]
 
 const router = createRouter({

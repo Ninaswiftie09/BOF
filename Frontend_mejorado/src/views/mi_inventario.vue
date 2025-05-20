@@ -1,7 +1,16 @@
 <template>
   <div class="inventory-container">
-    <h1>Inventario</h1>
-    <router-link to="/" class="back-button">Regresar</router-link>
+    <!-- HEADER unificado -->
+    <header class="top-bar">
+      <img
+        src="@/assets/logo_bof_blanco.png"
+        alt="Logo del cliente"
+        class="logo"
+        @click="goHome"
+      />
+      <h1>INVENTARIO</h1>
+      <button class="avatar-btn"></button>
+    </header>
 
     <div v-for="(items, tipo) in inventarios" :key="tipo" class="inventory-section">
       <h2>{{ tipo }}</h2>
@@ -81,7 +90,16 @@
 </template>
 
 <script>
+import { useRouter } from 'vue-router'
+
 export default {
+  setup() {
+    const router = useRouter()
+    const goHome = () => {
+      router.push({ name: 'home' })
+    }
+    return { goHome }
+  },
   data() {
     return {
       vistaExtendida: {},
@@ -116,7 +134,7 @@ export default {
     agregarProducto(tipo) {
       this.tipoFormulario = tipo;
       this.formVisible = true;
-      this.nuevoProducto = {}; // reiniciar formulario
+      this.nuevoProducto = {};
     },
     async obtenerInventario(tipo, endpoint) {
       try {
@@ -165,36 +183,49 @@ export default {
   padding: 40px;
   background-color: var(--color-octonary);
   min-height: 100vh;
+  padding-top: 120px; /* espacio para el header fijo */
 }
 
+/* HEADER UNIFICADO */
+.top-bar {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 0.75rem 2rem;
+  background: #1e293b;
+  justify-content: space-between;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+}
+.logo {
+  width: 150px;
+  height: auto;
+  cursor: pointer;
+}
 h1 {
-  font-size: 36px;
-  font-weight: bold;
-  color: var(--colo-texto-blanco);
-  margin-bottom: 30px;
+  font-family: 'Segoe UI', sans-serif;
+  color: #ffffff;
+  font-size: 2rem;
+  flex-grow: 1;
+  text-align: center;
+}
+.avatar-btn {
+  width: 40px;
+  height: 40px;
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
 }
 
+/* CONTENIDO */
 h2 {
   color: var(--colo-texto-blanco);
   margin-top: 40px;
   margin-bottom: 10px;
 }
-
-.back-button {
-  background-color: var(--color-senary);
-  color: white;
-  padding: 10px 20px;
-  border-radius: 10px;
-  font-weight: bold;
-  text-decoration: none;
-  float: right;
-  margin-top: -60px;
-}
-
-.back-button:hover {
-  background-color: var(--color-tertiary);
-}
-
 table {
   width: 100%;
   border-collapse: collapse;
@@ -204,7 +235,6 @@ table {
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
   margin-bottom: 10px;
 }
-
 th {
   background-color: var(--color-senary);
   color: white;
@@ -212,31 +242,26 @@ th {
   padding: 16px;
   font-size: 18px;
 }
-
 td {
   text-align: center;
   padding: 12px;
   font-size: 16px;
   color: var(--color-senary);
 }
-
 tr:nth-child(even) {
   background-color: #f9f9f9;
 }
-
 .en-escasez {
   background-color: #fff2f2;
   color: #b00020;
   font-weight: bold;
 }
-
 .button-row {
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
   margin-bottom: 20px;
 }
-
 .button-row button {
   background-color: var(--color-senary);
   color: white;
@@ -247,19 +272,16 @@ tr:nth-child(even) {
   cursor: pointer;
   transition: background-color 0.3s;
 }
-
 .button-row button:hover {
   background-color: var(--color-tertiary);
 }
-
 .formulario {
-  background: white;
+  background: var(--colo-texto-blanco);
   padding: 20px;
   border-radius: 12px;
   margin-bottom: 30px;
   box-shadow: 0 0 10px rgba(0,0,0,0.1);
 }
-
 .formulario input,
 .formulario textarea {
   display: block;
@@ -269,28 +291,9 @@ tr:nth-child(even) {
   border-radius: 6px;
   border: 1px solid #ccc;
 }
-
-.formulario {
-  background: var(--colo-texto-blanco); 
-  padding: 20px;
-  border-radius: 12px;
-  margin-bottom: 30px;
-  box-shadow: 0 0 10px rgba(0,0,0,0.1);
-}
-
-.formulario input,
-.formulario textarea {
-  display: block;
-  width: 100%;
-  margin-bottom: 10px;
-  padding: 8px;
-  border-radius: 6px;
-  border: 1px solid #ccc;
-}
-
 .formulario button {
-  background-color: var(--color-senary); 
-  color: var(--colo-texto-blanco); 
+  background-color: var(--color-senary);
+  color: var(--colo-texto-blanco);
   padding: 10px 20px;
   font-weight: bold;
   border: none;
@@ -299,9 +302,7 @@ tr:nth-child(even) {
   cursor: pointer;
   transition: background-color 0.3s;
 }
-
 .formulario button:hover {
   opacity: 0.9;
 }
-
 </style>

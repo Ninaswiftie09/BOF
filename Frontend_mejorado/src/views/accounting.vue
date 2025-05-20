@@ -1,11 +1,16 @@
 <template>
   <div class="contabilidad-container">
-    <router-link to="/" class="back-button">Regresar a Inicio</router-link>
-    <div class="upper-rectangle"></div>
-
-    <div class="header-rectangle">
-      <h2 class="header-title">SISTEMA DE CONTABILIDAD</h2>
-    </div>
+    <!-- Header tipo barra -->
+    <header class="top-bar">
+      <img
+        src="@/assets/logo_bof_blanco.png"
+        alt="Logo del cliente"
+        class="logo"
+        @click="goHome"
+      />
+      <h1>SISTEMA DE CONTABILIDAD</h1>
+      <button class="avatar-btn"></button>
+    </header>
 
     <div class="summary-section">
       <div class="summary-card">
@@ -72,8 +77,17 @@
 </template>
 
 <script>
+import { useRouter } from 'vue-router'
+
 export default {
   name: 'AccountingView',
+  setup() {
+    const router = useRouter()
+    const goHome = () => {
+      router.push({ name: 'home' }) // Asegúrate que tu ruta de inicio se llama "home"
+    }
+    return { goHome }
+  },
   data() {
     return {
       operations: [
@@ -112,41 +126,48 @@ export default {
   min-height: 100vh;
   background-color: var(--color-octonary);
   padding-top: 120px;
-  .operations-table tr:nth-child(even) {
-  background-color: var(--color-senary);
 }
 
-}
-.upper-rectangle {
-  background-color: var(--color-primary);
+/* Header reutilizado */
+.top-bar {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 0.75rem 2rem;
+  background: #1e293b;
+  justify-content: space-between;
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
-  padding: 20px;
-  text-align: center;
   z-index: 1000;
-  margin-bottom: 10px;
 }
-.header-rectangle {
-  background-color: var(--color-primary);
-  border-radius: 8px;
-  padding: 20px;
-  margin-top: 10px;
-  margin-bottom: 20px;
+.logo {
+  width: 150px;
+  height: auto;
+  cursor: pointer;
+}
+h1 {
+  font-family: 'Segoe UI', sans-serif;
+  color: #ffffff;
+  font-size: 2rem;
+  flex-grow: 1;
   text-align: center;
 }
-.header-title {
-  color: #fff;
-  margin: 0;
-  text-transform: uppercase;
+.avatar-btn {
+  width: 40px;
+  height: 40px;
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
 }
+
+/* Secciones de contenido */
 .summary-section {
   display: flex;
   flex-wrap: wrap;
   gap: 20px;
   margin-bottom: 30px;
-  
 }
 .summary-card {
   flex: 1 1 200px;
@@ -176,7 +197,6 @@ export default {
   gap: 20px;
   margin-bottom: 30px;
   color: var(--colo-texto-blanco);
-
 }
 .actions-row h3 {
   margin: 0;
@@ -191,29 +211,24 @@ export default {
   text-align: center;
   cursor: pointer;
   transition: background-color 0.3s;
-  
 }
 .action-box:hover {
   background-color: var(--color-senary);
 }
 .operations-section {
-
   background-color: #1e293b;
   border-radius: 8px;
   padding: 20px;
   color: var(--colo-texto-blanco);
-
 }
 .operations-table th {
   background-color: var(--color-primary);
-  color: var(--colo-texto-blanco); /* antes estaba #fff */
+  color: var(--colo-texto-blanco);
   text-transform: uppercase;
 }
-
 .operations-table td {
   color: var(--colo-texto-blanco);
 }
-
 .section-title {
   margin-bottom: 20px;
   text-transform: uppercase;
@@ -229,11 +244,6 @@ export default {
   border: 1px solid #ddd;
   padding: 10px;
   text-align: center;
-}
-.operations-table th {
-  background-color: var(--color-primary);
-  color: #fff;
-  text-transform: uppercase;
 }
 .operations-table tr:nth-child(even) {
   background-color: var(--color-quaternary);
