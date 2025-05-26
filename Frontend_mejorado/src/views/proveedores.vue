@@ -105,19 +105,22 @@ onMounted(() => {
         <input v-model="searchQuery" class="search" placeholder="Buscar proveedores…" />
         <table>
           <thead>
-            <tr><th>ID</th><th>Nombre</th><th>Correo</th><th>Teléfono</th><th>Dirección</th><th>Acciones</th></tr>
+            <tr>
+              <th>Nombre</th>
+              <th>Correo</th>
+              <th>Teléfono</th>
+              <th>Dirección</th>
+            </tr>
           </thead>
           <tbody>
             <tr v-for="prov in filteredProveedores" :key="prov.id">
-              <td>{{ prov.id }}</td>
               <td>{{ prov.nombre }}</td>
               <td>{{ prov.correo }}</td>
               <td>{{ prov.telefono }}</td>
               <td>{{ prov.direccion }}</td>
-              <td><button @click="open('historial', prov)">Ver historial</button></td>
             </tr>
             <tr v-if="filteredProveedores.length === 0">
-              <td colspan="6">&nbsp;</td>
+              <td colspan="4">&nbsp;</td>
             </tr>
           </tbody>
         </table>
