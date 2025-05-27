@@ -126,5 +126,9 @@ class Operacion(models.Model):
     def __str__(self):
         return f"{self.get_tipo_display()} - Q{self.monto} - {self.fecha.strftime('%d/%m/%Y')}"
 
+    @property
+    def tipo_display(self):
+        return self.get_tipo_display()
 
-
+    class Meta:
+        ordering = ['-fecha']  

@@ -23,8 +23,8 @@ from rest_framework import status
 from .models import Proveedor, Compra
 from .serializers import ProveedorSerializer, CompraSerializer
 
-from .models import Venta, DetalleVenta, Hilo, Tela, Uniforme
-from .serializers import VentaSerializer, HiloSerializer, TelaSerializer, UniformeSerializer
+from .models import Venta, DetalleVenta, Hilo, Tela, Uniforme, Operacion
+from .serializers import VentaSerializer, HiloSerializer, TelaSerializer, UniformeSerializer, OperacionSerializer
 
 
 def ping(request):
@@ -295,6 +295,11 @@ class ProveedorViewSet(viewsets.ModelViewSet):
 class CompraViewSet(viewsets.ModelViewSet):
     queryset = Compra.objects.all().order_by('-fecha')
     serializer_class = CompraSerializer
+
+
+class OperacionViewSet(viewsets.ModelViewSet):
+    queryset = Operacion.objects.all()
+    serializer_class = OperacionSerializer
 
 
 
