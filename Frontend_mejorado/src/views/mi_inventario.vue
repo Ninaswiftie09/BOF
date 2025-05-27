@@ -1,6 +1,7 @@
+
 <template>
   <div class="inventory-container">
-    <!-- Encabezado unificado -->
+    <!-- Encabezado modernizado -->
     <header class="top-bar">
       <img
         src="@/assets/logo_bof_blanco.png"
@@ -9,7 +10,6 @@
         @click="goHome"
       />
       <h1>INVENTARIO</h1>
-      <button class="avatar-btn"></button>
     </header>
 
     <div v-for="(items, tipo) in inventarios" :key="tipo" class="inventory-section">
@@ -48,14 +48,16 @@
         <button @click="abrirFormulario('agregar', tipo)">Agregar producto</button>
         <button @click="abrirFormulario('eliminar', tipo)">Eliminar Producto</button>
         <button @click="abrirFormulario('editar', tipo)">Editar Producto</button>
-        <button @click="toggleVistaCompleta(tipo)">{{ mostrarLimitado(tipo) ? 'Ver Todos' : 'Ver Menos' }}</button>
+        <button @click="abrirVerTodos(tipo)">Ver Todos</button>
       </div>
+    </div>
+    
 
-      <!-- Formulario Modal -->
-      <div v-if="formVisible && tipoFormulario === tipo" class="formulario">
-        <h3 v-if="accion === 'agregar'">Agregar nuevo {{ tipo }}</h3>
-        <h3 v-else-if="accion === 'editar'">Editar {{ tipo }}</h3>
-        <h3 v-else-if="accion === 'eliminar'">Eliminar {{ tipo }}</h3>
+    <div v-if="formVisible" class="modal-overlay">
+      <div class="modal-content">
+        <h3 v-if="accion === 'agregar'">Agregar nuevo {{ tipoFormulario }}</h3>
+        <h3 v-else-if="accion === 'editar'">Editar {{ tipoFormulario }}</h3>
+        <h3 v-else-if="accion === 'eliminar'">Eliminar {{ tipoFormulario }}</h3>
 
         <form @submit.prevent="submitFormulario" class="form-vertical">
           <div v-if="accion !== 'agregar'">
@@ -64,31 +66,48 @@
           </div>
 
           <div v-if="accion !== 'eliminar'">
-            <div v-if="tipo === 'Telas'">
+            <div v-if="tipoFormulario === 'Telas'">
+              <label>Nombre</label>
               <input v-model="formData.nombre" placeholder="Nombre" />
+              <label>Tipo</label>
               <input v-model="formData.tipo" placeholder="Tipo" />
+              <label>Composición</label>
               <input v-model="formData.composicion" placeholder="Composición" />
+              <label>Color</label>
               <input v-model="formData.color" placeholder="Color" />
+              <label>Código</label>
               <input v-model="formData.codigo" placeholder="Código" />
+              <label>Stock</label>
               <input v-model.number="formData.stock" type="number" />
+              <label>Descripción</label>
               <textarea v-model="formData.descripcion" placeholder="Descripción"></textarea>
             </div>
-
-            <div v-else-if="tipo === 'Hilos'">
+            <div v-if="tipoFormulario === 'Hilos'">
+              <label>Nombre</label>
               <input v-model="formData.nombre" placeholder="Nombre" />
+              <label>Material</label>
               <input v-model="formData.material" placeholder="Material" />
+              <label>Código de color</label>
               <input v-model="formData.codigo_color" placeholder="Código de color" />
+              <label>Color</label>
               <input v-model="formData.color" placeholder="Color" />
+              <label>Código</label>
               <input v-model="formData.codigo" placeholder="Código" />
+              <label>Stock</label>
               <input v-model.number="formData.stock" type="number" />
+              <label>Descripción</label>
               <textarea v-model="formData.descripcion" placeholder="Descripción"></textarea>
             </div>
-
-            <div v-else-if="tipo === 'Uniformes'">
+            <div v-if="tipoFormulario === 'Uniformes'">
+              <label>Tipo</label>
               <input v-model="formData.tipo" placeholder="Tipo" />
+              <label>Talla</label>
               <input v-model="formData.talla" placeholder="Talla" />
+              <label>Color</label>
               <input v-model="formData.color" placeholder="Color" />
-              <input v-model.number="formData.material" placeholder="ID de Tela relacionada" />
+              <label>ID de Tela relacionada</label>
+              <input v-model.number="formData.material" />
+              <label>Stock</label>
               <input v-model.number="formData.stock" type="number" />
             </div>
           </div>
@@ -102,6 +121,39 @@
         </form>
       </div>
     </div>
+
+    <div v-if="verTodosVisible" class="modal-overlay">
+      <div class="modal-content full-table-modal">
+        <button class="close-btn-top" @click="cerrarVerTodos">✕</button>
+        <h3>{{ tipoVerTodos }} - Lista Completa</h3>
+        <table>
+          <thead>
+            <tr>
+              <th v-for="col in columnasPorTipo[tipoVerTodos]" :key="col">{{ col }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="item in inventarios[tipoVerTodos]" :key="item.id">
+              <template v-if="tipoVerTodos === 'Telas'">
+                <td>{{ item.id }}</td><td>{{ item.nombre }}</td><td>{{ item.tipo }}</td>
+                <td>{{ item.composicion }}</td><td>{{ item.color }}</td>
+                <td>{{ item.codigo }}</td><td>{{ item.stock }}</td><td>{{ item.descripcion }}</td>
+              </template>
+              <template v-else-if="tipoVerTodos === 'Hilos'">
+                <td>{{ item.id }}</td><td>{{ item.nombre }}</td><td>{{ item.material }}</td>
+                <td>{{ item.codigo_color }}</td><td>{{ item.color }}</td>
+                <td>{{ item.codigo }}</td><td>{{ item.stock }}</td><td>{{ item.descripcion }}</td>
+              </template>
+              <template v-else-if="tipoVerTodos === 'Uniformes'">
+                <td>{{ item.id }}</td><td>{{ item.tipo }}</td><td>{{ item.talla }}</td>
+                <td>{{ item.color }}</td><td>{{ item.stock }}</td><td>{{ item.material_nombre }}</td>
+              </template>
+            </tr>
+          </tbody>
+        </table>
+        <button class="btn-cancel" @click="cerrarVerTodos">Cerrar</button>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -111,13 +163,19 @@ import { useRouter } from 'vue-router';
 export default {
   setup() {
     const router = useRouter();
-    const goHome = () => router.push({ name: 'home' });
+    const goHome = () => {
+      router.push({ name: 'home' });
+    };
     return { goHome };
   },
   data() {
     return {
       vistaExtendida: {},
-      inventarios: { Telas: [], Hilos: [], Uniformes: [] },
+      inventarios: {
+        Telas: [],
+        Hilos: [],
+        Uniformes: []
+      },
       columnasPorTipo: {
         Telas: ["id", "Nombre", "Tipo", "Composición", "Color", "Código", "Stock", "Descripción"],
         Hilos: ["id", "Nombre", "Material", "Código Color", "Color", "Código", "Stock", "Descripción"],
@@ -127,6 +185,8 @@ export default {
       tipoFormulario: '',
       accion: '',
       formData: {},
+      verTodosVisible: false,
+      tipoVerTodos: ''
     };
   },
   mounted() {
@@ -151,52 +211,63 @@ export default {
       this.formVisible = false;
       this.formData = {};
     },
+    abrirVerTodos(tipo) {
+      this.tipoVerTodos = tipo;
+      this.verTodosVisible = true;
+    },
+    cerrarVerTodos() {
+      this.verTodosVisible = false;
+      this.tipoVerTodos = '';
+    },
     async submitFormulario() {
       try {
-        const base = 'http://localhost:8000/api';
-        let url = '', method = '';
-
         const tipo = this.tipoFormulario.slice(0, -1).toLowerCase();
+        const urlBase = 'http://127.0.0.1:8000/api';
+        let url = '';
+        let method = '';
 
         if (this.accion === 'agregar') {
-          url = `${base}/inventario/agregar-nuevo-${tipo}/`;
+          url = `${urlBase}/inventario/agregar-nuevo-${tipo}/`;
           method = 'POST';
         } else if (this.accion === 'editar') {
-          url = `${base}/inventario/editar-${tipo}/${this.formData.id}/`;
+          if (!this.formData.id) return alert('Debe especificar el ID');
+          url = `${urlBase}/inventario/editar-${tipo}/${this.formData.id}/`;
           method = 'PUT';
         } else if (this.accion === 'eliminar') {
-          url = `${base}/inventario/eliminar-${tipo}/${this.formData.id}/`;
+          if (!this.formData.id) return alert('Debe especificar el ID');
+          url = `${urlBase}/inventario/eliminar-${tipo}/${this.formData.id}/`;
           method = 'DELETE';
         }
 
         const res = await fetch(url, {
           method,
           headers: { 'Content-Type': 'application/json' },
-          body: method !== 'DELETE' ? JSON.stringify(this.formData) : null,
+          body: method !== 'DELETE' ? JSON.stringify(this.formData) : null
         });
 
         if (!res.ok) {
           const err = await res.json();
-          alert('Error: ' + (err.error || 'Desconocido'));
-          return;
+          return alert('Error: ' + (err.error || 'Desconocido'));
         }
 
-        alert(`${this.accion} exitoso`);
+        alert(`${this.accion} completado con éxito`);
         this.cerrarFormulario();
         this.obtenerInventario(this.tipoFormulario, this.tipoFormulario.toLowerCase());
-      } catch (e) {
-        alert('Error al conectar con el servidor');
-        console.error(e);
+
+      } catch (error) {
+        alert('Error en la conexión con el servidor');
+        console.error(error);
       }
     },
     async obtenerInventario(tipo, endpoint) {
       try {
-        const res = await fetch(`http://localhost:8000/api/${endpoint}/`);
+        const res = await fetch(`http://127.0.0.1:8000/api/${endpoint}/`);
         const data = await res.json();
-        const items = data.map(item => tipo === 'Uniformes' ? { ...item, material_nombre: item.material_nombre || 'N/A' } : item);
-        this.inventarios[tipo] = items;
-      } catch (e) {
-        console.error(`Error obteniendo ${tipo}:`, e);
+        this.inventarios[tipo] = data.map(item =>
+          tipo === "Uniformes" ? { ...item, material_nombre: item.material_nombre || "N/A" } : item
+        );
+      } catch (error) {
+        console.error(`Error al obtener ${tipo}:`, error);
       }
     }
   }
@@ -204,53 +275,63 @@ export default {
 </script>
 
 <style scoped>
+.logo {
+  width: 100px;
+  height: auto;
+  cursor: pointer;
+}
+
 .inventory-container {
   padding: 40px;
   background-color: var(--color-octonary);
   min-height: 100vh;
-  padding-top: 120px; /* espacio para el header fijo */
 }
 
-/* HEADER UNIFICADO */
-.top-bar {
-  display: flex;
-  align-items: center;
-  gap: 1.5rem;
-  padding: 0.75rem 2rem;
-  background: #1e293b;
-  justify-content: space-between;
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 1000;
-}
-.logo {
-  width: 150px;
-  height: auto;
-  cursor: pointer;
-}
 h1 {
-  font-family: 'Segoe UI', sans-serif;
-  color: #ffffff;
-  font-size: 2rem;
   flex-grow: 1;
   text-align: center;
-}
-.avatar-btn {
-  width: 40px;
-  height: 40px;
-  background-color: transparent;
-  border: none;
-  cursor: pointer;
+  color: #ffffff;
+  font-size: 1.8rem;
+  font-weight: bold;
+  margin: 0;
 }
 
-/* CONTENIDO */
 h2 {
   color: var(--colo-texto-blanco);
   margin-top: 40px;
   margin-bottom: 10px;
 }
+
+.top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: #1e293b; /* Azul oscuro */
+  padding: 0.75rem 2rem;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 60px;
+  z-index: 1000;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.back-button {
+  background-color: var(--color-senary);
+  color: white;
+  padding: 10px 20px;
+  border-radius: 10px;
+  font-weight: bold;
+  text-decoration: none;
+  float: right;
+  margin-top: -60px;
+}
+
+.back-button:hover {
+  background-color: var(--color-tertiary);
+}
+
 table {
   width: 100%;
   border-collapse: collapse;
@@ -260,6 +341,7 @@ table {
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
   margin-bottom: 10px;
 }
+
 th {
   background-color: var(--color-senary);
   color: white;
@@ -267,26 +349,31 @@ th {
   padding: 16px;
   font-size: 18px;
 }
+
 td {
   text-align: center;
   padding: 12px;
   font-size: 16px;
   color: var(--color-senary);
 }
+
 tr:nth-child(even) {
   background-color: #f9f9f9;
 }
+
 .en-escasez {
   background-color: #fff2f2;
   color: #b00020;
   font-weight: bold;
 }
+
 .button-row {
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
   margin-bottom: 20px;
 }
+
 .button-row button {
   background-color: var(--color-senary);
   color: white;
@@ -297,51 +384,104 @@ tr:nth-child(even) {
   cursor: pointer;
   transition: background-color 0.3s;
 }
+
 .button-row button:hover {
   background-color: var(--color-tertiary);
 }
 
-.formulario {
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.modal-content {
   background: white;
-  padding: 20px;
+  padding: 25px 30px;
   border-radius: 12px;
-  margin-bottom: 30px;
-  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+  max-width: 450px;
+  width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
 }
 
-.formulario input,
-.formulario textarea {
+.form-vertical label {
+  font-weight: 600;
+  margin-top: 12px;
+  margin-bottom: 5px;
   display: block;
+}
+
+.form-vertical input,
+.form-vertical textarea {
   width: 100%;
-  margin-bottom: 10px;
-  padding: 8px;
+  padding: 8px 10px;
   border-radius: 6px;
   border: 1px solid #ccc;
+  font-size: 15px;
+  resize: vertical;
 }
 
-.formulario {
-  background: var(--colo-texto-blanco); 
-  padding: 20px;
+.buttons-row {
+  margin-top: 20px;
+  display: flex;
+  gap: 15px;
+  justify-content: flex-end;
+}
+
+.btn-primary {
+  background-color: var(--color-senary);
+  color: var(--colo-texto-blanco);
+  padding: 10px 22px;
+  border-radius: 8px;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.btn-primary:hover {
+  background-color: var(--color-tertiary);
+}
+
+.btn-cancel {
+  background: transparent;
+  color: #555;
+  padding: 10px 22px;
+  border-radius: 8px;
+  border: 1px solid #aaa;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background-color 0.3s ease;
+}
+
+.btn-cancel:hover {
+  background-color: #eee;
+}
+.full-table-modal {
+  background: white;
+  padding: 25px 30px;
   border-radius: 12px;
-  margin-bottom: 30px;
-  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+  max-width: 90vw; 
+  width: 90vw;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative; 
 }
-
-.formulario input,
-.formulario textarea {
-  display: block;
-  width: 100%;
-  margin-bottom: 10px;
-  padding: 8px;
-  border-radius: 6px;
-  border: 1px solid #ccc;
-}
-
-.formulario button {
-  background-color: var(--color-senary); 
-  color: var(--colo-texto-blanco); 
-  padding: 10px 20px;
-  font-weight: bold;
+.close-btn-top {
+  position: absolute;
+  top: 10px;
+  right: 15px;
+  background: transparent;
   border: none;
   font-size: 22px;
   cursor: pointer;
@@ -349,8 +489,9 @@ tr:nth-child(even) {
   color: #333;
 }
 
-.formulario button:hover {
-  opacity: 0.9;
+.close-btn-top:hover {
+  color: #b00020;
 }
+
 
 </style>
