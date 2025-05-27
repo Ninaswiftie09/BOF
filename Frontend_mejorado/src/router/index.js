@@ -18,7 +18,7 @@ const routes = [
   { path: '/accounting', name: 'accounting', component: accounting },
   { path: '/billpage', name: 'billpage', component: billpage },
   { path: '/forgotpass', name: 'forgotpass', component: forgotpass },
-  { path: '/login', name: 'login-explicit', component: login },
+ // { path: '/login', name: 'login-explicit', component: login },
   { path: '/register', name: 'register', component: register },
   { path: '/ReporteVentas', name: 'ReporteVentas', component: ReporteVentas },
   { path: '/clientes', name: 'clientes', component: clientes },
