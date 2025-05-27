@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from .models import Categoria, Producto, Venta, DetalleVenta
 from .models import Hilo, Tela, Uniforme
-from .models import Proveedor, Compra
+from .models import Proveedor, Compra, Operacion
 
 class CategoriaSerializer(serializers.ModelSerializer):
     class Meta:
@@ -81,6 +81,16 @@ class UniformeSerializer(serializers.ModelSerializer):
             instance.stock = validated_data['stock']
         instance.save()
         return instance
+
+class OperacionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Operacion
+        fields = ['id', 'tipo', 'monto', 'concepto', 'fecha']
+        
+    def validate_monto(self, value):
+        if value <= 0:
+            raise serializers.ValidationError("El monto debe ser mayor a cero.")
+        return value
 
 
 
