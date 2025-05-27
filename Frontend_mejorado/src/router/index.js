@@ -1,32 +1,45 @@
+// src/router/index.js
 import { createRouter, createWebHistory } from 'vue-router'
-import home from '../views/home.vue'
-import mi_inventario from '../views/mi_inventario.vue'
-import accounting from '../views/accounting.vue'
-import billpage from '../views/billpage.vue'
-import forgotpass from '../views/forgotpass.vue'
-import login from '../views/login.vue'
-import register from '../views/register.vue'
+
+// Vistas
+import Home from '../views/home.vue'
+import MiInventario from '../views/mi_inventario.vue'
+import Accounting from '../views/accounting.vue'
+import Billpage from '../views/billpage.vue'
+import Forgotpass from '../views/forgotpass.vue'
+import Login from '../views/login.vue'
+import Register from '../views/register.vue'
 import ReporteVentas from '../views/ReporteVentas.vue'
-import clientes from '../views/clientes.vue'
-import clientesregistro from '../views/clientesregistro.vue'
-import proveedores from '../views/proveedores.vue'
+import Clientes from '../views/clientes.vue'
+import ClientesRegistro from '../views/clientesregistro.vue'
+import Proveedores from '../views/proveedores.vue'
 
 const routes = [
-  { path: '/', name: 'login', component: login },
-  { path: '/home', name: 'home', component: home },
-  { path: '/mi_inventario', name: 'mi_inventario', component: mi_inventario },
-  { path: '/accounting', name: 'accounting', component: accounting },
-  { path: '/billpage', name: 'billpage', component: billpage },
-  { path: '/forgotpass', name: 'forgotpass', component: forgotpass },
-  { path: '/login', name: 'login-explicit', component: login },
-  { path: '/register', name: 'register', component: register },
+  { path: '/', redirect: '/login' },
+  { path: '/home', name: 'home', component: Home },
+  { path: '/mi_inventario', name: 'mi_inventario', component: MiInventario },
+  { path: '/accounting', name: 'accounting', component: Accounting },
+  { path: '/billpage', name: 'billpage', component: Billpage },
+  { path: '/forgotpass', name: 'forgotpass', component: Forgotpass },
+  { path: '/login', name: 'login', component: Login },
+  { path: '/register', name: 'register', component: Register },
   { path: '/ReporteVentas', name: 'ReporteVentas', component: ReporteVentas },
-  { path: '/clientes', name: 'clientes', component: clientes },
-  { path: '/clientesregistro', name: 'clientesregistro', component: clientesregistro },
+  { path: '/clientes', name: 'clientes', component: Clientes },
+  { path: '/clientesregistro', name: 'clientesregistro', component: ClientesRegistro },
+  { path: '/proveedores', name: 'proveedores', component: Proveedores },
 
-  
+  // Manejo de rutas inexistentes (404)
   {
-    path: '/proveedores',name: 'proveedores',component: proveedores}
+    path: '/:pathMatch(.*)*',
+    name: 'NotFound',
+    component: {
+      template: `<div style="text-align:center; padding: 2rem;">
+        <h1>404 - Página no encontrada</h1>
+        <p>La ruta ingresada no existe.</p>
+        <router-link to="/login">Volver al login</router-link>
+      </div>`
+    }
+  }
 ]
 
 const router = createRouter({

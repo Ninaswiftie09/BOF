@@ -24,8 +24,8 @@ from .models import Proveedor, Compra
 from .serializers import ProveedorSerializer, CompraSerializer
 from clientes.models import Compra
 
-from .models import Venta, DetalleVenta, Hilo, Tela, Uniforme
-from .serializers import VentaSerializer, HiloSerializer, TelaSerializer, UniformeSerializer
+from .models import Venta, DetalleVenta, Hilo, Tela, Uniforme, Operacion
+from .serializers import VentaSerializer, HiloSerializer, TelaSerializer, UniformeSerializer, OperacionSerializer
 
 
 def ping(request):
@@ -298,4 +298,28 @@ class CompraViewSet(viewsets.ModelViewSet):
     serializer_class = CompraSerializer
 
 
+class OperacionViewSet(viewsets.ModelViewSet):
+    queryset = Operacion.objects.all()
+    serializer_class = OperacionSerializer
 
+
+class OperacionSummaryAPIView(APIView):
+    def get(self, request):
+        ingresos = Operacion.objects.filter(tipo='ingreso').aggregate(
+            total=Sum('monto')
+        )['total'] or 0
+        
+        egresos = Operacion.objects.filter(tipo='egreso').aggregate(
+            total=Sum('monto')
+        )['total'] or 0
+        
+        total_ops = Operacion.objects.count()
+        
+        data = {
+            'ingresos': float(ingresos),
+            'egresos': float(egresos),
+            'balance': float(ingresos - egresos),
+            'total': total_ops
+        }
+        
+        return Response(data, status=status.HTTP_200_OK)

@@ -1,8 +1,9 @@
 from rest_framework import serializers
 from .models import Categoria, Producto, Venta, DetalleVenta
 from .models import Hilo, Tela, Uniforme
-from .models import Proveedor, Compra
-from clientes.models import Compra
+from .models import Proveedor, Compra, Operacion
+from clientes.models import Compra as CompraCliente
+
 
 class CategoriaSerializer(serializers.ModelSerializer):
     class Meta:
@@ -83,5 +84,27 @@ class UniformeSerializer(serializers.ModelSerializer):
             instance.stock = validated_data['stock']
         instance.save()
         return instance
+
+class OperacionSerializer(serializers.ModelSerializer):
+    fecha = serializers.DateTimeField(
+        format="%d/%m/%Y %H:%M",  
+        read_only=True
+    )
+    tipo_display = serializers.CharField(
+        source='get_tipo_display',
+        read_only=True
+    )
+
+    class Meta:
+        model = Operacion
+        fields = ['id', 'tipo', 'tipo_display', 'monto', 'concepto', 'fecha']
+        read_only_fields = ['fecha']
+
+    def validate_monto(self, value):
+        if value <= 0:
+            raise serializers.ValidationError("El monto debe ser mayor a cero.")
+        return value
+
+
 
 

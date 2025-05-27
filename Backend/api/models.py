@@ -99,3 +99,36 @@ class Compra(models.Model):
 
     def __str__(self):
         return f'Compra {self.id} a {self.proveedor.nombre}'
+
+# Tabla para contabilidad
+
+class Operacion(models.Model):
+    TIPO_OPERACION = [
+        ('ingreso', 'Ingreso'),
+        ('egreso', 'Egreso'),
+    ]
+
+    tipo = models.CharField(
+        max_length=10,
+        choices=TIPO_OPERACION
+    )
+    monto = models.DecimalField(
+        max_digits=10,
+        decimal_places=2
+    )
+    concepto = models.TextField(
+        max_length=250
+    )
+    fecha = models.DateTimeField(
+        auto_now_add=True
+    )
+
+    def __str__(self):
+        return f"{self.get_tipo_display()} - Q{self.monto} - {self.fecha.strftime('%d/%m/%Y')}"
+
+    @property
+    def tipo_display(self):
+        return self.get_tipo_display()
+
+    class Meta:
+        ordering = ['-fecha']  

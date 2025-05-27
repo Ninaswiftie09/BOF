@@ -20,11 +20,14 @@ from .views import (
     AgregarNuevoUniforme,
     ProveedorViewSet,
     CompraViewSet,
+    OperacionViewSet,  
+    OperacionSummaryAPIView,
 )
 
 router = routers.DefaultRouter()
 router.register(r'proveedores', ProveedorViewSet, basename='proveedor')
 router.register(r'compras', CompraViewSet, basename='compra')
+router.register(r'operaciones', OperacionViewSet, basename='operacion')  
 
 urlpatterns = [
     path("ping/", ping), 
@@ -49,6 +52,8 @@ urlpatterns = [
     path('inventario/agregar-nuevo-tela/', AgregarNuevaTela.as_view()),
     path('inventario/agregar-nuevo-uniforme/', AgregarNuevoUniforme.as_view()),
 
-    # Rutas automáticas de Proveedores y Compras
+    path('operaciones/summary/', OperacionSummaryAPIView.as_view(), name='operaciones-summary'),
+
+    # Rutas automáticas de Proveedores, Compras y Operaciones
     path('', include(router.urls)),
 ]
