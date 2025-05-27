@@ -302,4 +302,23 @@ class OperacionViewSet(viewsets.ModelViewSet):
     serializer_class = OperacionSerializer
 
 
-
+class OperacionSummaryAPIView(APIView):
+    def get(self, request):
+        ingresos = Operacion.objects.filter(tipo='ingreso').aggregate(
+            total=Sum('monto')
+        )['total'] or 0
+        
+        egresos = Operacion.objects.filter(tipo='egreso').aggregate(
+            total=Sum('monto')
+        )['total'] or 0
+        
+        total_ops = Operacion.objects.count()
+        
+        data = {
+            'ingresos': float(ingresos),
+            'egresos': float(egresos),
+            'balance': float(ingresos - egresos),
+            'total': total_ops
+        }
+        
+        return Response(data, status=status.HTTP_200_OK)

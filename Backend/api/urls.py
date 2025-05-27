@@ -21,6 +21,7 @@ from .views import (
     ProveedorViewSet,
     CompraViewSet,
     OperacionViewSet,  
+    OperacionSummaryAPIView,
 )
 
 router = routers.DefaultRouter()
@@ -50,6 +51,8 @@ urlpatterns = [
     path('inventario/agregar-nuevo-hilo/', AgregarNuevoHilo.as_view()),
     path('inventario/agregar-nuevo-tela/', AgregarNuevaTela.as_view()),
     path('inventario/agregar-nuevo-uniforme/', AgregarNuevoUniforme.as_view()),
+
+    path('operaciones/summary/', OperacionSummaryAPIView.as_view(), name='operaciones-summary'),
 
     # Rutas automáticas de Proveedores, Compras y Operaciones
     path('', include(router.urls)),
