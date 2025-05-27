@@ -20,19 +20,28 @@ from .views import (
     AgregarNuevoUniforme,
     ProveedorViewSet,
     CompraViewSet,
-    OperacionViewSet,  
+    OperacionViewSet,
     OperacionSummaryAPIView,
+    TelaListAPIView,
+    HiloListAPIView,
+    UniformeListAPIView,
+    EliminarTela,
+    EliminarHilo,
+    EliminarUniforme,
+    EditarTela,
+    EditarHilo,
+    EditarUniforme,
 )
 
 router = routers.DefaultRouter()
 router.register(r'proveedores', ProveedorViewSet, basename='proveedor')
 router.register(r'compras', CompraViewSet, basename='compra')
-router.register(r'operaciones', OperacionViewSet, basename='operacion')  
+router.register(r'operaciones', OperacionViewSet, basename='operacion')
 
 urlpatterns = [
-    path("ping/", ping), 
-    path('register/', register_user),  
-    path('login/', login_user),  
+    path("ping/", ping),
+    path('register/', register_user),
+    path('login/', login_user),
 
     # Ventas
     path('ventas/por-fecha/', VentasPorFechaAPIView.as_view(), name='ventas_por_fecha'),
@@ -52,8 +61,22 @@ urlpatterns = [
     path('inventario/agregar-nuevo-tela/', AgregarNuevaTela.as_view()),
     path('inventario/agregar-nuevo-uniforme/', AgregarNuevoUniforme.as_view()),
 
+    # CRUD extra para vistas de inventario
+    path('telas/', TelaListAPIView.as_view(), name='listar_telas'),
+    path('hilos/', HiloListAPIView.as_view(), name='listar_hilos'),
+    path('uniformes/', UniformeListAPIView.as_view(), name='listar_uniformes'),
+
+    path('inventario/eliminar-tela/<int:pk>/', EliminarTela.as_view()),
+    path('inventario/eliminar-hilo/<int:pk>/', EliminarHilo.as_view()),
+    path('inventario/eliminar-uniforme/<int:pk>/', EliminarUniforme.as_view()),
+
+    path('inventario/editar-tela/<int:pk>/', EditarTela.as_view()),
+    path('inventario/editar-hilo/<int:pk>/', EditarHilo.as_view()),
+    path('inventario/editar-uniforme/<int:pk>/', EditarUniforme.as_view()),
+
+    # Operaciones resumen
     path('operaciones/summary/', OperacionSummaryAPIView.as_view(), name='operaciones-summary'),
 
-    # Rutas automáticas de Proveedores, Compras y Operaciones
+    # Rutas automáticas
     path('', include(router.urls)),
 ]

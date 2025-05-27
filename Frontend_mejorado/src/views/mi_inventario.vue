@@ -1,6 +1,6 @@
 <template>
   <div class="inventory-container">
-    <!-- HEADER unificado -->
+    <!-- Encabezado unificado -->
     <header class="top-bar">
       <img
         src="@/assets/logo_bof_blanco.png"
@@ -17,106 +17,122 @@
       <table>
         <thead>
           <tr>
-            <th>Material</th>
-            <th>Descripción</th>
-            <th>Cantidad</th>
-            <th>En Escasez</th>
-            <th>Usados</th>
+            <th v-for="col in columnasPorTipo[tipo]" :key="col">{{ col }}</th>
           </tr>
         </thead>
         <tbody>
           <tr
             v-for="(item, index) in mostrarLimitado(tipo) ? items.slice(0, 6) : items"
             :key="index"
-            :class="{ 'en-escasez': item.cantidad < 6 }"
+            :class="{ 'en-escasez': item.stock < 6 }"
           >
-            <td>{{ item.material }}</td>
-            <td>{{ item.descripcion }}</td>
-            <td>{{ item.cantidad }}</td>
-            <td>{{ item.cantidad < 6 ? 'Sí' : 'No' }}</td>
-            <td>{{ item.usados }}</td>
+            <template v-if="tipo === 'Telas'">
+              <td>{{ item.id }}</td><td>{{ item.nombre }}</td><td>{{ item.tipo }}</td>
+              <td>{{ item.composicion }}</td><td>{{ item.color }}</td>
+              <td>{{ item.codigo }}</td><td>{{ item.stock }}</td><td>{{ item.descripcion }}</td>
+            </template>
+            <template v-else-if="tipo === 'Hilos'">
+              <td>{{ item.id }}</td><td>{{ item.nombre }}</td><td>{{ item.material }}</td>
+              <td>{{ item.codigo_color }}</td><td>{{ item.color }}</td>
+              <td>{{ item.codigo }}</td><td>{{ item.stock }}</td><td>{{ item.descripcion }}</td>
+            </template>
+            <template v-else-if="tipo === 'Uniformes'">
+              <td>{{ item.id }}</td><td>{{ item.tipo }}</td><td>{{ item.talla }}</td>
+              <td>{{ item.color }}</td><td>{{ item.stock }}</td><td>{{ item.material_nombre }}</td>
+            </template>
           </tr>
         </tbody>
       </table>
 
       <div class="button-row">
-        <button @click="agregarStock(tipo)">Agregar Stock</button>
-        <button @click="sacarStock(tipo)">Sacar Stock</button>
-        <button @click="agregarProducto(tipo)">Agregar Nuevo Producto</button>
-        <button @click="toggleVistaCompleta(tipo)">
-          {{ mostrarLimitado(tipo) ? 'Ver Todos' : 'Ver Menos' }}
-        </button>
+        <button @click="abrirFormulario('agregar', tipo)">Agregar producto</button>
+        <button @click="abrirFormulario('eliminar', tipo)">Eliminar Producto</button>
+        <button @click="abrirFormulario('editar', tipo)">Editar Producto</button>
+        <button @click="toggleVistaCompleta(tipo)">{{ mostrarLimitado(tipo) ? 'Ver Todos' : 'Ver Menos' }}</button>
       </div>
 
-      <!-- Formularios por tipo -->
+      <!-- Formulario Modal -->
       <div v-if="formVisible && tipoFormulario === tipo" class="formulario">
-        <h3>Agregar nuevo {{ tipo }}</h3>
+        <h3 v-if="accion === 'agregar'">Agregar nuevo {{ tipo }}</h3>
+        <h3 v-else-if="accion === 'editar'">Editar {{ tipo }}</h3>
+        <h3 v-else-if="accion === 'eliminar'">Eliminar {{ tipo }}</h3>
 
-        <div v-if="tipo === 'Telas'">
-          <input v-model="nuevoProducto.nombre" placeholder="Nombre">
-          <input v-model="nuevoProducto.tipo" placeholder="Tipo">
-          <input v-model="nuevoProducto.composicion" placeholder="Composición">
-          <input v-model="nuevoProducto.color" placeholder="Color">
-          <input v-model="nuevoProducto.codigo" placeholder="Código">
-          <input v-model.number="nuevoProducto.stock" type="number" placeholder="Stock">
-          <textarea v-model="nuevoProducto.descripcion" placeholder="Descripción"></textarea>
-          <button @click="enviarNuevo('telas')">Guardar</button>
-        </div>
+        <form @submit.prevent="submitFormulario" class="form-vertical">
+          <div v-if="accion !== 'agregar'">
+            <label>ID del producto:</label>
+            <input v-model.number="formData.id" type="number" min="1" required />
+          </div>
 
-        <div v-else-if="tipo === 'Hilos'">
-          <input v-model="nuevoProducto.nombre" placeholder="Nombre">
-          <input v-model="nuevoProducto.material" placeholder="Material">
-          <input v-model="nuevoProducto.codigo_color" placeholder="Código de color">
-          <input v-model="nuevoProducto.color" placeholder="Color">
-          <input v-model="nuevoProducto.codigo" placeholder="Código">
-          <input v-model.number="nuevoProducto.stock" type="number" placeholder="Stock">
-          <textarea v-model="nuevoProducto.descripcion" placeholder="Descripción"></textarea>
-          <button @click="enviarNuevo('hilos')">Guardar</button>
-        </div>
+          <div v-if="accion !== 'eliminar'">
+            <div v-if="tipo === 'Telas'">
+              <input v-model="formData.nombre" placeholder="Nombre" />
+              <input v-model="formData.tipo" placeholder="Tipo" />
+              <input v-model="formData.composicion" placeholder="Composición" />
+              <input v-model="formData.color" placeholder="Color" />
+              <input v-model="formData.codigo" placeholder="Código" />
+              <input v-model.number="formData.stock" type="number" />
+              <textarea v-model="formData.descripcion" placeholder="Descripción"></textarea>
+            </div>
 
-        <div v-else-if="tipo === 'Uniformes'">
-          <input v-model="nuevoProducto.tipo" placeholder="Tipo">
-          <input v-model="nuevoProducto.talla" placeholder="Talla">
-          <input v-model="nuevoProducto.color" placeholder="Color">
-          <input v-model.number="nuevoProducto.material" placeholder="ID de Tela relacionada">
-          <input v-model.number="nuevoProducto.stock" type="number" placeholder="Stock">
-          <button @click="enviarNuevo('uniformes')">Guardar</button>
-        </div>
+            <div v-else-if="tipo === 'Hilos'">
+              <input v-model="formData.nombre" placeholder="Nombre" />
+              <input v-model="formData.material" placeholder="Material" />
+              <input v-model="formData.codigo_color" placeholder="Código de color" />
+              <input v-model="formData.color" placeholder="Color" />
+              <input v-model="formData.codigo" placeholder="Código" />
+              <input v-model.number="formData.stock" type="number" />
+              <textarea v-model="formData.descripcion" placeholder="Descripción"></textarea>
+            </div>
 
-        <button @click="formVisible = false">Cancelar</button>
+            <div v-else-if="tipo === 'Uniformes'">
+              <input v-model="formData.tipo" placeholder="Tipo" />
+              <input v-model="formData.talla" placeholder="Talla" />
+              <input v-model="formData.color" placeholder="Color" />
+              <input v-model.number="formData.material" placeholder="ID de Tela relacionada" />
+              <input v-model.number="formData.stock" type="number" />
+            </div>
+          </div>
+
+          <div class="buttons-row">
+            <button type="submit" class="btn-primary">
+              {{ accion === 'agregar' ? 'Guardar' : accion === 'editar' ? 'Actualizar' : 'Eliminar' }}
+            </button>
+            <button type="button" class="btn-cancel" @click="cerrarFormulario">Cancelar</button>
+          </div>
+        </form>
       </div>
     </div>
   </div>
 </template>
 
 <script>
-import { useRouter } from 'vue-router'
+import { useRouter } from 'vue-router';
 
 export default {
   setup() {
-    const router = useRouter()
-    const goHome = () => {
-      router.push({ name: 'home' })
-    }
-    return { goHome }
+    const router = useRouter();
+    const goHome = () => router.push({ name: 'home' });
+    return { goHome };
   },
   data() {
     return {
       vistaExtendida: {},
+      inventarios: { Telas: [], Hilos: [], Uniformes: [] },
+      columnasPorTipo: {
+        Telas: ["id", "Nombre", "Tipo", "Composición", "Color", "Código", "Stock", "Descripción"],
+        Hilos: ["id", "Nombre", "Material", "Código Color", "Color", "Código", "Stock", "Descripción"],
+        Uniformes: ["id", "Tipo", "Talla", "Color", "Stock", "Material (tela)"]
+      },
       formVisible: false,
       tipoFormulario: '',
-      inventarios: {
-        Telas: [],
-        Hilos: [],
-        Uniformes: []
-      },
-      nuevoProducto: {}
+      accion: '',
+      formData: {},
     };
   },
   mounted() {
-    this.obtenerInventario('Telas', 'telas');
-    this.obtenerInventario('Hilos', 'hilos');
-    this.obtenerInventario('Uniformes', 'uniformes');
+    this.obtenerInventario("Telas", "telas");
+    this.obtenerInventario("Hilos", "hilos");
+    this.obtenerInventario("Uniformes", "uniformes");
   },
   methods: {
     mostrarLimitado(tipo) {
@@ -125,53 +141,62 @@ export default {
     toggleVistaCompleta(tipo) {
       this.$set(this.vistaExtendida, tipo, !this.vistaExtendida[tipo]);
     },
-    agregarStock(tipo) {
-      alert(`Agregar stock a: ${tipo}`);
-    },
-    sacarStock(tipo) {
-      alert(`Sacar stock de: ${tipo}`);
-    },
-    agregarProducto(tipo) {
+    abrirFormulario(accion, tipo) {
+      this.accion = accion;
       this.tipoFormulario = tipo;
       this.formVisible = true;
-      this.nuevoProducto = {};
+      this.formData = {};
+    },
+    cerrarFormulario() {
+      this.formVisible = false;
+      this.formData = {};
+    },
+    async submitFormulario() {
+      try {
+        const base = 'http://localhost:8000/api';
+        let url = '', method = '';
+
+        const tipo = this.tipoFormulario.slice(0, -1).toLowerCase();
+
+        if (this.accion === 'agregar') {
+          url = `${base}/inventario/agregar-nuevo-${tipo}/`;
+          method = 'POST';
+        } else if (this.accion === 'editar') {
+          url = `${base}/inventario/editar-${tipo}/${this.formData.id}/`;
+          method = 'PUT';
+        } else if (this.accion === 'eliminar') {
+          url = `${base}/inventario/eliminar-${tipo}/${this.formData.id}/`;
+          method = 'DELETE';
+        }
+
+        const res = await fetch(url, {
+          method,
+          headers: { 'Content-Type': 'application/json' },
+          body: method !== 'DELETE' ? JSON.stringify(this.formData) : null,
+        });
+
+        if (!res.ok) {
+          const err = await res.json();
+          alert('Error: ' + (err.error || 'Desconocido'));
+          return;
+        }
+
+        alert(`${this.accion} exitoso`);
+        this.cerrarFormulario();
+        this.obtenerInventario(this.tipoFormulario, this.tipoFormulario.toLowerCase());
+      } catch (e) {
+        alert('Error al conectar con el servidor');
+        console.error(e);
+      }
     },
     async obtenerInventario(tipo, endpoint) {
       try {
         const res = await fetch(`http://localhost:8000/api/${endpoint}/`);
         const data = await res.json();
-        const items = data.map(item => ({
-          material: item.nombre || item.tipo || 'Sin nombre',
-          descripcion: item.descripcion || '—',
-          cantidad: item.stock || 0,
-          usados: item.usados || 0
-        }));
+        const items = data.map(item => tipo === 'Uniformes' ? { ...item, material_nombre: item.material_nombre || 'N/A' } : item);
         this.inventarios[tipo] = items;
-      } catch (error) {
-        console.error(`Error al obtener ${tipo}:`, error);
-      }
-    },
-    async enviarNuevo(endpoint) {
-      try {
-        const res = await fetch(`http://localhost:8000/api/${endpoint}/nuevo/`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(this.nuevoProducto)
-        });
-
-        const result = await res.json();
-
-        if (!res.ok) {
-          alert('Error: ' + (result.error || 'Error al guardar'));
-          return;
-        }
-
-        alert(`${this.tipoFormulario.slice(0, -1)} agregado correctamente`);
-        this.formVisible = false;
-        this.obtenerInventario(this.tipoFormulario, endpoint);
-      } catch (error) {
-        alert('Error de red');
-        console.error(error);
+      } catch (e) {
+        console.error(`Error obteniendo ${tipo}:`, e);
       }
     }
   }
@@ -275,13 +300,15 @@ tr:nth-child(even) {
 .button-row button:hover {
   background-color: var(--color-tertiary);
 }
+
 .formulario {
-  background: var(--colo-texto-blanco);
+  background: white;
   padding: 20px;
   border-radius: 12px;
   margin-bottom: 30px;
   box-shadow: 0 0 10px rgba(0,0,0,0.1);
 }
+
 .formulario input,
 .formulario textarea {
   display: block;
@@ -291,18 +318,39 @@ tr:nth-child(even) {
   border-radius: 6px;
   border: 1px solid #ccc;
 }
+
+.formulario {
+  background: var(--colo-texto-blanco); 
+  padding: 20px;
+  border-radius: 12px;
+  margin-bottom: 30px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+.formulario input,
+.formulario textarea {
+  display: block;
+  width: 100%;
+  margin-bottom: 10px;
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+
 .formulario button {
-  background-color: var(--color-senary);
-  color: var(--colo-texto-blanco);
+  background-color: var(--color-senary); 
+  color: var(--colo-texto-blanco); 
   padding: 10px 20px;
   font-weight: bold;
   border: none;
-  border-radius: 6px;
-  margin-right: 10px;
+  font-size: 22px;
   cursor: pointer;
-  transition: background-color 0.3s;
+  font-weight: bold;
+  color: #333;
 }
+
 .formulario button:hover {
   opacity: 0.9;
 }
+
 </style>

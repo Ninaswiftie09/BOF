@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 from pathlib import Path
 import os
+from decouple import config
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -39,10 +40,9 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'corsheaders',
-    'rest_framework',   
+    'rest_framework',
     'clientes',
     'api',  
-
 ]
 
 MIDDLEWARE = [
@@ -54,11 +54,11 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
 ]
 
 ROOT_URLCONF = 'proyecto_django.urls'
 
+# CORS settings
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
 ]
@@ -87,11 +87,11 @@ WSGI_APPLICATION = 'proyecto_django.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.environ.get("DB_NAME", "proyecto"),
-        'USER': os.environ.get("DB_USER", "user"),
-        'PASSWORD': os.environ.get("DB_PASSWORD", "pass"),
-        'HOST': os.environ.get("DB_HOST", "db"),
-        'PORT': os.environ.get("DB_PORT", "5432"),
+        'NAME': config("DB_NAME", default="proyecto"),
+        'USER': config("DB_USER", default="user"),
+        'PASSWORD': config("DB_PASSWORD", default="pass"),
+        'HOST': config("DB_HOST", default="db"),
+        'PORT': config("DB_PORT", default="5432"),
     }
 }
 
