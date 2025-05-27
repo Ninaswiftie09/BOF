@@ -6,7 +6,7 @@ import axios from 'axios'
 const router = useRouter()
 function goHome() { router.push({ name: 'home' }) }
 
-const API = 'http://localhost:8000/api'
+const API = '/api'
 
 const modal = reactive({ visible: false, type: '' })
 const currentProveedor = ref(null)
@@ -17,7 +17,7 @@ const compras = ref([])
 const searchQuery = ref('')
 const searchReportQuery = ref('')
 
-const proveedorForm = reactive({ nombre: '', correo: '', telefono: '', direccion: '' })
+const proveedorForm = reactive({ nombre: '', email: '', telefono: '', direccion: '', nit: ''})
 const compraForm = reactive({ proveedor: '', descripcion: '', monto: '' })
 
 const filteredProveedores = computed(() =>
@@ -35,7 +35,10 @@ const filteredCompras = computed(() =>
 function open(type, prov = null) {
   modal.type = type
   modal.visible = true
-  if (type === 'historial' && prov) currentProveedor.value = prov
+  if (type === 'historial') {
+  currentProveedor.value = prov || proveedores.value[0] || {}
+  }
+
 }
 function close() { modal.visible = false }
 
@@ -49,35 +52,49 @@ async function fetchProveedores() {
 }
 async function fetchCompras() {
   try {
-    compras.value = (await axios.get(`${API}/compras/`)).data
-  } catch (e) {
+    const response = await axios.get(`${API}/compras/`)
+    compras.value = response.data
+    console.log('🧾 Compras recibidas:', JSON.stringify(response.data, null, 2))
+  } catch (e) { 
     console.error('Error cargando compras', e)
   }
 }
 
+
 async function saveProveedor() {
   if (!proveedorForm.nombre) return alert('El nombre es obligatorio')
+
+  console.log('🟢 Enviando proveedor:', proveedorForm)
+
   try {
     await axios.post(`${API}/proveedores/`, proveedorForm)
     close()
     Object.keys(proveedorForm).forEach(k => (proveedorForm[k] = ''))
     await fetchProveedores()
   } catch (e) {
-    console.error('Error guardando proveedor', e)
+    console.error('🔴 Error guardando proveedor:', e.response?.data || e)
     alert(e.response?.data?.nombre || 'No se pudo crear proveedor')
   }
 }
 
+
 async function saveCompra() {
   if (!compraForm.proveedor || !compraForm.descripcion || !compraForm.monto)
     return alert('Todos los campos de compra son obligatorios')
+
   try {
-    await axios.post(`${API}/compras/`, compraForm)
+    const payload = {
+      proveedor_id: compraForm.proveedor,
+      descripcion: compraForm.descripcion,
+      monto_total: compraForm.monto
+    }
+    console.log('🟡 Enviando datos:', payload)
+    await axios.post(`${API}/compras/`, payload)
     close()
     Object.keys(compraForm).forEach(k => (compraForm[k] = ''))
     await Promise.all([fetchProveedores(), fetchCompras()])
   } catch (e) {
-    console.error('Error guardando compra', e)
+    console.error('🔴 Error guardando compra:', e.response?.data || e.message)
     alert('No se pudo crear compra')
   }
 }
@@ -115,7 +132,7 @@ onMounted(() => {
           <tbody>
             <tr v-for="prov in filteredProveedores" :key="prov.id">
               <td>{{ prov.nombre }}</td>
-              <td>{{ prov.correo }}</td>
+              <td>{{ prov.email }}</td>
               <td>{{ prov.telefono }}</td>
               <td>{{ prov.direccion }}</td>
             </tr>
@@ -147,9 +164,11 @@ onMounted(() => {
         <h3>Nuevo Proveedor</h3>
         <form class="modal-form grid-two" @submit.prevent="saveProveedor">
           <label>Nombre<input v-model="proveedorForm.nombre" required /></label>
-          <label>Correo<input v-model="proveedorForm.correo" type="email" /></label>
+          <label>Correo<input v-model="proveedorForm.email" type="email" /></label>
           <label>Teléfono<input v-model="proveedorForm.telefono" /></label>
           <label>Dirección<input v-model="proveedorForm.direccion" /></label>
+          <label>NIT<input v-model="proveedorForm.nit" required /></label>
+
           <button class="save-big" type="submit">Guardar</button>
           <button class="cancel-btn" type="button" @click="close">Cancelar</button>
         </form>
@@ -167,7 +186,7 @@ onMounted(() => {
             </select>
           </label>
           <label>Descripción<input v-model="compraForm.descripcion" required /></label>
-          <label>Monto<input type="number" step="0.01" v-model="compraForm.monto" required /></label>
+            <label>Monto<input type="number" step="0.01" v-model="compraForm.monto" required /></label>
           <button class="save-big" type="submit">Guardar</button>
           <button class="cancel-btn" type="button" @click="close">Cancelar</button>
         </form>
@@ -183,10 +202,10 @@ onMounted(() => {
               <tr><th>ID</th><th>Fecha</th><th>Descripción</th><th>Monto</th></tr>
             </thead>
             <tbody>
-              <tr v-for="c in compras.filter(x => x.proveedor === currentProveedor.id)" :key="c.id">
-                <td>{{ c.id }}</td><td>{{ c.fecha }}</td><td>{{ c.descripcion }}</td><td>{{ c.monto }}</td>
+              <tr v-for="c in compras.filter(x => x.proveedor_id === currentProveedor.id)" :key="c.id">
+                <td>{{ c.id }}</td><td>{{ c.fecha }}</td><td>{{ c.descripcion }}</td><td>{{ c.monto_total }}</td>
               </tr>
-              <tr v-if="!compras.some(x => x.proveedor === currentProveedor.id)">
+              <tr v-if="!compras.some(x => x.proveedor_id === currentProveedor.id)">
                 <td colspan="4" class="text-center py-4">Sin compras para este proveedor.</td>
               </tr>
             </tbody>

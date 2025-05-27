@@ -1,5 +1,7 @@
 from rest_framework import serializers
-from .models import Empresa, Cliente, Pedido, PedidoDetalle, CuentaPagada, Proveedor, Compra, CompraDetalle
+from .models import Empresa, Cliente, Pedido, PedidoDetalle, CuentaPagada
+from clientes.models import Compra, Proveedor, CompraDetalle
+
 
 class EmpresaSerializer(serializers.ModelSerializer):
     class Meta:
@@ -72,10 +74,10 @@ class CompraSerializer(serializers.ModelSerializer):
         queryset=Proveedor.objects.all(),
         source='proveedor'
     )
+    descripcion = serializers.CharField()  # ✅ AÑADE ESTO
     detalles = CompraDetalleSerializer(many=True, read_only=True)
 
     class Meta:
         model = Compra
-        fields = [
-            'id', 'proveedor_id', 'fecha', 'monto_total', 'detalles'
-        ]
+        fields = ['id', 'proveedor_id', 'fecha', 'descripcion', 'monto_total', 'detalles']
+        read_only_fields = ['id', 'fecha']

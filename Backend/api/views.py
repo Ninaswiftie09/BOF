@@ -22,6 +22,7 @@ from rest_framework import status
 # App local
 from .models import Proveedor, Compra
 from .serializers import ProveedorSerializer, CompraSerializer
+from clientes.models import Compra
 
 from .models import Venta, DetalleVenta, Hilo, Tela, Uniforme
 from .serializers import VentaSerializer, HiloSerializer, TelaSerializer, UniformeSerializer

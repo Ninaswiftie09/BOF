@@ -55,7 +55,6 @@ class CuentaPagada(models.Model):
 # Tabla de Proveedores
 class Proveedor(models.Model):
     nombre = models.CharField(max_length=255)
-    contacto = models.CharField(max_length=255, blank=True)
     telefono = models.CharField(max_length=50, blank=True)
     email = models.EmailField(blank=True)
     direccion = models.TextField(blank=True)
@@ -69,6 +68,7 @@ class Compra(models.Model):
     proveedor = models.ForeignKey(Proveedor, on_delete=models.CASCADE)
     fecha = models.DateTimeField(auto_now_add=True)
     monto_total = models.DecimalField(max_digits=12, decimal_places=2)
+    descripcion = models.TextField(default='')  
 
     def __str__(self):
         return f"Compra #{self.id} - {self.proveedor.nombre}"
