@@ -16,17 +16,17 @@ import Proveedores from '../views/proveedores.vue'
 
 const routes = [
   { path: '/', redirect: '/login' },
-  { path: '/home', name: 'home', component: Home },
-  { path: '/mi_inventario', name: 'mi_inventario', component: MiInventario },
-  { path: '/accounting', name: 'accounting', component: Accounting },
-  { path: '/billpage', name: 'billpage', component: Billpage },
-  { path: '/forgotpass', name: 'forgotpass', component: Forgotpass },
+  /*{ path: '/home', name: 'home', component: Home },
+  //{ path: '/mi_inventario', name: 'mi_inventario', component: MiInventario },
+  //{ path: '/accounting', name: 'accounting', component: Accounting },
+  //{ path: '/billpage', name: 'billpage', component: Billpage },
+  //{ path: '/forgotpass', name: 'forgotpass', component: Forgotpass },
   { path: '/login', name: 'login', component: Login },
   { path: '/register', name: 'register', component: Register },
   { path: '/ReporteVentas', name: 'ReporteVentas', component: ReporteVentas },
   { path: '/clientes', name: 'clientes', component: Clientes },
   { path: '/clientesregistro', name: 'clientesregistro', component: ClientesRegistro },
-  { path: '/proveedores', name: 'proveedores', component: Proveedores },
+  { path: '/proveedores', name: 'proveedores', component: Proveedores },*/
 
   // Manejo de rutas inexistentes (404)
   {
