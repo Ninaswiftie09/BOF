@@ -12,16 +12,17 @@ class Empresa(models.Model):
 class Cliente(models.Model):
     empresa = models.ForeignKey(Empresa, on_delete=models.SET_NULL, null=True, blank=True)
     nombre = models.CharField(max_length=255)
-    contacto = models.CharField(max_length=255, blank=True)
+    contacto = models.CharField(max_length=255, null=True, blank=True)  
     nit = models.CharField(max_length=50, unique=True, blank=True)
     direccion = models.TextField(blank=True)
     direccion_entrega = models.TextField(blank=True)
     telefono = models.CharField(max_length=50, blank=True)
     email = models.EmailField(blank=True)
-    estado = models.BooleanField(default=True)  # True = Activo, False = Inactivo
+    estado = models.BooleanField(default=True)
 
     def __str__(self):
         return self.nombre
+
 
 # Tabla de Pedidos (Ventas)
 class Pedido(models.Model):
@@ -55,6 +56,7 @@ class CuentaPagada(models.Model):
 # Tabla de Proveedores
 class Proveedor(models.Model):
     nombre = models.CharField(max_length=255)
+    contacto = models.CharField(max_length=255, null=True, blank=True)  
     telefono = models.CharField(max_length=50, blank=True)
     email = models.EmailField(blank=True)
     direccion = models.TextField(blank=True)
@@ -62,6 +64,7 @@ class Proveedor(models.Model):
 
     def __str__(self):
         return self.nombre
+
 
 # Tabla de Compras a Proveedores
 class Compra(models.Model):

@@ -22,15 +22,6 @@ from .views import (
     CompraViewSet,
     OperacionViewSet,
     OperacionSummaryAPIView,
-    TelaListAPIView,
-    HiloListAPIView,
-    UniformeListAPIView,
-    EliminarTela,
-    EliminarHilo,
-    EliminarUniforme,
-    EditarTela,
-    EditarHilo,
-    EditarUniforme,
 )
 
 router = routers.DefaultRouter()
@@ -58,21 +49,9 @@ urlpatterns = [
     path('inventario/quitar-stock/tela/<int:pk>/', QuitarStockTela.as_view()),
     path('inventario/quitar-stock/uniforme/<int:pk>/', QuitarStockUniforme.as_view()),
     path('inventario/agregar-nuevo-hilo/', AgregarNuevoHilo.as_view()),
-    path('inventario/agregar-nuevo-tela/', AgregarNuevaTela.as_view()),
+    path('inventario/agregar-nueva-tela/', AgregarNuevaTela.as_view()),  # corregido aquí
     path('inventario/agregar-nuevo-uniforme/', AgregarNuevoUniforme.as_view()),
 
-    # CRUD extra para vistas de inventario
-    path('telas/', TelaListAPIView.as_view(), name='listar_telas'),
-    path('hilos/', HiloListAPIView.as_view(), name='listar_hilos'),
-    path('uniformes/', UniformeListAPIView.as_view(), name='listar_uniformes'),
-
-    path('inventario/eliminar-tela/<int:pk>/', EliminarTela.as_view()),
-    path('inventario/eliminar-hilo/<int:pk>/', EliminarHilo.as_view()),
-    path('inventario/eliminar-uniforme/<int:pk>/', EliminarUniforme.as_view()),
-
-    path('inventario/editar-tela/<int:pk>/', EditarTela.as_view()),
-    path('inventario/editar-hilo/<int:pk>/', EditarHilo.as_view()),
-    path('inventario/editar-uniforme/<int:pk>/', EditarUniforme.as_view()),
 
     # Operaciones resumen
     path('operaciones/summary/', OperacionSummaryAPIView.as_view(), name='operaciones-summary'),
