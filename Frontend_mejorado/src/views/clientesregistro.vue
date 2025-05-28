@@ -1,8 +1,10 @@
+/* clientesregistro.vue */
 <script setup>
 import { reactive, ref, computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import NavBar from '@/components/NavBar.vue'
 import { onMounted } from 'vue'
+import axios from 'axios'
 
 const router = useRouter()
 const go = path => router.push(path)
@@ -12,6 +14,9 @@ const modal = reactive({ visible:false, type:'' })
 const open = t => { modal.type = t; modal.visible = true }
 const close = () => { modal.visible = false }
 
+
+
+/* FORMULARIO CLIENTES */
 const clienteForm = reactive({
   codigo:'', estado:'Activo', nombre:'', contacto:'', nit:'',
   direccion:'', direccionEntrega:'', telefono:'', email:'', cartera:0
@@ -21,9 +26,11 @@ const clientes = ref([])
 /* FUNCIÓN FETCH */
 async function fetchClientes () {
   try {
-    const response = await fetch('https://abriluniformes.shop/clientes/clientes/')
-    const data = await response.json()
-    clientes.value = data
+    const response = await axios.get('/api/clientes/')
+    clientes.value = response.data.map(c => ({
+      ...c,
+      codigo: c.codigo_cliente
+    }))
   } catch (error) {
     console.error('Error al obtener clientes:', error)
   }
@@ -39,14 +46,26 @@ async function saveCliente () {
   
   const method = clientes.value.some(c => c.codigo === clienteForm.codigo) ? 'PUT' : 'POST'
   const url = method === 'PUT'
-    ? `http://backend:8000/api/cliente/clientes/${clienteForm.codigo}/`
-    : `http://backend:8000/api/cliente/clientes/`
+    ? `/api/clientes/${clienteForm.id}/`
+    : `/api/clientes/`
 
   try {
     await fetch(url, {
       method,
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(clienteForm)
+      body: JSON.stringify({
+        codigo_cliente: clienteForm.codigo,
+        estado: clienteForm.estado === 'Activo',
+        nombre: clienteForm.nombre,
+        contacto: clienteForm.contacto,
+        nit: clienteForm.nit,
+        direccion: clienteForm.direccion,
+        direccion_entrega: clienteForm.direccionEntrega,
+        telefono: clienteForm.telefono,
+        email: clienteForm.email,
+        cartera: clienteForm.cartera,
+        empresa_id: clienteForm.empresa_id || null
+      })
     })
 
     await fetchClientes()
@@ -61,7 +80,11 @@ async function saveCliente () {
 
 /* EDITAR CLIENTE */
 function editCliente(cliente) {
-  Object.assign(clienteForm, cliente)
+  Object.assign(clienteForm, {
+    ...cliente,
+    codigo: cliente.codigo_cliente,
+    id: cliente.id
+  })
   modal.type = 'clientes'
   modal.visible = true
 }
@@ -71,7 +94,7 @@ async function deleteCliente(codigo) {
   if (!confirm('¿Seguro que deseas eliminar este cliente?')) return
 
   try {
-    await fetch(`http://backend:8000/api/cliente/clientes/${codigo}/`, {
+    await fetch(`/api/clientes/${id}/`, {
       method: 'DELETE'
     })
     await fetchClientes()
@@ -79,8 +102,6 @@ async function deleteCliente(codigo) {
     console.error('Error al eliminar cliente:', err)
   }
 }
-
-
 
 /* FILTRO DE BÚSQUEDA */
 const filteredClientes = computed(() =>
@@ -101,12 +122,64 @@ const lineTotal  = l => (l.precio*l.cantidad) - l.descuento
 const grandTotal = computed(()=> orderLines.value.reduce((s,l)=>s+lineTotal(l),0))
 
 /* GUARDAR NUEVA ORDEN */
-function saveOrder(){
-  pedidos.value.push({ id:Date.now(), cliente:orderHeader.cliente, monto:grandTotal.value, fecha:orderHeader.fecha, estado:'pendiente' })
-  orderHeader.cliente = ''; orderHeader.fecha = ''
-  orderLines.value = [{ producto:'', talla:'', color:'', tela:'', bordado:'', cantidad:1, precio:0, descuento:0 }]
-  close()
+async function saveOrder () {
+  if (!orderHeader.cliente || !orderHeader.fecha) {
+    alert('Completa el cliente y la fecha')
+    return
+  }
+
+  try {
+    const payload = {
+      cliente: orderHeader.cliente,
+      fecha: orderHeader.fecha,
+      total: grandTotal.value,
+
+      detalles: orderLines.value.map(l => ({
+        producto: l.producto,
+        talla: l.talla,
+        color: l.color,
+        tela: l.tela,
+        bordado: l.bordado,
+        cantidad: l.cantidad,
+        precio: l.precio,
+        descuento: l.descuento,
+      }))
+    }
+
+    await axios.post('/api/ordenes/', payload)
+
+    // Limpiar el formulario
+    orderHeader.cliente = ''
+    orderHeader.fecha = ''
+    orderLines.value = [{ producto:'', talla:'', color:'', tela:'', bordado:'', cantidad:1, precio:0, descuento:0 }]
+    close()
+    alert('Orden guardada exitosamente')
+  } catch (err) {
+    console.error('Error al guardar la orden:', err)
+    alert('Error al guardar la orden')
+  }
 }
+
+/* CARGAR HISTORIAL */
+async function fetchPedidos() {
+  try {
+    const res = await axios.get('/api/ordenes/historial/')
+    pedidos.value = res.data
+  } catch (e) {
+    console.error('Error al cargar historial de pedidos:', e)
+  }
+}
+
+onMounted(() => {
+  fetchClientes()
+})
+
+watch(() => modal.type, (newVal) => {
+  if (newVal === 'historial') fetchPedidos()
+})
+
+
+
 
 const pedidos  = ref([])
 const pagadas  = ref([])
@@ -153,17 +226,21 @@ const porPagar = ref([])
               <th>Código</th>
               <th>Nombre</th>
               <th>Contacto</th>
+              <th>Teléfono</th>
+              <th>NIT</th>
               <th>Acciones</th>
             </tr>
           </thead>
           <tbody>
             <tr v-for="c in filteredClientes" :key="c.codigo">
-              <td>{{ c.codigo }}</td>
+              <td>{{ c.codigo_cliente }}</td>
               <td>{{ c.nombre }}</td>
               <td>{{ c.contacto }}</td>
+              <td>{{ c.telefono }}</td>
+              <td>{{ c.nit }}</td>
               <td>
                 <button class="edit-btn" @click="editCliente(c)">✎</button>
-                <button class="remove-btn" @click="deleteCliente(c.codigo)">✕</button>
+                <button class="remove-btn" @click="deleteCliente(c.id)">✕</button>
               </td>
             </tr>
             <tr v-if="filteredClientes.length===0">
@@ -182,6 +259,7 @@ const porPagar = ref([])
         <template v-if="modal.type==='clientes'">
           <h3>Clientes</h3>
           <form class="modal-form grid-two" @submit.prevent="saveCliente">
+            <label>Código<input v-model="clienteForm.codigo" required/></label>
             <label>Nombre<input v-model="clienteForm.nombre" required/></label>
             <label>Contacto<input v-model="clienteForm.contacto"/></label>
             <label>NIT<input v-model="clienteForm.nit"/></label>
@@ -401,8 +479,36 @@ const porPagar = ref([])
 .table-wrapper th,.table-wrapper td{padding:.4rem .6rem;border-bottom:1px solid #2c3148}
 .table-wrapper thead{position:sticky;top:0;background:#1e293b}
 
-.order-table{width:100%;border-collapse:collapse;margin-bottom:1rem;font-size:.8rem}
-.order-table th,.order-table td{border:1px solid #2c3148;padding:.3rem .4rem;text-align:center}
+.order-table{
+  width:100%;
+  border-collapse:collapse;
+  margin-bottom:1rem;
+  font-size:.8rem;
+  color: #000
+  }
+
+.order-table th,.order-table td{
+  border:1px solid #2c3148;
+  padding:.3rem .4rem;
+  text-align:center;}
+
+.order-table input {
+  color: #000;
+  background-color: #fff;
+}
+  
+
+input[type="date"] {
+  background: #fff;
+  color: #000;
+}
+
+.modal-window select,
+.modal-window input {
+  background: #111827;
+  color: #fff;
+}
+
 .remove-btn{background:transparent;border:none;color:#e74c3c;cursor:pointer}
 .add-line{background:#059669;border:none;color:#fff;border-radius:8px;padding:.4rem 1rem;cursor:pointer;margin-bottom:.6rem}
 .grand-total{text-align:right;font-weight:700;margin-bottom:.4rem}
