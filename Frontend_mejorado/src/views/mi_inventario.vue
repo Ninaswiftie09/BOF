@@ -190,9 +190,10 @@ export default {
     };
   },
   mounted() {
-    this.obtenerInventario("Telas", "telas");
-    this.obtenerInventario("Hilos", "hilos");
-    this.obtenerInventario("Uniformes", "uniformes");
+    this.obtenerInventario("Telas");
+    this.obtenerInventario("Hilos");
+    this.obtenerInventario("Uniformes");
+
   },
   methods: {
     mostrarLimitado(tipo) {
@@ -222,7 +223,7 @@ export default {
     async submitFormulario() {
       try {
         const tipo = this.tipoFormulario.slice(0, -1).toLowerCase();
-        const urlBase = 'http://127.0.0.1:8000/api';
+        const urlBase = 'https://abriluniformes.shop/api/';
         let url = '';
         let method = '';
 
@@ -261,7 +262,7 @@ export default {
     },
     async obtenerInventario(tipo, endpoint) {
       try {
-        const res = await fetch(`http://127.0.0.1:8000/api/${endpoint}/`);
+        const res = await fetch(`https://abriluniformes.shop/api/${tipo.toLowerCase()}/`);
         const data = await res.json();
         this.inventarios[tipo] = data.map(item =>
           tipo === "Uniformes" ? { ...item, material_nombre: item.material_nombre || "N/A" } : item
@@ -270,6 +271,7 @@ export default {
         console.error(`Error al obtener ${tipo}:`, error);
       }
     }
+
   }
 };
 </script>
