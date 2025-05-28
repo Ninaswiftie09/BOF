@@ -88,7 +88,8 @@
 <script>
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import axios from 'axios'
+import { apiFetch } from '@/utils/api'
+
 
 export default {
   name: 'AccountingView',
@@ -119,8 +120,9 @@ export default {
   methods: {
     async fetchOperations() {
       try {
-        const response = await axios.get('/api/operaciones/')
-        this.operations = response.data
+        const data = await apiFetch('/api/operaciones/')
+        this.operations = data
+
         this.calculateSummary()
       } catch (error) {
         console.error('Error cargando operaciones:', error)
@@ -150,8 +152,9 @@ export default {
           concepto: this.newOperation.concepto,
           fecha: new Date().toISOString().slice(0, 10), 
         }
-        const response = await axios.post('/api/operaciones/', payload)
-        this.operations.push(response.data)
+        const data = await apiFetch('/api/operaciones/', 'POST', payload)
+        this.operations.push(data)
+
         this.calculateSummary()
         this.showForm = false
         this.newOperation = { tipo: 'ingreso', monto: '', concepto: '' }

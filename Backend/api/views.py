@@ -22,15 +22,10 @@ from rest_framework import status
 # App local
 from .models import Proveedor, Compra
 from .serializers import ProveedorSerializer, CompraSerializer
-from clientes.models import Compra
 
 from .models import Venta, DetalleVenta, Hilo, Tela, Uniforme, Operacion
 from .serializers import VentaSerializer, HiloSerializer, TelaSerializer, UniformeSerializer, OperacionSerializer
-
-from .models import Tela, Hilo, Uniforme
-from .serializers import TelaSerializer, HiloSerializer, UniformeSerializer
-
-
+from django.utils.decorators import method_decorator
 
 
 def ping(request):
@@ -106,69 +101,6 @@ def login_user(request):
     else:
         return JsonResponse({'message': 'Método no permitido'}, status=405)
 
-
-class EliminarTela(APIView):
-    def delete(self, request, pk):
-        tela = get_object_or_404(Tela, pk=pk)
-        tela.delete()
-        return Response({'mensaje': 'Tela eliminada correctamente'}, status=status.HTTP_204_NO_CONTENT)
-
-class EliminarHilo(APIView):
-    def delete(self, request, pk):
-        hilo = get_object_or_404(Hilo, pk=pk)
-        hilo.delete()
-        return Response({'mensaje': 'Hilo eliminado correctamente'}, status=status.HTTP_204_NO_CONTENT)
-
-class EliminarUniforme(APIView):
-    def delete(self, request, pk):
-        uniforme = get_object_or_404(Uniforme, pk=pk)
-        uniforme.delete()
-        return Response({'mensaje': 'Uniforme eliminado correctamente'}, status=status.HTTP_204_NO_CONTENT)
-
-class EditarTela(APIView):
-    def put(self, request, pk):
-        tela = get_object_or_404(Tela, pk=pk)
-        serializer = TelaSerializer(tela, data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response({'mensaje': 'Tela actualizada correctamente', 'tela': serializer.data})
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-class EditarHilo(APIView):
-    def put(self, request, pk):
-        hilo = get_object_or_404(Hilo, pk=pk)
-        serializer = HiloSerializer(hilo, data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response({'mensaje': 'Hilo actualizado correctamente', 'hilo': serializer.data})
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-class EditarUniforme(APIView):
-    def put(self, request, pk):
-        uniforme = get_object_or_404(Uniforme, pk=pk)
-        serializer = UniformeSerializer(uniforme, data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response({'mensaje': 'Uniforme actualizado correctamente', 'uniforme': serializer.data})
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-class TelaListAPIView(APIView):
-    def get(self, request):
-        telas = Tela.objects.all()
-        serializer = TelaSerializer(telas, many=True)
-        return Response(serializer.data)
-
-class HiloListAPIView(APIView):
-    def get(self, request):
-        hilos = Hilo.objects.all()
-        serializer = HiloSerializer(hilos, many=True)
-        return Response(serializer.data)
-
-class UniformeListAPIView(APIView):
-    def get(self, request):
-        uniformes = Uniforme.objects.all()
-        serializer = UniformeSerializer(uniformes, many=True)
-        return Response(serializer.data)
 class VentasPorFechaAPIView(APIView):
     def get(self, request):
         fecha_inicio = request.query_params.get('fecha_inicio')
@@ -365,6 +297,8 @@ class CompraViewSet(viewsets.ModelViewSet):
     queryset = Compra.objects.all().order_by('-fecha')
     serializer_class = CompraSerializer
 
+
+# Metodos para el área de contabiidad 
 
 class OperacionViewSet(viewsets.ModelViewSet):
     queryset = Operacion.objects.all()
