@@ -12,23 +12,14 @@ const modal = reactive({ visible: false, type: '' })
 const currentProveedor = ref(null)
 
 const proveedores = ref([])
-const compras = ref([])
 
 const searchQuery = ref('')
-const searchReportQuery = ref('')
 
 const proveedorForm = reactive({ nombre: '', email: '', telefono: '', direccion: '', nit: ''})
-const compraForm = reactive({ proveedor: '', descripcion: '', monto: '' })
 
 const filteredProveedores = computed(() =>
   proveedores.value.filter(p =>
     p.nombre.toLowerCase().includes(searchQuery.value.toLowerCase())
-  )
-)
-
-const filteredCompras = computed(() =>
-  compras.value.filter(c =>
-    String(c.proveedor).includes(searchReportQuery.value)
   )
 )
 
@@ -50,16 +41,6 @@ async function fetchProveedores() {
     console.error('Error cargando proveedores', e)
   }
 }
-async function fetchCompras() {
-  try {
-    const response = await axios.get(`${API}/compras/`)
-    compras.value = response.data
-    console.log('🧾 Compras recibidas:', JSON.stringify(response.data, null, 2))
-  } catch (e) { 
-    console.error('Error cargando compras', e)
-  }
-}
-
 
 async function saveProveedor() {
   if (!proveedorForm.nombre) return alert('El nombre es obligatorio')
@@ -77,31 +58,8 @@ async function saveProveedor() {
   }
 }
 
-
-async function saveCompra() {
-  if (!compraForm.proveedor || !compraForm.descripcion || !compraForm.monto)
-    return alert('Todos los campos de compra son obligatorios')
-
-  try {
-    const payload = {
-      proveedor_id: compraForm.proveedor,
-      descripcion: compraForm.descripcion,
-      monto_total: compraForm.monto
-    }
-    console.log('🟡 Enviando datos:', payload)
-    await axios.post(`${API}/compras/`, payload)
-    close()
-    Object.keys(compraForm).forEach(k => (compraForm[k] = ''))
-    await Promise.all([fetchProveedores(), fetchCompras()])
-  } catch (e) {
-    console.error('🔴 Error guardando compra:', e.response?.data || e.message)
-    alert('No se pudo crear compra')
-  }
-}
-
 onMounted(() => {
   fetchProveedores()
-  fetchCompras()
 })
 </script>
 
@@ -113,9 +71,12 @@ onMounted(() => {
       <button class="avatar-btn"></button>
     </header>
 
+    <!-- Comentamos la sección de nueva compra -->
+    <!--
     <div class="new-order-wrapper">
       <button class="new-order-btn" @click="open('compra')">NUEVA COMPRA</button>
     </div>
+    -->
 
     <div class="body-wrapper">
       <section class="module">
@@ -149,12 +110,15 @@ onMounted(() => {
             <h2>ACTUALIZACIÓN</h2>
             <ul><li @click="open('proveedor')">Agregar proveedor</li></ul>
           </section>
+          <!-- Comentamos la sección de reportes -->
+          <!--
           <section class="big-card">
             <h2>REPORTES</h2>
             <ul>
               <li @click="open('historial')">Historial de compras</li>
             </ul>
           </section>
+          -->
         </div>
       </section>
     </div>
@@ -175,6 +139,8 @@ onMounted(() => {
       </div>
     </div>
 
+    <!-- Comentamos los modales de compra e historial -->
+    <!--
     <div v-if="modal.visible && modal.type === 'compra'" class="modal-overlay" @click.self="close">
       <div class="modal-window">
         <h3>Nueva Compra</h3>
@@ -214,6 +180,7 @@ onMounted(() => {
         <button class="cancel-btn" @click="close">Cerrar</button>
       </div>
     </div>
+    -->
   </div>
 </template>
 
