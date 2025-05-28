@@ -4,7 +4,7 @@ import { reactive, ref, computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import NavBar from '@/components/NavBar.vue'
 import { onMounted } from 'vue'
-import axios from 'axios'
+import { apiFetch } from '../utils/api'
 
 const router = useRouter()
 const go = path => router.push(path)
@@ -26,8 +26,8 @@ const clientes = ref([])
 /* FUNCIÓN FETCH */
 async function fetchClientes () {
   try {
-    const response = await axios.get('/api/cliente/clientes/')
-    clientes.value = response.data.map(c => ({
+    const data = await apiFetch('/api/clientes/')
+    clientes.value = data.map(c => ({
       ...c,
       codigo: c.codigo_cliente
     }))
@@ -42,7 +42,7 @@ onMounted(() => {
 
 /* FUNCIÓN GUARDAR CLIENTE */
 async function saveCliente () {
-  if (!clienteForm.codigo || !clienteForm.nombre) return alert('Código y nombre')
+  if (!clienteForm.codigo || !clienteForm.nombre) return alert('Código y nombre requeridos')
   
   const method = clientes.value.some(c => c.codigo === clienteForm.codigo) ? 'PUT' : 'POST'
   const url = method === 'PUT'
@@ -50,23 +50,20 @@ async function saveCliente () {
     : `/api/cliente/clientes/`
 
   try {
-    await fetch(url, {
-      method,
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        codigo_cliente: clienteForm.codigo,
-        estado: clienteForm.estado === 'Activo',
-        nombre: clienteForm.nombre,
-        contacto: clienteForm.contacto,
-        nit: clienteForm.nit,
-        direccion: clienteForm.direccion,
-        direccion_entrega: clienteForm.direccionEntrega,
-        telefono: clienteForm.telefono,
-        email: clienteForm.email,
-        cartera: clienteForm.cartera,
-        empresa_id: clienteForm.empresa_id || null
-      })
+    await apiFetch(url, method, {
+      codigo_cliente: clienteForm.codigo,
+      estado: clienteForm.estado === 'Activo',
+      nombre: clienteForm.nombre,
+      contacto: clienteForm.contacto,
+      nit: clienteForm.nit,
+      direccion: clienteForm.direccion,
+      direccion_entrega: clienteForm.direccionEntrega,
+      telefono: clienteForm.telefono,
+      email: clienteForm.email,
+      cartera: clienteForm.cartera,
+      empresa_id: clienteForm.empresa_id || null
     })
+    
 
     await fetchClientes()
     Object.keys(clienteForm).forEach(k =>
@@ -75,8 +72,8 @@ async function saveCliente () {
     close()
   } catch (err) {
     console.error('Error al guardar cliente:', err)
-  }
-}
+} }
+
 
 /* EDITAR CLIENTE */
 function editCliente(cliente) {
@@ -90,13 +87,11 @@ function editCliente(cliente) {
 }
 
 /* ELIMINAR CLIENTE */
-async function deleteCliente(codigo) {
+async function deleteCliente(id) {
   if (!confirm('¿Seguro que deseas eliminar este cliente?')) return
 
   try {
-    await fetch(`/api/cliente/clientes/${id}/`, {
-      method: 'DELETE'
-    })
+    await apiFetch(`/api/clientes/${id}/`, 'DELETE')
     await fetchClientes()
   } catch (err) {
     console.error('Error al eliminar cliente:', err)
@@ -133,7 +128,6 @@ async function saveOrder () {
       cliente: orderHeader.cliente,
       fecha: orderHeader.fecha,
       total: grandTotal.value,
-
       detalles: orderLines.value.map(l => ({
         producto: l.producto,
         talla: l.talla,
@@ -146,7 +140,7 @@ async function saveOrder () {
       }))
     }
 
-    await axios.post('/api/ordenes/', payload)
+    await apiFetch('/api/ordenes/', 'POST', payload)
 
     // Limpiar el formulario
     orderHeader.cliente = ''
@@ -160,11 +154,12 @@ async function saveOrder () {
   }
 }
 
+
 /* CARGAR HISTORIAL */
 async function fetchPedidos() {
   try {
-    const res = await axios.get('/api/ordenes/historial/')
-    pedidos.value = res.data
+    const res = await apiFetch('/api/ordenes/historial/')
+    pedidos.value = res
   } catch (e) {
     console.error('Error al cargar historial de pedidos:', e)
   }

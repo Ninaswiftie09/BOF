@@ -33,14 +33,20 @@ from .views import (
     EditarUniforme,
     OrdenViewSet,
 	HistorialPedidosAPIView,
+    OrdenViewSet,
+	HistorialPedidosAPIView,
 
 )
+
+from clientes.views import ClienteViewSet
+
 
 router = routers.DefaultRouter()
 router.register(r'proveedores', ProveedorViewSet, basename='proveedor')
 router.register(r'compras', CompraViewSet, basename='compra')
 router.register(r'operaciones', OperacionViewSet, basename='operacion')
 router.register(r'ordenes', OrdenViewSet, basename='orden')
+router.register(r'clientes', ClienteViewSet, basename='cliente')
 
 urlpatterns = [
     path("ping/", ping),

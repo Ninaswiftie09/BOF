@@ -37,6 +37,8 @@ from clientes.models import Compra
 from .models import Orden
 from .serializers import OrdenSerializer
 from rest_framework.generics import ListAPIView
+from clientes.views import ClienteViewSet
+
 
 
 class TelaListAPIView(ListAPIView):
