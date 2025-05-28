@@ -91,7 +91,7 @@ async function deleteCliente(id) {
   if (!confirm('¿Seguro que deseas eliminar este cliente?')) return
 
   try {
-    await apiFetch(`/api/clientes/${id}/`, 'DELETE')
+    await apiFetch(`/api/cliente/clientes/${id}/`, 'DELETE')
     await fetchClientes()
   } catch (err) {
     console.error('Error al eliminar cliente:', err)
