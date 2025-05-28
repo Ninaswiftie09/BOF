@@ -47,7 +47,7 @@ async function saveCliente () {
   const method = clientes.value.some(c => c.codigo === clienteForm.codigo) ? 'PUT' : 'POST'
   const url = method === 'PUT'
     ? `/api/cliente/clientes/${clienteForm.id}/`
-    : `/api/cliente/clientes/`
+    : `http://localhost:8000/api/cliente/clientes/`
 
   try {
     await apiFetch(url, method, {
@@ -140,7 +140,7 @@ async function saveOrder () {
       }))
     }
 
-    await apiFetch('/api/ordenes/', 'POST', payload)
+    await apiFetch('/http://localhost:8000/api/ordenes/', 'POST', payload)
 
     // Limpiar el formulario
     orderHeader.cliente = ''
