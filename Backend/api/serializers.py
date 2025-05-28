@@ -54,7 +54,7 @@ class ProveedorSerializer(serializers.ModelSerializer):
 class HiloSerializer(serializers.ModelSerializer):
     class Meta:
         model = Hilo
-        fields = ['id', 'material', 'codigo_color', 'stock', 'nombre', 'codigo', 'descripcion']
+        fields = ['id', 'material', 'codigo_color','color', 'stock', 'nombre', 'codigo', 'descripcion']
 
     def update(self, instance, validated_data):
         if 'stock' in validated_data:
@@ -77,7 +77,7 @@ class TelaSerializer(serializers.ModelSerializer):
 class UniformeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Uniforme
-        fields = ['id', 'tipo', 'talla', 'color', 'material']
+        fields = ['id', 'tipo', 'talla', 'color','stock', 'material']
 
     def update(self, instance, validated_data):
         if 'stock' in validated_data:
