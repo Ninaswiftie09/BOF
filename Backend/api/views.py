@@ -33,6 +33,11 @@ from .models import Tela
 from .serializers import TelaSerializer
 from clientes.models import Compra
 
+# Nueva Orden
+from .models import Orden
+from .serializers import OrdenSerializer
+
+
 class TelaListAPIView(ListAPIView):
     queryset = Tela.objects.all()
     serializer_class = TelaSerializer
@@ -397,3 +402,12 @@ class OperacionSummaryAPIView(APIView):
         }
         
         return Response(data, status=status.HTTP_200_OK)
+    
+#   M Agregar Nueva Orden
+class OrdenViewSet(viewsets.ModelViewSet):
+    queryset = Orden.objects.all()
+    serializer_class = OrdenSerializer
+
+class HistorialPedidosAPIView(ListAPIView):
+    queryset = Orden.objects.all().order_by('-fecha')
+    serializer_class = OrdenSerializer

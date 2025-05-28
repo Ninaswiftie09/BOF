@@ -3,6 +3,7 @@ from .models import Categoria, Producto, Venta, DetalleVenta
 from .models import Hilo, Tela, Uniforme
 from .models import Proveedor, Compra, Operacion
 from clientes.models import Compra as CompraCliente
+from .models import Orden, DetalleOrden
 
 
 class CategoriaSerializer(serializers.ModelSerializer):
@@ -106,5 +107,44 @@ class OperacionSerializer(serializers.ModelSerializer):
         return value
 
 
+# Nueva Orden Clientes
 
+class DetalleOrdenSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = DetalleOrden
+        exclude = ['orden']
+        extra_kwargs = {
+            'orden': {'required': False}
+        }
 
+class OrdenSerializer(serializers.ModelSerializer):
+    detalles = DetalleOrdenSerializer(many=True)
+
+    class Meta:
+        model = Orden
+        fields = '__all__'
+
+    def create(self, validated_data):
+        detalles_data = validated_data.pop('detalles')
+        orden = Orden.objects.create(**validated_data)
+        for item in detalles_data:
+            DetalleOrden.objects.create(orden=orden, **item)
+        return orden
+
+    def update(self, instance, validated_data):
+        detalles_data = validated_data.pop('detalles', [])
+
+        # Actualiza campos simples
+        instance.cliente = validated_data.get('cliente', instance.cliente)
+        instance.fecha = validated_data.get('fecha', instance.fecha)
+        instance.total = validated_data.get('total', instance.total)
+        instance.save()
+
+        # Elimina detalles existentes
+        instance.detalles.all().delete()
+
+        # Crea nuevos detalles
+        for item in detalles_data:
+            DetalleOrden.objects.create(orden=instance, **item)
+
+        return instance

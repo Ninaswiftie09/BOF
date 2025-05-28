@@ -31,6 +31,9 @@ from .views import (
     EditarTela,
     EditarHilo,
     EditarUniforme,
+    OrdenViewSet,
+	HistorialPedidosAPIView,
+
 )
 
 router = routers.DefaultRouter()
@@ -74,6 +77,9 @@ urlpatterns = [
 
     # Operaciones resumen
     path('operaciones/summary/', OperacionSummaryAPIView.as_view(), name='operaciones-summary'),
+
+    # Clientes
+    path('ordenes/historial/', HistorialPedidosAPIView.as_view(), name='historial-pedidos'),
 
     # Rutas automáticas
     path('', include(router.urls)),

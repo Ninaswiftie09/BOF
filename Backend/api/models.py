@@ -132,3 +132,20 @@ class Operacion(models.Model):
 
     class Meta:
         ordering = ['-fecha']  
+
+# Clases para Nueva Orden
+class Orden(models.Model):
+    cliente = models.CharField(max_length=100)
+    fecha = models.DateField()
+    total = models.DecimalField(max_digits=10, decimal_places=2)
+
+class DetalleOrden(models.Model):
+    orden = models.ForeignKey(Orden, related_name='detalles', on_delete=models.CASCADE)
+    producto = models.CharField(max_length=100)
+    talla = models.CharField(max_length=20)
+    color = models.CharField(max_length=20)
+    tela = models.CharField(max_length=50)
+    bordado = models.CharField(max_length=50)
+    cantidad = models.PositiveIntegerField()
+    precio = models.DecimalField(max_digits=10, decimal_places=2)
+    descuento = models.DecimalField(max_digits=10, decimal_places=2)
