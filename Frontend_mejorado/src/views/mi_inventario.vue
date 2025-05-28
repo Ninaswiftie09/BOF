@@ -240,11 +240,34 @@ export default {
           method = 'DELETE';
         }
 
+        // Función para obtener el token CSRF
+        function getCookie(name) {
+          let cookieValue = null;
+          if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+              const cookie = cookies[i].trim();
+              // Coincide con el nombre
+              if (cookie.startsWith(name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+              }
+            }
+          }
+          return cookieValue;
+        }
+
+
         const res = await fetch(url, {
           method,
-          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',  
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')  // token CSRF
+          },
           body: method !== 'DELETE' ? JSON.stringify(this.formData) : null
         });
+
 
         if (!res.ok) {
           const err = await res.json();
