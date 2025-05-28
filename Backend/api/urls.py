@@ -40,6 +40,7 @@ router = routers.DefaultRouter()
 router.register(r'proveedores', ProveedorViewSet, basename='proveedor')
 router.register(r'compras', CompraViewSet, basename='compra')
 router.register(r'operaciones', OperacionViewSet, basename='operacion')
+router.register(r'ordenes', OrdenViewSet, basename='orden')
 
 urlpatterns = [
     path("ping/", ping),
