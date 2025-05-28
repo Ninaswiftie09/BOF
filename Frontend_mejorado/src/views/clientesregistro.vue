@@ -26,7 +26,7 @@ const clientes = ref([])
 /* FUNCIÓN FETCH */
 async function fetchClientes () {
   try {
-    const response = await axios.get('/api/clientes/')
+    const response = await axios.get('/api/cliente/clientes/')
     clientes.value = response.data.map(c => ({
       ...c,
       codigo: c.codigo_cliente
@@ -46,8 +46,8 @@ async function saveCliente () {
   
   const method = clientes.value.some(c => c.codigo === clienteForm.codigo) ? 'PUT' : 'POST'
   const url = method === 'PUT'
-    ? `/api/clientes/${clienteForm.id}/`
-    : `/api/clientes/`
+    ? `/api/cliente/clientes/${clienteForm.id}/`
+    : `/api/cliente/clientes/`
 
   try {
     await fetch(url, {
@@ -94,7 +94,7 @@ async function deleteCliente(codigo) {
   if (!confirm('¿Seguro que deseas eliminar este cliente?')) return
 
   try {
-    await fetch(`/api/clientes/${id}/`, {
+    await fetch(`/api/cliente/clientes/${id}/`, {
       method: 'DELETE'
     })
     await fetchClientes()
