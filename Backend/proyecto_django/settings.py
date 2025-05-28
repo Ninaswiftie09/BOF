@@ -61,6 +61,7 @@ ROOT_URLCONF = 'proyecto_django.urls'
 # CORS settings
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
+    "https://abriluniformes.shop",
 ]
 
 TEMPLATES = [
