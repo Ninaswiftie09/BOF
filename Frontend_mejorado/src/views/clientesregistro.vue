@@ -39,8 +39,8 @@ async function saveCliente () {
   
   const method = clientes.value.some(c => c.codigo === clienteForm.codigo) ? 'PUT' : 'POST'
   const url = method === 'PUT'
-    ? `http://backend:8000/api/clientes/${clienteForm.codigo}/`
-    : `http://backend:8000/api/clientes/`
+    ? `http://backend:8000/api/cliente/clientes/${clienteForm.codigo}/`
+    : `http://backend:8000/api/cliente/clientes/`
 
   try {
     await fetch(url, {
@@ -71,7 +71,7 @@ async function deleteCliente(codigo) {
   if (!confirm('¿Seguro que deseas eliminar este cliente?')) return
 
   try {
-    await fetch(`http://backend:8000/api/clientes/${codigo}/`, {
+    await fetch(`http://backend:8000/api/cliente/clientes/${codigo}/`, {
       method: 'DELETE'
     })
     await fetchClientes()
