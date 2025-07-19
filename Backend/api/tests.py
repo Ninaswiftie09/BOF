@@ -57,10 +57,12 @@ class AuthTests(BaseTest):
 
     def test_login_user(self):
         response = self.client.post(reverse('login'), {
-            "username": "test@example.com",
+            "email": "test@example.com",
             "password": "password123"
-        }, format='json')
+            }, format='json')
         self.assertEqual(response.status_code, 200)
+
+
 
 # -------------------------------------------------------------------
 # 3. Pruebas de Inventario (Telas, Hilos, Uniformes)
