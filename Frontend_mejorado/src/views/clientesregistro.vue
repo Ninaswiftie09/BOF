@@ -26,7 +26,7 @@ const clientes = ref([])
 /* FUNCIÓN FETCH */
 async function fetchClientes () {
   try {
-    const data = await apiFetch('/api/clientes/')
+    const data = await apiFetch('http://localhost:8000/api/clientes/')
     clientes.value = data.map(c => ({
       ...c,
       codigo: c.codigo_cliente

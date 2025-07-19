@@ -27,7 +27,8 @@
 
 <script setup>
 defineProps({
-  title: { type: String, required: true }
+  title: { type: String, required: true },
+  profileImg: { type: String, required: false, default: '' }
 })
 
 import profileImage from '@/assets/profileImg.png'
