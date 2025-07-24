@@ -30,7 +30,7 @@ class Venta(models.Model):
     ]
 
     fecha = models.DateField()
-    cliente_id = models.IntegerField()  # Esto lo podemos mejorar después si tienes una tabla de clientes
+    cliente_id = models.IntegerField()  
     metodo_pago = models.CharField(max_length=20, choices=METODOS_PAGO)
     total = models.DecimalField(max_digits=10, decimal_places=2)
     estado = models.CharField(max_length=20, choices=ESTADOS_VENTA)
@@ -149,3 +149,4 @@ class DetalleOrden(models.Model):
     cantidad = models.PositiveIntegerField()
     precio = models.DecimalField(max_digits=10, decimal_places=2)
     descuento = models.DecimalField(max_digits=10, decimal_places=2)
+
