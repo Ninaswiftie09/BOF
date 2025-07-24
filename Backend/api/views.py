@@ -414,3 +414,21 @@ class OrdenViewSet(viewsets.ModelViewSet):
 class HistorialPedidosAPIView(ListAPIView):
     queryset = Orden.objects.all().order_by('-fecha')
     serializer_class = OrdenSerializer
+
+class VentasPorFechaAPIView(APIView):
+    def get(self, request):
+        fecha_inicio = request.query_params.get('fecha_inicio')
+        fecha_fin = request.query_params.get('fecha_fin')
+        
+        ventas = Venta.objects.filter(fecha__range=[fecha_inicio, fecha_fin])
+
+        total_ventas = ventas.aggregate(total=Sum('total'))['total'] or 0
+        numero_facturas = ventas.count()
+
+        serializer = VentaSerializer(ventas, many=True)
+
+        return Response({
+            'total_ventas': total_ventas,
+            'numero_facturas': numero_facturas,
+            'ventas': serializer.data
+        }, status=status.HTTP_200_OK)

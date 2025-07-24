@@ -5,7 +5,7 @@ from .models import Operacion, Venta
 @receiver(post_save, sender=Operacion)
 def crear_venta_desde_operacion(sender, instance, created, **kwargs):
     if created and instance.tipo == 'ingreso':
-        # Crear la venta basada en la información disponible
+        
         Venta.objects.create(
             producto='Venta desde Operación',
             cliente='Desconocido',
