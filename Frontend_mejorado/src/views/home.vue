@@ -80,6 +80,11 @@ const inventarioData = ref({
   Uniformes: 0
 })
 
+const ventasPorMes = ref({
+  Ene: 0, Feb: 0, Mar: 0, Abr: 0, May: 0, Jun: 0,
+  Jul: 0, Ago: 0, Sep: 0, Oct: 0, Nov: 0, Dic: 0
+})
+
 // Navegación
 const navItems = [
   { label: 'Clientes y Proveedores', icon: IconClientes, route: '/clientes' },
@@ -113,8 +118,34 @@ async function fetchInventarioData() {
   }
 }
 
+// 
+async function fetchVentasMensuales() {
+  try {
+    const res = await fetch('https://abriluniformes.shop/api/ventas/')
+    const data = await res.json()
+
+    // Reset
+    Object.keys(ventasPorMes.value).forEach(m => ventasPorMes.value[m] = 0)
+
+    data.forEach(v => {
+      const fecha = new Date(v.fecha)
+      const mes = fecha.toLocaleString('es-ES', { month: 'short' }) 
+      const clave = mes.charAt(0).toUpperCase() + mes.slice(1) 
+
+      if (ventasPorMes.value[clave] !== undefined) {
+        ventasPorMes.value[clave] += parseFloat(v.total)
+      }
+    })
+
+  } catch (error) {
+    console.error('Error cargando ventas:', error)
+  }
+}
+
 onMounted(async () => {
   await fetchInventarioData()
+  await fetchVentasMensuales()
+
 
   // Pie Chart: Inventario real
   const pieCtx = document.getElementById('myPieChart').getContext('2d')
@@ -142,15 +173,14 @@ onMounted(async () => {
     }
   })
 
-  // Bar Chart: Ventas por mes (simulado)
-  const barCtx = document.getElementById('bestMonthChart').getContext('2d')
+ const barCtx = document.getElementById('bestMonthChart').getContext('2d')
   new Chart(barCtx, {
     type: 'bar',
     data: {
-      labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun'],
+      labels: Object.keys(ventasPorMes.value).slice(0, 6), // Ene-Jun
       datasets: [{
         label: 'Ventas',
-        data: [120, 150, 100, 180, 200, 160],
+        data: Object.values(ventasPorMes.value).slice(0, 6),
         backgroundColor: context => context.dataIndex === 4 ? '#2AA68F' : '#84C8C0',
         borderColor: '#fff',
         borderWidth: 1
@@ -165,6 +195,7 @@ onMounted(async () => {
     }
   })
 })
+
 </script>
 
 <style scoped>
