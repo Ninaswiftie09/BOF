@@ -70,6 +70,14 @@ import IconContabilidad from '@/components/icons/IconContabilidad.vue'
 import IconInventario from '@/components/icons/IconInventario.vue'
 import IconReporteVentas from '@/components/icons/IconRVentas.vue'
 
+
+
+const inventarioData = ref({
+  Telas: 0,
+  Hilos: 0,
+  Uniformes: 0
+})
+
 // Navegación
 const navItems = [
   { label: 'Clientes y Proveedores', icon: IconClientes, route: '/clientes' },
@@ -84,23 +92,49 @@ const calendarAttrs = ref([
   { key: 'hoy', highlight: true, dates: new Date() }
 ])
 
-onMounted(() => {
-  // Pie Chart: Inventario
+//
+async function fetchInventarioData() {
+  const tipos = ['telas', 'hilos', 'uniformes']
+  for (const tipo of tipos) {
+    try {
+      const res = await fetch(`https://abriluniformes.shop/api/${tipo}/`)
+      const data = await res.json()
+      inventarioData.value[tipo.charAt(0).toUpperCase() + tipo.slice(1)] = data.reduce(
+        (total, item) => total + (item.stock || 0),
+        0
+      )
+    } catch (err) {
+      console.error(`Error cargando ${tipo}:`, err)
+    }
+  }
+}
+
+onMounted(async () => {
+  await fetchInventarioData()
+
+  // Pie Chart: Inventario real
   const pieCtx = document.getElementById('myPieChart').getContext('2d')
   new Chart(pieCtx, {
     type: 'pie',
     data: {
-      labels: ['Libro de Matemáticas', 'Cuaderno de Dibujo', 'Marcadores', 'Pinturas', 'Tijeras'],
+      labels: ['Telas', 'Hilos', 'Uniformes'],
       datasets: [{
-        data: [5, 15, 4, 10, 6],
-        backgroundColor: ['#839A2D', '#2AA68F', '#84C8C0', '#C9E8F5', '#2B5CA8'],
+        data: [
+          inventarioData.value.Telas,
+          inventarioData.value.Hilos,
+          inventarioData.value.Uniformes
+        ],
+        backgroundColor: ['#839A2D', '#2AA68F', '#2B5CA8'],
         borderColor: '#fff',
         borderWidth: 1
       }]
     },
     options: {
       maintainAspectRatio: false,
-      plugins: { legend: { position: 'top' }, title: { display: true, text: 'Inventario' } }
+      plugins: {
+        legend: { position: 'top' },
+        title: { display: true, text: 'Inventario' }
+      }
     }
   })
 
@@ -120,7 +154,9 @@ onMounted(() => {
     },
     options: {
       maintainAspectRatio: false,
-      plugins: { title: { display: true, text: 'Ventas por mes' } },
+      plugins: {
+        title: { display: true, text: 'Ventas por mes' }
+      },
       scales: { y: { beginAtZero: true } }
     }
   })
