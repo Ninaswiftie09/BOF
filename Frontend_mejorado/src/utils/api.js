@@ -21,10 +21,18 @@ export async function apiFetch(url, method = 'GET', data = null) {
       'Content-Type': 'application/json',
       'X-CSRFToken': getCookie('csrftoken'),
     },
-    body: method !== 'GET' && method !== 'DELETE' ? JSON.stringify(data) : null,
+    body: method !== 'GET' && method !== 'DELETE' ? JSON.stringify(data) : undefined,
   };
 
-  const response = await fetch(url, options);
-  return await response.json();
+  try {
+    const response = await fetch(url, options);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    return await response.json();
+  } catch (error) {
+    console.error('API fetch error:', error);
+    throw error;
+  }
 }
 
