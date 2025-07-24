@@ -31,9 +31,7 @@
           <router-link to="/forgotpass">¿Olvidaste tu contraseña?</router-link>
         </div>
 
-        <div class="create-account">
-          <p>¿No tienes cuenta? <router-link to="/register">Crear cuenta</router-link></p>
-        </div>
+        
         
       </form>
 
