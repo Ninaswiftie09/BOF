@@ -406,7 +406,7 @@ class OperacionSummaryAPIView(APIView):
         
         return Response(data, status=status.HTTP_200_OK)
     
-#   M Agregar Nueva Orden
+#   Agregar Nueva Orden
 class OrdenViewSet(viewsets.ModelViewSet):
     queryset = Orden.objects.all()
     serializer_class = OrdenSerializer

@@ -69,6 +69,8 @@ import IconFacturas from '@/components/icons/IconFacturas.vue'
 import IconContabilidad from '@/components/icons/IconContabilidad.vue'
 import IconInventario from '@/components/icons/IconInventario.vue'
 import IconReporteVentas from '@/components/icons/IconRVentas.vue'
+import IconUser from '@/components/icons/IconUser.vue' 
+
 
 
 
@@ -84,7 +86,9 @@ const navItems = [
   { label: 'Facturas', icon: IconFacturas, route: '/billpage' },
   { label: 'Contabilidad', icon: IconContabilidad, route: '/accounting' },
   { label: 'Inventario', icon: IconInventario, route: '/mi_inventario' },
-  { label: 'Reporte de ventas', icon: IconReporteVentas, route: '/ReporteVentas' }
+  { label: 'Reporte de ventas', icon: IconReporteVentas, route: '/ReporteVentas' },
+  { label: 'Gestión de Usuarios', icon: IconUser, route: '/register' }
+
 ]
 
 // Atributos para V-Calendar (resalta hoy)
