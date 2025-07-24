@@ -79,17 +79,20 @@
           </tr>
         </thead>
         <tbody>
-          <tr v-for="venta in ventas" :key="venta.id">
-            <td>{{ venta.id }}</td>
-            <td>{{ venta.producto }}</td>
-            <td>{{ venta.cliente || 'No registrado' }}</td>
-            <td>{{ venta.cantidad }}</td>
-            <td>Q{{ venta.precio_unitario }}</td>
-            <td>Q{{ venta.total }}</td>
-            <td>{{ venta.metodo_pago || 'Efectivo' }}</td>
-            <td>{{ formatearFecha(venta.fecha) }}</td>
-          </tr>
+          <template v-for="venta in ventas" :key="venta.id">
+            <tr v-for="(detalle, i) in venta.detalles" :key="`${venta.id}-${i}`">
+              <td>{{ venta.id }}</td>
+              <td>{{ detalle.producto.nombre }}</td>
+              <td>{{ venta.cliente_id || 'No registrado' }}</td>
+              <td>{{ detalle.cantidad }}</td>
+              <td>Q{{ detalle.precio_unitario }}</td>
+              <td>Q{{ detalle.subtotal }}</td>
+              <td>{{ venta.metodo_pago }}</td>
+              <td>{{ formatearFecha(venta.fecha) }}</td>
+            </tr>
+          </template>
         </tbody>
+
       </table>
       <div v-else-if="cargando" class="loading">
         <div class="spinner"></div>
