@@ -362,4 +362,8 @@ tr:hover {
   background-color: #666;
   cursor: not-allowed;
 }
+h2 {
+  color: #ffffff;
+}
+
 </style>
