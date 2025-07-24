@@ -31,7 +31,7 @@
       <div class="kpi-card principal">
         <h3>Total de Ventas</h3>
         <p class="valor">Q{{ totalVentas }}</p>
-        <p class="descripcion">Solo ventas (sin gastos ni balances)</p>
+        <p class="descripcion">Solo ventas</p>
       </div>
       <div class="kpi-card principal">
         <h3>Número de Facturas</h3>
@@ -119,8 +119,10 @@ import axios from 'axios';
 export default {
   data() {
     return {
-      fechaInicio: '',  
+      fechaInicio: '',
       fechaFin: '',
+      filtroFechaInicio: '',
+      filtroFechaFin: '',
       totalVentas: 0,
       numeroFacturas: 0,
       ventas: [],
@@ -128,10 +130,27 @@ export default {
     };
   },
   methods: {
+    formatearFecha(fecha) {
+      if (!fecha) return '';
+      return new Date(fecha).toLocaleDateString('es-GT');
+    },
+
+    filtrarDatos() {
+      this.fechaInicio = this.filtroFechaInicio;
+      this.fechaFin = this.filtroFechaFin;
+
+      if (this.fechaInicio && this.fechaFin) {
+        this.cargarVentas();
+      } else {
+        alert('Por favor, seleccioná ambas fechas.');
+      }
+    },
+
     async cargarVentas() {
       this.cargando = true;
       try {
-        const response = await axios.get('http://localhost:8000/ventas/por-fecha/', {
+        const response = await axios.get('http://localhost:8000/api/ventas/por-fecha/', {
+
           params: {
             fecha_inicio: this.fechaInicio,
             fecha_fin: this.fechaFin,
@@ -145,10 +164,21 @@ export default {
       } finally {
         this.cargando = false;
       }
+    },
+
+    resetFiltros() {
+      this.filtroFechaInicio = '';
+      this.filtroFechaFin = '';
+      this.fechaInicio = '';
+      this.fechaFin = '';
+      this.totalVentas = 0;
+      this.numeroFacturas = 0;
+      this.ventas = [];
     }
   }
 };
 </script>
+
 
 
 <style scoped>
