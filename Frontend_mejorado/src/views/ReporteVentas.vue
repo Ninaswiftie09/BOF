@@ -116,7 +116,7 @@ import axios from 'axios';
 export default {
   data() {
     return {
-      fechaInicio: '',  s
+      fechaInicio: '',  
       fechaFin: '',
       totalVentas: 0,
       numeroFacturas: 0,
