@@ -79,17 +79,20 @@
           </tr>
         </thead>
         <tbody>
-          <tr v-for="venta in ventas" :key="venta.id">
-            <td>{{ venta.id }}</td>
-            <td>{{ venta.producto }}</td>
-            <td>{{ venta.cliente || 'No registrado' }}</td>
-            <td>{{ venta.cantidad }}</td>
-            <td>Q{{ venta.precio_unitario }}</td>
-            <td>Q{{ venta.total }}</td>
-            <td>{{ venta.metodo_pago || 'Efectivo' }}</td>
-            <td>{{ formatearFecha(venta.fecha) }}</td>
-          </tr>
+          <template v-for="venta in ventas" :key="venta.id">
+            <tr v-for="(detalle, i) in venta.detalles" :key="`${venta.id}-${i}`">
+              <td>{{ venta.id }}</td>
+              <td>{{ detalle.producto.nombre }}</td>
+              <td>{{ venta.cliente_id || 'No registrado' }}</td>
+              <td>{{ detalle.cantidad }}</td>
+              <td>Q{{ detalle.precio_unitario }}</td>
+              <td>Q{{ detalle.subtotal }}</td>
+              <td>{{ venta.metodo_pago }}</td>
+              <td>{{ formatearFecha(venta.fecha) }}</td>
+            </tr>
+          </template>
         </tbody>
+
       </table>
       <div v-else-if="cargando" class="loading">
         <div class="spinner"></div>
@@ -111,75 +114,42 @@
 </template>
 
 <script>
-import { useRouter } from 'vue-router'
+import axios from 'axios';
 
 export default {
-  name: 'ReporteVentas',
-  setup() {
-    const router = useRouter()
-    const goHome = () => {
-      router.push({ name: 'home' })
-    }
-    return { goHome }
-  },
   data() {
     return {
+      fechaInicio: '',  
+      fechaFin: '',
+      totalVentas: 0,
+      numeroFacturas: 0,
       ventas: [],
-      cargando: true,
-      filtroFechaInicio: '',
-      filtroFechaFin: '',
-      paginaActual: 1,
-      totalPaginas: 1,
-      totalVentas: '0.00',
-      numeroFacturas: 0
+      cargando: false,
     };
   },
   methods: {
-    formatearFecha(fecha) {
-      return new Date(fecha).toLocaleDateString();
-    },
-    filtrarDatos() {
-      console.log('Filtrando datos:', this.filtroFechaInicio, this.filtroFechaFin);
-    },
-    resetFiltros() {
-      this.filtroFechaInicio = '';
-      this.filtroFechaFin = '';
-    },
-    cambiarPagina(pagina) {
-      this.paginaActual = pagina;
+    async cargarVentas() {
+      this.cargando = true;
+      try {
+        const response = await axios.get('http://localhost:8000/ventas/por-fecha/', {
+          params: {
+            fecha_inicio: this.fechaInicio,
+            fecha_fin: this.fechaFin,
+          },
+        });
+        this.totalVentas = response.data.total_ventas;
+        this.numeroFacturas = response.data.numero_facturas;
+        this.ventas = response.data.ventas;
+      } catch (error) {
+        console.error('Error al obtener las ventas:', error);
+      } finally {
+        this.cargando = false;
+      }
     }
-  },
-  mounted() {
-    setTimeout(() => {
-      this.ventas = [
-        {
-          id: 1,
-          producto: 'Camisa deportiva',
-          cliente: 'Juan Pérez',
-          cantidad: 2,
-          precio_unitario: 150.00,
-          total: 300.00,
-          metodo_pago: 'Efectivo',
-          fecha: '2025-04-20'
-        },
-        {
-          id: 2,
-          producto: 'Pantalón formal',
-          cliente: 'María López',
-          cantidad: 1,
-          precio_unitario: 250.00,
-          total: 250.00,
-          metodo_pago: 'Tarjeta',
-          fecha: '2025-04-21'
-        }
-      ];
-      this.totalVentas = '550.00';
-      this.numeroFacturas = 2;
-      this.cargando = false;
-    }, 1000);
   }
-}
+};
 </script>
+
 
 <style scoped>
 /* Header unificado */
