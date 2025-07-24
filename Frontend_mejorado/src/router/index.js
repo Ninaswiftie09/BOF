@@ -17,7 +17,7 @@ import LandingPage from '@/views/LandingPage.vue'
 
 
 const routes = [
-  { path: '/', redirect: '/login' },
+  { path: '/', redirect: '/LandingPage' },
   { path: '/home', name: 'home', component: Home },
   { path: '/mi_inventario', name: 'mi_inventario', component: MiInventario },
   { path: '/accounting', name: 'accounting', component: Accounting },
