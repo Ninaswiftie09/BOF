@@ -53,44 +53,49 @@ export default {
     };
   },
   methods: {
-  async handleSubmit() {
-    const loginData = {
-      email: this.email,
-      password: this.password
+    async handleSubmit() {
+      const loginData = {
+        email: this.email,
+        password: this.password
     };
 
-    try {
-      const response = await fetch('https://abriluniformes.shop/api/login/', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
+      const BASE_URL = process.env.NODE_ENV === 'development'
+        ? 'http://localhost:8000'
+        : 'https://abriluniformes.shop';
+
+      try {
+        const response = await fetch(`${BASE_URL}/api/login/`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
         },
-        body: JSON.stringify(loginData)
+          body: JSON.stringify(loginData)
       });
 
-      if (response.ok) {
-        const data = await response.json();
-        console.log("Respuesta del servidor:", data);
+        if (response.ok) {
+          const data = await response.json();
+          console.log("Respuesta del servidor:", data);
 
-        this.message = "¡Bienvenido! Inicio de sesión exitoso.";
-        this.messageType = "success";
-        
-        this.email = ''; 
-        this.password = '';
-        
-        this.$router.push('/home'); 
+          this.message = "¡Bienvenido! Inicio de sesión exitoso.";
+          this.messageType = "success";
+
+          this.email = ''; 
+          this.password = '';
+
+          this.$router.push('/home'); 
 
       } else {
-        const data = await response.json();
-        this.message = data.message || 'Credenciales incorrectas. Intenta de nuevo.';
-        this.messageType = "error";
+          const data = await response.json();
+          this.message = data.message || 'Credenciales incorrectas. Intenta de nuevo.';
+          this.messageType = "error";
       }
-    } catch (error) {
-      console.error("Error de login:", error);
-      this.message = 'Error al conectar con el servidor. Intenta nuevamente más tarde.';
-      this.messageType = "error";
+    }   catch (error) {
+        console.error("Error de login:", error);
+        this.message = 'Error al conectar con el servidor. Intenta nuevamente más tarde.';
+        this.messageType = "error";
     }
-  }
+}
+
 }
 
 };
