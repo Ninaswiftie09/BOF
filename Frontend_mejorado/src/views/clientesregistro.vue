@@ -27,10 +27,7 @@ const clientes = ref([])
 async function fetchClientes () {
   try {
     const data = await apiFetch('http://localhost:8000/api/clientes/')
-    clientes.value = data.map(c => ({
-      ...c,
-      codigo: c.codigo_cliente
-    }))
+    clientes.value = data
   } catch (error) {
     console.error('Error al obtener clientes:', error)
   }
@@ -41,17 +38,30 @@ onMounted(() => {
 })
 
 /* FUNCIÓN GUARDAR CLIENTE */
+function resetForm() {
+  Object.assign(clienteForm, {
+    estado: 'Activo',
+    nombre: '',
+    contacto: '',
+    nit: '',
+    direccion: '',
+    direccionEntrega: '',
+    telefono: '',
+    email: '',
+    cartera: 0
+  })
+}
+
 async function saveCliente () {
-  if (!clienteForm.codigo || !clienteForm.nombre) return alert('Código y nombre requeridos')
+  if (!clienteForm.nombre) return alert('El nombre es requerido')
   
-  const method = clientes.value.some(c => c.codigo === clienteForm.codigo) ? 'PUT' : 'POST'
+  const method = clienteForm.id ? 'PUT' : 'POST'
   const url = method === 'PUT'
-    ? `/api/cliente/clientes/${clienteForm.id}/`
-    : `http://localhost:8000/api/cliente/clientes/`
+    ? `http://localhost:8000/api/clientes/${clienteForm.id}/`
+    : `http://localhost:8000/api/clientes/`
 
   try {
     await apiFetch(url, method, {
-      codigo_cliente: clienteForm.codigo,
       estado: clienteForm.estado === 'Activo',
       nombre: clienteForm.nombre,
       contacto: clienteForm.contacto,
@@ -91,18 +101,20 @@ async function deleteCliente(id) {
   if (!confirm('¿Seguro que deseas eliminar este cliente?')) return
 
   try {
-    await apiFetch(`/api/cliente/clientes/${id}/`, 'DELETE')
+    await apiFetch(`http://localhost:8000/api/clientes/${id}/`, 'DELETE')
+    // Si llegamos aquí, la eliminación fue exitosa
     await fetchClientes()
   } catch (err) {
     console.error('Error al eliminar cliente:', err)
+    alert('Error al eliminar el cliente')
   }
 }
 
 /* FILTRO DE BÚSQUEDA */
 const filteredClientes = computed(() =>
   clientes.value.filter(c =>
-    [c.codigo, c.nombre, c.contacto]
-      .some(v => v?.toLowerCase().includes(search.value.toLowerCase()))
+    [c.codigo_cliente, c.nombre, c.contacto]
+      .some(v => v?.toString().toLowerCase().includes(search.value.toLowerCase()))
   )
 )
 
@@ -254,7 +266,6 @@ const porPagar = ref([])
         <template v-if="modal.type==='clientes'">
           <h3>Clientes</h3>
           <form class="modal-form grid-two" @submit.prevent="saveCliente">
-            <label>Código<input v-model="clienteForm.codigo" required/></label>
             <label>Nombre<input v-model="clienteForm.nombre" required/></label>
             <label>Contacto<input v-model="clienteForm.contacto"/></label>
             <label>NIT<input v-model="clienteForm.nit"/></label>
