@@ -1,165 +1,234 @@
 <template>
   <div class="landing-container">
-    <!-- HERO -->
-    <header class="landing-header">
-      <img src="@/assets/logo_bof_blanco.png" alt="Logo de la empresa" class="landing-logo" />
-      <h1 class="landing-title">Uniformes</h1>
-      <p class="landing-subtitle">Que hablan bien de ti</p>
+    <!-- Menú flotante -->
+    <nav class="menu-lateral">
+      <a href="#mision">Misión</a>
+      <a href="#productos">Productos</a>
+      <a href="#contacto">Contacto</a>
+    </nav>
 
-      <!-- Botón de acceso como ícono SVG  -->
-      <router-link to="/login" class="access-icon-btn" title="Acceder al sistema">
-        <svg height="21" viewBox="0 0 21 21" width="21" xmlns="http://www.w3.org/2000/svg">
-          <g fill="none" fill-rule="evenodd" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" transform="translate(3 3)">
-            <path d="m6.5 10.5 3-3-3-3"/>
-            <path d="m5 3v9" transform="matrix(0 1 -1 0 12.5 2.5)"/>
-            <path d="m1.5 5.5v-3.0079176c0-1.10147263.89060277-1.99561512 1.99206673-1.99998427l7.95228497-.03160773c1.1045608-.00432011 2.0035361.8875515 2.0079175 1.99211231l.0398162 10.02918369c.0043323 1.1045608-.8875404 2.003535-1.9921012 2.0079309-.0026436 0-.0052873 0-.0079309 0h-7.9920533c-1.1045695 0-2-.8954305-2-2v-2.9897173"/>
-          </g>
-        </svg>
-      </router-link>
+    <!-- Título principal -->
+    <header class="titulo-principal">
+      <h1>Abril Uniformes</h1>
+      <p>Soluciones textiles personalizadas para tu empresa</p>
     </header>
 
-    <!-- QUIÉNES SOMOS -->
-    <section class="landing-section">
-      <h2>¿Quiénes somos?</h2>
-      <p>
-        En Abril Uniformes y Bordados nos especializamos en la confección de uniformes médicos, escolares e institucionales,
-        así como en bordados personalizados de alta calidad. Combinamos diseño, funcionalidad y confort para ofrecer soluciones textiles únicas
-        que reflejan la identidad y profesionalismo de nuestros clientes. Con un compromiso firme con la puntualidad, la cercanía y la excelencia,
-        aspiramos a ser una empresa reconocida a nivel regional y nacional por la confiabilidad y estilo de nuestros productos.
-      </p>
-    </section>
-
-    <!-- MISIÓN -->
-    <section class="landing-section">
+    <!-- Misión y Visión -->
+    <section id="mision" class="landing-section">
       <h2>Misión</h2>
       <p>
-        Ofrecer bordados personalizados y confección de uniformes médicos e institucionales de alta calidad, combinando diseño,
-        funcionalidad y confort. Nos comprometemos a brindar soluciones únicas que reflejen la identidad de nuestros clientes y fortalezcan su imagen,
-        con un servicio cercano, profesional y puntual.
+        Nuestra misión es brindar soluciones textiles personalizadas y de calidad para empresas,
+        instituciones y emprendedores, destacando por nuestro compromiso con la innovación,
+        el servicio y la satisfacción del cliente.
       </p>
-    </section>
-
-    <!-- VISIÓN -->
-    <section class="landing-section">
       <h2>Visión</h2>
       <p>
-        Ser una empresa reconocida en bordados profesionales y confección de uniformes en nuestra región y a nivel nacional,
-        reconocida por la calidad, el diseño y la confiabilidad de nuestros productos. Aspiramos a vestir e inspirar a profesionales e instituciones
-        con prendas que transmitan identidad, profesionalismo y estilo.
+        Ser reconocidos como líderes en el sector de la confección y productos promocionales,
+        expandiendo nuestra presencia a nivel nacional y consolidando relaciones duraderas
+        con nuestros clientes.
       </p>
     </section>
 
-    <!-- PRODUCTOS -->
-    <section class="landing-products">
-      <h2>Algunos de nuestros productos</h2>
-      <div class="product-gallery">
-        <!-- ✅ imagenes de los productos falta agregarlos -->
-        <!-- <img src="@/assets/uniforme1.jpg" alt="Producto 1" /> -->
-        <!-- <img src="@/assets/uniforme2.jpg" alt="Producto 2" /> -->
-        <!-- <img src="@/assets/uniforme3.jpg" alt="Producto 3" /> -->
+    <!-- Productos que ofrecemos -->
+    <section id="productos" class="landing-section productos">
+      <h2>Productos que ofrecemos</h2>
+      <div class="productos-grid">
+        <div v-for="producto in productos" :key="producto.nombre" class="producto-card">
+          <img :src="producto.imagen" :alt="producto.nombre" />
+          <p>{{ producto.nombre }}</p>
+        </div>
       </div>
     </section>
 
-    <!-- FOOTER -->
-    <footer class="landing-footer">
-      <p>&copy; 2025 Abril Uniformes y Bordados. Todos los derechos reservados.</p>
-    </footer>
+    <!-- Contacto redes -->
+    <section id="contacto" class="landing-section">
+      <h2>Contáctanos</h2>
+      <div class="redes redes-iconos">
+        <a href="https://facebook.com" target="_blank" aria-label="Facebook">
+          <IconFc />
+        </a>
+        <a href="https://instagram.com" target="_blank" aria-label="Instagram">
+          <IconIg />
+        </a>
+        <a href="https://wa.me/1234567890" target="_blank" aria-label="WhatsApp">
+          <IconWs />
+        </a>
+      </div>
+    </section>
+
+    <!-- Botón para ir al login -->
+    <div class="ingreso-login">
+      <router-link to="/login" class="btn-login">Ingresar al sistema</router-link>
+    </div>
   </div>
 </template>
 
+<script setup>
+// Íconos redes
+import IconFc from '@/components/icons/fc.vue'
+import IconIg from '@/components/icons/ig.vue'
+import IconWs from '@/components/icons/ws.vue'
+
+// Lista de productos con rutas relativas a /assets/images
+const productos = [
+  { nombre: 'Gorras Personalizadas', imagen: new URL('@/assets/images/gorra1.jpg', import.meta.url).href },
+  { nombre: 'Bordados Personalizados', imagen: new URL('@/assets/images/bordado1.jpg', import.meta.url).href },
+  { nombre: 'Uniformes Médicos', imagen: new URL('@/assets/images/model3.jpg', import.meta.url).href },
+  { nombre: 'Toallas personalizadas', imagen: new URL('@/assets/images/toalla.jpg', import.meta.url).href },
+  { nombre: 'Camisetas ', imagen: new URL('@/assets/images/ep.jpg', import.meta.url).href },
+  { nombre: 'Uniformes', imagen: new URL('@/assets/images/ep2.jpg', import.meta.url).href },
+  { nombre: '', imagen: new URL('@/assets/images/bordado2.jpg', import.meta.url).href },
+  { nombre: '', imagen: new URL('@/assets/images/model10.jpg', import.meta.url).href },
+]
+</script>
+
 <style scoped>
+html {
+  scroll-behavior: smooth;
+}
+
 .landing-container {
-  font-family: 'Kollektif', sans-serif;
-  background-color: var(--color-octonary);
-  color: var(--color-novenary);
+  font-family: 'Segoe UI', sans-serif;
+  padding-bottom: 4rem;
+  background: #f8fafc;
+  color: #1e293b;
+}
+
+/* Título principal */
+.titulo-principal {
   text-align: center;
-  padding: 2rem;
+  padding: 2rem 1rem 1rem;
+  background-color: #e2e8f0;
+  border-bottom: 2px solid #cbd5e1;
 }
 
-/* Encabezado con fondo primario */
-.landing-header {
-  background-color: var(--color-primary);
-  padding: 2rem;
-  border-radius: 8px;
-  margin-bottom: 2rem;
-  position: relative;
-}
-
-.landing-logo {
-  width: 200px;
-  margin-bottom: 1rem;
-}
-
-.landing-title {
-  font-family: 'Archivo Black', sans-serif;
-  font-size: 2rem;
+.titulo-principal h1 {
+  font-size: 2.5rem;
+  color: #1e293b;
   margin-bottom: 0.5rem;
-  color: var(--color-novenary);
 }
 
-.landing-subtitle {
+.titulo-principal p {
   font-size: 1.2rem;
-  color: var(--color-septenary);
-}
-
-/* Botón de acceso ícono SVG */
-.access-icon-btn {
-  position: absolute;
-  top: 1rem;
-  right: 1rem;
-  color: var(--color-quinary);
-  opacity: 0.6;
-  transition: opacity 0.3s ease;
-}
-
-.access-icon-btn:hover {
-  opacity: 1;
+  color: #475569;
 }
 
 /* Secciones */
 .landing-section {
-  background-color: var(--color-senary);
-  margin: 1.5rem auto;
-  padding: 1.5rem;
-  border-radius: 10px;
-  max-width: 800px;
-  text-align: left;
+  padding: 2rem;
+  max-width: 900px;
+  margin: 0 auto;
 }
 
-.landing-section h2 {
-  color: var(--color-novenary);
-  font-family: 'Archivo Black', sans-serif;
+.landing-section:nth-child(even) {
+  background: linear-gradient(to right, #f1f5f9, #e2e8f0);
 }
 
-/* Galería de productos */
-.landing-products {
-  margin-top: 2rem;
+h2 {
+  font-size: 1.8rem;
+  color: #0f172a;
+  margin-bottom: 0.5rem;
 }
 
-.product-gallery {
+p {
+  font-size: 1.1rem;
+  line-height: 1.6;
+}
+
+/* Productos */
+.productos-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+}
+
+.producto-card {
+  background: white;
+  padding: 1rem;
+  border-radius: 12px;
+  text-align: center;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  cursor: pointer;
+}
+
+.producto-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+.producto-card img {
+  width: 100%;
+  height: 140px;
+  object-fit: cover;
+  border-radius: 8px;
+  margin-bottom: 0.5rem;
+}
+
+/* Redes sociales */
+.redes {
   display: flex;
   justify-content: center;
-  gap: 1rem;
-  flex-wrap: wrap;
+  gap: 2rem;
   margin-top: 1rem;
 }
 
-.product-gallery img {
-  width: 200px;
-  height: auto;
+.redes-iconos a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #1e293b;
+  padding: 0.5rem;
+  border-radius: 50%;
+  width: 48px;
+  height: 48px;
+  transition: background 0.3s ease;
+}
+
+.redes-iconos a:hover {
+  background: #2563eb;
+}
+
+.redes-iconos svg {
+  fill: white;
+  width: 24px;
+  height: 24px;
+}
+
+/* Botón login */
+.ingreso-login {
+  text-align: center;
+  margin-top: 2rem;
+}
+
+.btn-login {
+  background: #1e293b;
+  color: white;
+  padding: 0.75rem 2rem;
   border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(255, 255, 255, 0.1);
-  transition: transform 0.3s ease;
+  font-weight: bold;
+  text-decoration: none;
 }
 
-.product-gallery img:hover {
-  transform: scale(1.05);
+/* Menú lateral fijo */
+.menu-lateral {
+  position: fixed;
+  top: 40%;
+  right: 0;
+  background-color: #1e293b;
+  padding: 0.5rem 1rem;
+  border-radius: 8px 0 0 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  z-index: 100;
 }
 
-/* Footer */
-.landing-footer {
-  margin-top: 3rem;
+.menu-lateral a {
+  color: #ffffff;
+  text-decoration: none;
+  font-weight: bold;
   font-size: 0.9rem;
-  color: var(--color-septenary);
 }
 </style>

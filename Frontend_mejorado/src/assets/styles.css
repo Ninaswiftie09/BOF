@@ -11,6 +11,17 @@
     --color-novenary: #ffffff;
     --colo-texto-negro: #000000;
     --colo-texto-blanco: #ffffff;
+    /* colores que agrego*/ 
+    :root {
+  --color-primary: #1e293b;
+  --color-secondary: #f8fafc;
+  --color-novenary: #ffffff;
+  --color-septenary: #cbd5e1;
+  --color-senary: #334155;
+  --color-quinary: #94a3b8;
+  --color-octonary: #0f172a;
+}
+
 
   }
   
