@@ -79,32 +79,38 @@
           first_name: this.firstName,
           last_name: this.lastName,
           email: this.email,
-          password: this.password,  
+          password: this.password,
           role: this.position === "admin" ? "Administrador" : "Empleado"
         };
-  
+        
+        const BASE_URL = process.env.NODE_ENV === 'development'
+        ? 'http://localhost:8000'
+        : 'https://abriluniformes.shop';
+        
         try {
-          const response = await fetch('https://abriluniformes.shop/api/register/', {
+          const response = await fetch(`${BASE_URL}/api/register/`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
             },
             body: JSON.stringify(registerData)
           });
-  
+
           const result = await response.json();
-  
+
+
           if (response.ok) {
-            alert('Usuario creado exitosamente');
-            this.$router.push('/login')
-          } else {
-            alert(result.message || 'Error al crear usuario');
-          }
-        } catch (error) {
-          console.error("Error al registrar usuario:", error);
-          alert('Hubo un problema al enviar la solicitud');
+          alert('Usuario creado exitosamente');
+          this.$router.push('/login');
+        } else {
+          alert(result.message || 'Error al crear usuario');
         }
-      }
+      } catch (error) {
+        console.error("Error al registrar usuario:", error);
+        alert('Hubo un problema al enviar la solicitud');
+  }
+}
+
     }
   };
   </script>
