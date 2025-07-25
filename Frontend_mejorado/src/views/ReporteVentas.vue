@@ -12,6 +12,8 @@
       <button class="avatar-btn"></button>
     </header>
 
+  <main class="main-content">
+
     <!-- FILTROS -->
     <div class="filtros-container">
       <div class="filtro">
@@ -113,6 +115,8 @@
         </button>
       </div>
     </div>
+  
+  </main>
   </div>
 </template>
 
@@ -140,6 +144,10 @@ export default {
     formatearFecha(fecha) {
       if (!fecha) return '';
       return new Date(fecha).toLocaleDateString('es-GT');
+    },
+
+    goHome() {
+      this.$router.push({ name: 'home' });
     },
 
     filtrarDatos() {
@@ -494,5 +502,6 @@ tr:hover {
 h2 {
   color: #ffffff;
 }
+
 
 </style>

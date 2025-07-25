@@ -58,6 +58,7 @@ import profileImage from '@/assets/profileImg.png'
   font-weight:700;
   color:#ffffff;
   letter-spacing:.5px;
+  margin-right: auto;
 }
 
 /* ====== Foto de Perfil ====== */
