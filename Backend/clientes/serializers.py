@@ -39,6 +39,7 @@ class PedidoDetalleSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class PedidoSerializer(serializers.ModelSerializer):
+    cliente_nombre = serializers.CharField(source='cliente.nombre', read_only=True)
     cliente_id = serializers.PrimaryKeyRelatedField(
         queryset=Cliente.objects.all(),
         source='cliente'
@@ -48,7 +49,7 @@ class PedidoSerializer(serializers.ModelSerializer):
     class Meta:
         model = Pedido
         fields = [
-            'id', 'cliente_id', 'fecha', 'precio_total', 'detalles'
+            'id', 'cliente_id', 'cliente_nombre', 'fecha', 'precio_total', 'detalles'
         ]
 
 class CuentaPagadaSerializer(serializers.ModelSerializer):
