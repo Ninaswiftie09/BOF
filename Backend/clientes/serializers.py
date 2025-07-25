@@ -20,6 +20,7 @@ class ClienteSerializer(serializers.ModelSerializer):
         model = Cliente
         fields = [
             'id',
+            'codigo_cliente',
             'empresa_id',
             'nombre',
             'contacto',
@@ -30,6 +31,7 @@ class ClienteSerializer(serializers.ModelSerializer):
             'email',
             'estado'
         ]
+        read_only_fields = ['codigo_cliente']
 
 class PedidoDetalleSerializer(serializers.ModelSerializer):
     class Meta:
@@ -74,7 +76,7 @@ class CompraSerializer(serializers.ModelSerializer):
         queryset=Proveedor.objects.all(),
         source='proveedor'
     )
-    descripcion = serializers.CharField()  # ✅ AÑADE ESTO
+    descripcion = serializers.CharField()  
     detalles = CompraDetalleSerializer(many=True, read_only=True)
 
     class Meta:
