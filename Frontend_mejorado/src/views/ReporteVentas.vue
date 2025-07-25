@@ -44,21 +44,24 @@
     <div class="chart-container">
       <h2>Evolución de Ventas</h2>
       <div class="chart-placeholder">
-        <div class="chart-overlay">Gráfica de evolución de ventas por días, semanas o meses</div>
+        <canvas id="evolucionVentasChart"></canvas>
+        <!-- <div class="chart-overlay">Gráfica de evolución de ventas por días, semanas o meses /div> -->
       </div>
     </div>
 
     <div class="chart-container">
       <h2>Productos más vendidos</h2>
       <div class="chart-placeholder">
-        <div class="chart-overlay">Top 5 o 10 productos más vendidos</div>
+        <!-- <div class="chart-overlay">Top 5 o 10 productos más vendidos</div> -->
+        <canvas id="productosMasVendidosChart"></canvas>
       </div>
     </div>
 
     <div class="chart-container">
       <h2>Métodos de pago utilizados</h2>
       <div class="chart-placeholder shorter">
-        <div class="chart-overlay">Distribución de pagos (efectivo, tarjeta, transferencia)</div>
+        <!--  <div class="chart-overlay">Distribución de pagos (efectivo, tarjeta, transferencia)</div> -->
+        <canvas id="metodosPagoChart"></canvas>
       </div>
     </div>
 
