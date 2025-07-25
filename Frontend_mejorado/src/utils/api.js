@@ -29,6 +29,10 @@ export async function apiFetch(url, method = 'GET', data = null) {
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
+    // Para métodos DELETE o respuestas sin contenido (204)
+    if (method === 'DELETE' || response.status === 204) {
+      return null;
+    }
     return await response.json();
   } catch (error) {
     console.error('API fetch error:', error);
