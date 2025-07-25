@@ -69,10 +69,7 @@ import IconFacturas from '@/components/icons/IconFacturas.vue'
 import IconContabilidad from '@/components/icons/IconContabilidad.vue'
 import IconInventario from '@/components/icons/IconInventario.vue'
 import IconReporteVentas from '@/components/icons/IconRVentas.vue'
-import IconUser from '@/components/icons/IconUser.vue' 
-
-
-
+import IconUser from '@/components/icons/IconUser.vue'
 
 const inventarioData = ref({
   Telas: 0,
@@ -93,15 +90,14 @@ const navItems = [
   { label: 'Inventario', icon: IconInventario, route: '/mi_inventario' },
   { label: 'Reporte de ventas', icon: IconReporteVentas, route: '/ReporteVentas' },
   { label: 'Gestión de Usuarios', icon: IconUser, route: '/register' }
-
 ]
 
-// Atributos para V-Calendar (resalta hoy)
+// Calendario
 const calendarAttrs = ref([
   { key: 'hoy', highlight: true, dates: new Date() }
 ])
 
-//
+// API llamadas
 async function fetchInventarioData() {
   const tipos = ['telas', 'hilos', 'uniformes']
   for (const tipo of tipos) {
@@ -118,19 +114,17 @@ async function fetchInventarioData() {
   }
 }
 
-// 
 async function fetchVentasMensuales() {
   try {
     const res = await fetch('https://abriluniformes.shop/api/ventas/')
     const data = await res.json()
 
-    // Reset
     Object.keys(ventasPorMes.value).forEach(m => ventasPorMes.value[m] = 0)
 
     data.forEach(v => {
       const fecha = new Date(v.fecha)
-      const mes = fecha.toLocaleString('es-ES', { month: 'short' }) 
-      const clave = mes.charAt(0).toUpperCase() + mes.slice(1) 
+      const mes = fecha.toLocaleString('es-ES', { month: 'short' })
+      const clave = mes.charAt(0).toUpperCase() + mes.slice(1)
 
       if (ventasPorMes.value[clave] !== undefined) {
         ventasPorMes.value[clave] += parseFloat(v.total)
@@ -146,8 +140,6 @@ onMounted(async () => {
   await fetchInventarioData()
   await fetchVentasMensuales()
 
-
-  // Pie Chart: Inventario real
   const pieCtx = document.getElementById('myPieChart').getContext('2d')
   new Chart(pieCtx, {
     type: 'pie',
@@ -173,11 +165,11 @@ onMounted(async () => {
     }
   })
 
- const barCtx = document.getElementById('bestMonthChart').getContext('2d')
+  const barCtx = document.getElementById('bestMonthChart').getContext('2d')
   new Chart(barCtx, {
     type: 'bar',
     data: {
-      labels: Object.keys(ventasPorMes.value).slice(0, 6), // Ene-Jun
+      labels: Object.keys(ventasPorMes.value).slice(0, 6),
       datasets: [{
         label: 'Ventas',
         data: Object.values(ventasPorMes.value).slice(0, 6),
@@ -195,7 +187,6 @@ onMounted(async () => {
     }
   })
 })
-
 </script>
 
 <style scoped>
@@ -217,35 +208,143 @@ onMounted(async () => {
   gap: 2rem;
 }
 
-.logo { width: 250px; height: 150px; margin-bottom: 1rem; }
+/* LOGO ajustado + animación hover */
+.logo {
+  width: 180px;
+  height: auto;
+  margin-bottom: 1rem;
+  transition: transform 0.3s ease-in-out;
+}
 
-.nav-links { width: 100%; display: flex; flex-direction: column; gap: 1rem; }
-.nav-item { display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem; border-radius: 8px;
-            cursor: pointer; transition: background 0.2s; color: white; text-decoration: none; }
-.nav-item:hover, .router-link-exact-active { background-color: #334155; }
-.icon-circle { width: 36px; height: 36px; border-radius: 50%; background-color: #64748b;
-               display: flex; align-items: center; justify-content: center; }
+.logo:hover {
+  transform: scale(1.05);
+}
 
-.main-area { flex: 1; display: flex; flex-direction: column; }
-.topbar { background-color: #1e293b; padding: 1rem; display: flex;
-         justify-content: space-between; align-items: center; }
-.view-name { font-size: 1.25rem; font-weight: bold; }
-.user-circle { width: 36px; height: 36px; background-color: white; border-radius: 50%; }
+.nav-links {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
 
-.content { display: flex; flex: 1; padding: 1rem; gap: 1rem; overflow: hidden; }
-.chart-area { flex: 2; background-color: #1e293b; border-radius: 16px;
-              display: flex; align-items: center; justify-content: center; }
-.chart-area canvas { width: 100% !important; height: 100% !important; }
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.6rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.3s, transform 0.3s;
+  color: white;
+  text-decoration: none;
+}
 
-.side-panels { flex: 1; display: flex; flex-direction: column; gap: 1rem; overflow: hidden; }
-.panel { background-color: #334155; border-radius: 12px; padding: 1rem;
-         display: flex; align-items: center; justify-content: center; position: relative; }
+.nav-item:hover {
+  background-color: #334155;
+  transform: translateX(4px);
+}
 
-/* Ajuste general para canvases en paneles */
-.panel canvas { width: 100% !important; height: 100% !important; }
+.router-link-exact-active {
+  background-color: #334155;
+}
 
-/* Estilos de KPI simple */
-.kpi { text-align: center; }
-.kpi .value { font-size: 2rem; margin: 0.5rem 0; color: #2AA68F; }
-.kpi small { color: #cbd5e1; }
+.icon-circle {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background-color: #64748b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.3s ease;
+}
+
+.nav-item:hover .icon-circle {
+  transform: scale(1.15);
+}
+
+.main-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.topbar {
+  background-color: #1e293b;
+  padding: 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.view-name {
+  font-size: 1.25rem;
+  font-weight: bold;
+}
+
+.user-circle {
+  width: 36px;
+  height: 36px;
+  background-color: white;
+  border-radius: 50%;
+}
+
+.content {
+  display: flex;
+  flex: 1;
+  padding: 1rem;
+  gap: 1rem;
+  overflow: hidden;
+}
+
+.chart-area {
+  flex: 2;
+  background-color: #1e293b;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.chart-area canvas {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.side-panels {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  overflow: hidden;
+}
+
+.panel {
+  background-color: #334155;
+  border-radius: 12px;
+  padding: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.panel canvas {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.kpi {
+  text-align: center;
+}
+
+.kpi .value {
+  font-size: 2rem;
+  margin: 0.5rem 0;
+  color: #2AA68F;
+}
+
+.kpi small {
+  color: #cbd5e1;
+}
 </style>
