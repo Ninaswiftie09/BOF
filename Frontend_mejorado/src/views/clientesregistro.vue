@@ -136,23 +136,24 @@ async function saveOrder () {
   }
 
   try {
+    // Encontrar el ID del cliente seleccionado
+    const clienteSeleccionado = clientes.value.find(c => c.nombre === orderHeader.cliente)
+    if (!clienteSeleccionado) {
+      throw new Error('Cliente no encontrado')
+    }
+
     const payload = {
-      cliente: orderHeader.cliente,
+      cliente_id: clienteSeleccionado.id,
       fecha: orderHeader.fecha,
-      total: grandTotal.value,
+      precio_total: grandTotal.value,
       detalles: orderLines.value.map(l => ({
-        producto: l.producto,
-        talla: l.talla,
-        color: l.color,
-        tela: l.tela,
-        bordado: l.bordado,
+        descripcion_producto: `${l.producto} - Talla: ${l.talla}, Color: ${l.color}, Tela: ${l.tela}, Bordado: ${l.bordado}`,
         cantidad: l.cantidad,
-        precio: l.precio,
-        descuento: l.descuento,
+        precio_unitario: l.precio
       }))
     }
 
-    await apiFetch('/http://localhost:8000/api/ordenes/', 'POST', payload)
+    await apiFetch('http://localhost:8000/api/cliente/pedidos/', 'POST', payload)
 
     // Limpiar el formulario
     orderHeader.cliente = ''
