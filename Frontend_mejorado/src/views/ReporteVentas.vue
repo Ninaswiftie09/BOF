@@ -118,6 +118,7 @@
 
 <script>
 import axios from 'axios';
+import Chart from 'chart.js/auto';
 
 export default {
   data() {
@@ -130,6 +131,9 @@ export default {
       numeroFacturas: 0,
       ventas: [],
       cargando: false,
+      evolucionChartInstance: null,
+      productosChartInstance: null,
+      metodosPagoChartInstance: null,
     };
   },
   methods: {
@@ -144,6 +148,9 @@ export default {
 
       if (this.fechaInicio && this.fechaFin) {
         this.cargarVentas();
+        this.cargarEvolucionVentas();
+        this.cargarProductosMasVendidos();
+        this.cargarMetodosPago();
       } else {
         alert('Por favor, seleccioná ambas fechas.');
       }
@@ -177,6 +184,9 @@ export default {
       this.totalVentas = 0;
       this.numeroFacturas = 0;
       this.ventas = [];
+      if (this.evolucionChartInstance) this.evolucionChartInstance.destroy();
+      if (this.productosChartInstance) this.productosChartInstance.destroy();
+      if (this.metodosPagoChartInstance) this.metodosPagoChartInstance.destroy();
     }
   }
 };
