@@ -99,7 +99,7 @@ const productos = [
   { nombre: 'Gorros Quirúrgicos', imagen: new URL('@/assets/images/gorro.jpg', import.meta.url).href },
   { nombre: 'Uniformes Empresariales', imagen: new URL('@/assets/images/ep2.jpg', import.meta.url).href },
   { nombre: 'Bordados Personalizados', imagen: new URL('@/assets/images/bordado1.jpg', import.meta.url).href },
-  { nombre: 'Toallas Perzonalizadas', imagen: new URL('@/assets/images/toalla.jpg', import.meta.url).href },
+  { nombre: 'Toallas Personalizadas', imagen: new URL('@/assets/images/toalla.jpg', import.meta.url).href },
   { nombre: 'Uniformes ', imagen: new URL('@/assets/images/uniformes1.jpg', import.meta.url).href },
   
 ]
