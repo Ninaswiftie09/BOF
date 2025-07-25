@@ -46,22 +46,23 @@ async function fetchProveedores() {
 async function saveProveedor() {
   if (!proveedorForm.nombre) return alert('El nombre es obligatorio')
 
+  const proveedorData = {
+    nombre:   proveedorForm.nombre,
+    correo:   proveedorForm.correo,
+    telefono: proveedorForm.telefono,
+    direccion:proveedorForm.direccion,
+    nit:      proveedorForm.nit
+  }
   console.log('🚀 Enviando (payload limpio):', proveedorData)
 
-
-
   try {
-    const proveedorData = {
-      nombre: proveedorForm.nombre,
-      correo: proveedorForm.correo,
-      telefono: proveedorForm.telefono,
-      direccion: proveedorForm.direccion,
-      nit: proveedorForm.nit
-    }
-  await axios.post(`${API}/proveedores/`, proveedorData)
+    await axios.post(`${API}/proveedores/`, proveedorData)
 
     close()
-    Object.assign(proveedorForm, { nombre: '', correo: '', telefono: '', direccion: '', nit: '' })
+    // Reseteamos el formulario
+    Object.assign(proveedorForm, {
+      nombre: '', correo: '', telefono: '', direccion: '', nit: ''
+    })
     await fetchProveedores()
   } catch (e) {
     console.error('🔴 Error guardando proveedor:', e.response?.data || e)
