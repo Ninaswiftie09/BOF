@@ -176,6 +176,122 @@ export default {
       }
     },
 
+    // Nuevos métodos para las gráficas
+
+async cargarEvolucionVentas() {
+  try {
+    const res = await axios.get('/api/ventas/evolucion/', {
+      params: { fecha_inicio: this.fechaInicio, fecha_fin: this.fechaFin },
+    });
+    this.renderEvolucionChart(res.data);
+  } catch (error) {
+    console.error('Error al cargar evolución de ventas:', error);
+  }
+},
+
+async cargarProductosMasVendidos() {
+  try {
+    // El endpint no necesita fechas
+    const res = await axios.get('/api/ventas/productos-mas-vendidos/');
+    this.renderProductosChart(res.data);
+  } catch (error) {
+    console.error('Error al cargar productos más vendidos:', error);
+  }
+},
+
+async cargarMetodosPago() {
+  try {
+    // Este endpoint no necesita fechas
+    const res = await axios.get('/api/ventas/metodos-pago/');
+    this.renderMetodosPagoChart(res.data);
+  } catch (error) {
+    console.error('Error al cargar métodos de pago:', error);
+  }
+},
+
+// Métodos para renderizar gráficas
+renderEvolucionChart(data) {
+  if (this.evolucionChartInstance) {
+    this.evolucionChartInstance.destroy();
+  }
+  const ctx = document.getElementById('evolucionVentasChart').getContext('2d');
+  this.evolucionChartInstance = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: data.map(item => this.formatearFecha(item.dia)),
+      datasets: [{
+        label: 'Total de Ventas por Día',
+        data: data.map(item => item.total),
+        borderColor: '#2AA68F',
+        backgroundColor: 'rgba(42, 166, 143, 0.2)',
+        tension: 0.1,
+        fill: true,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        y: { ticks: { color: '#FFF' } },
+        x: { ticks: { color: '#FFF' } }
+      },
+      plugins: { legend: { labels: { color: '#FFF' } } }
+    }
+  });
+},
+
+renderProductosChart(data) {
+  if (this.productosChartInstance) {
+    this.productosChartInstance.destroy();
+  }
+  const ctx = document.getElementById('productosMasVendidosChart').getContext('2d');
+  this.productosChartInstance = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: data.map(item => item.producto__nombre),
+      datasets: [{
+        label: 'Cantidad Vendida',
+        data: data.map(item => item.total_vendido),
+        backgroundColor: ['#2B5CA8', '#374666', '#83A4CC', '#C9E8F5', '#84C8C0'],
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      indexAxis: 'y', // Hace la gráfica de barras en horizontal, es por estética y comprensión
+      scales: {
+        y: { ticks: { color: '#FFF' } },
+        x: { ticks: { color: '#FFF' } }
+      },
+      plugins: { legend: { labels: { color: '#FFF' } } }
+    }
+  });
+},
+
+renderMetodosPagoChart(data) {
+  if (this.metodosPagoChartInstance) {
+    this.metodosPagoChartInstance.destroy();
+  }
+  const ctx = document.getElementById('metodosPagoChart').getContext('2d');
+  this.metodosPagoChartInstance = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: data.map(item => item.metodo_pago),
+      datasets: [{
+        data: data.map(item => item.cantidad),
+        backgroundColor: ['#839A2D', '#2AA68F', '#2B5CA8', '#C9E8F5'],
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { labels: { color: '#FFF' } } }
+    }
+  });
+},
+//
+
+
     resetFiltros() {
       this.filtroFechaInicio = '';
       this.filtroFechaFin = '';
