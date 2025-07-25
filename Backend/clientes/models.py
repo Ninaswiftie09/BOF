@@ -10,6 +10,7 @@ class Empresa(models.Model):
 
 # Tabla de Clientes
 class Cliente(models.Model):
+    codigo_cliente = models.CharField(max_length=50, unique=True, editable=False, null=True, blank=True)
     empresa = models.ForeignKey(Empresa, on_delete=models.SET_NULL, null=True, blank=True)
     nombre = models.CharField(max_length=255)
     contacto = models.CharField(max_length=255, null=True, blank=True)  
@@ -19,6 +20,13 @@ class Cliente(models.Model):
     telefono = models.CharField(max_length=50, blank=True)
     email = models.EmailField(blank=True)
     estado = models.BooleanField(default=True)
+
+    def save(self, *args, **kwargs):
+        if not self.codigo_cliente:
+            last_id = Cliente.objects.order_by('-id').first()
+            next_id = 1 if not last_id else last_id.id + 1
+            self.codigo_cliente = f'CLI{next_id:04d}'
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.nombre
