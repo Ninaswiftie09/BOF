@@ -1,4 +1,3 @@
-
 <template>
   <div class="inventory-container">
     <!-- Encabezado modernizado -->
@@ -157,7 +156,9 @@
   </div>
 </template>
 
+
 <script>
+import { BASE_URL } from '@/config';
 import { useRouter } from 'vue-router';
 
 export default {
@@ -223,7 +224,7 @@ export default {
     async submitFormulario() {
       try {
         const tipo = this.tipoFormulario.slice(0, -1).toLowerCase();
-        const urlBase = 'https://abriluniformes.shop/api/';
+        const urlBase = `${BASE_URL}/api/`;
         let url = '';
         let method = '';
 
@@ -285,7 +286,7 @@ export default {
     },
     async obtenerInventario(tipo, endpoint) {
       try {
-        const res = await fetch(`https://abriluniformes.shop/api/${tipo.toLowerCase()}/`);
+        const res = await fetch(`${BASE_URL}/api/${tipo.toLowerCase()}/`);
         const data = await res.json();
         this.inventarios[tipo] = data.map(item =>
           tipo === "Uniformes" ? { ...item, material_nombre: item.material_nombre || "N/A" } : item
