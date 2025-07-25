@@ -170,7 +170,7 @@ async function saveOrder () {
 /* CARGAR HISTORIAL */
 async function fetchPedidos() {
   try {
-    const res = await apiFetch('/api/ordenes/historial/')
+    const res = await apiFetch('http://localhost:8000/api/cliente/pedidos/')
     pedidos.value = res
   } catch (e) {
     console.error('Error al cargar historial de pedidos:', e)
@@ -294,7 +294,11 @@ const porPagar = ref([])
               <tbody>
                 <template v-if="modal.type==='historial'">
                   <tr v-for="p in pedidos" :key="p.id">
-                    <td>{{p.id}}</td><td>{{p.cliente}}</td><td>{{p.monto}}</td><td>{{p.fecha}}</td><td>{{p.estado}}</td>
+                    <td>{{p.id}}</td>
+                    <td>{{p.cliente_nombre}}</td>
+                    <td>{{p.precio_total}}</td>
+                    <td>{{new Date(p.fecha).toLocaleDateString()}}</td>
+                    <td>{{p.estado || 'Pendiente'}}</td>
                   </tr>
                 </template>
                 <template v-else-if="modal.type==='pagadas'">
