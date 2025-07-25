@@ -15,7 +15,9 @@ const proveedores = ref([])
 
 const searchQuery = ref('')
 
-const proveedorForm = reactive({ nombre: '', email: '', telefono: '', direccion: '', nit: ''})
+const proveedorForm = reactive({ nombre: '', correo: '', telefono: '', direccion: '', nit: ''})
+delete proveedorForm.email
+
 
 const filteredProveedores = computed(() =>
   proveedores.value.filter(p =>
@@ -46,11 +48,12 @@ async function saveProveedor() {
   if (!proveedorForm.nombre) return alert('El nombre es obligatorio')
 
   console.log('🟢 Enviando proveedor:', proveedorForm)
+  
 
   try {
     await axios.post(`${API}/proveedores/`, proveedorForm)
     close()
-    Object.keys(proveedorForm).forEach(k => (proveedorForm[k] = ''))
+    Object.assign(proveedorForm, { nombre: '', correo: '', telefono: '', direccion: '', nit: '' })
     await fetchProveedores()
   } catch (e) {
     console.error('🔴 Error guardando proveedor:', e.response?.data || e)
@@ -93,7 +96,7 @@ onMounted(() => {
           <tbody>
             <tr v-for="prov in filteredProveedores" :key="prov.id">
               <td>{{ prov.nombre }}</td>
-              <td>{{ prov.email }}</td>
+              <td>{{ prov.correo }}</td>
               <td>{{ prov.telefono }}</td>
               <td>{{ prov.direccion }}</td>
             </tr>
@@ -128,7 +131,7 @@ onMounted(() => {
         <h3>Nuevo Proveedor</h3>
         <form class="modal-form grid-two" @submit.prevent="saveProveedor">
           <label>Nombre<input v-model="proveedorForm.nombre" required /></label>
-          <label>Correo<input v-model="proveedorForm.email" type="email" /></label>
+          <label>Correo<input v-model="proveedorForm.correo" type="email" /></label>
           <label>Teléfono<input v-model="proveedorForm.telefono" /></label>
           <label>Dirección<input v-model="proveedorForm.direccion" /></label>
           <label>NIT<input v-model="proveedorForm.nit" required /></label>
