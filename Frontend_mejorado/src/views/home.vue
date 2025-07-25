@@ -63,6 +63,7 @@
 <script setup>
 import { onMounted, ref } from 'vue'
 import Chart from 'chart.js/auto'
+import { bus } from '@/event-bus'
 
 import IconClientes from '@/components/icons/IconClientes.vue'
 import IconFacturas from '@/components/icons/IconFacturas.vue'
@@ -77,12 +78,11 @@ const inventarioData = ref({
   Uniformes: 0
 })
 
-const ventasPorMes = ref({
+ventasPorMes: ref({
   Ene: 0, Feb: 0, Mar: 0, Abr: 0, May: 0, Jun: 0,
   Jul: 0, Ago: 0, Sep: 0, Oct: 0, Nov: 0, Dic: 0
 })
 
-// Navegación
 const navItems = [
   { label: 'Clientes y Proveedores', icon: IconClientes, route: '/clientes' },
   { label: 'Facturas', icon: IconFacturas, route: '/billpage' },
@@ -92,12 +92,14 @@ const navItems = [
   { label: 'Gestión de Usuarios', icon: IconUser, route: '/register' }
 ]
 
-// Calendario
 const calendarAttrs = ref([
   { key: 'hoy', highlight: true, dates: new Date() }
 ])
 
-// API llamadas
+// ----------------------------
+// Gráfico de pastel reactivo
+let pieChart = null
+
 async function fetchInventarioData() {
   const tipos = ['telas', 'hilos', 'uniformes']
   for (const tipo of tipos) {
@@ -116,32 +118,35 @@ async function fetchInventarioData() {
 
 async function fetchVentasMensuales() {
   try {
-    const res = await fetch('https://abriluniformes.shop/api/ventas/')
+    const res = await fetch('http://localhost:8000/api/ventas/evolucion/')
     const data = await res.json()
 
+    // Reiniciamos a 0
     Object.keys(ventasPorMes.value).forEach(m => ventasPorMes.value[m] = 0)
 
     data.forEach(v => {
-      const fecha = new Date(v.fecha)
-      const mes = fecha.toLocaleString('es-ES', { month: 'short' })
-      const clave = mes.charAt(0).toUpperCase() + mes.slice(1)
+      const fecha = new Date(v.dia)
+      const mes = fecha.toLocaleString('es-ES', { month: 'short' }) // ej: "jul"
+      const clave = mes.charAt(0).toUpperCase() + mes.slice(1) // ej: "Jul"
 
       if (ventasPorMes.value[clave] !== undefined) {
         ventasPorMes.value[clave] += parseFloat(v.total)
       }
     })
-
   } catch (error) {
-    console.error('Error cargando ventas:', error)
+    console.error('Error al cargar ventas reales:', error)
   }
 }
 
-onMounted(async () => {
-  await fetchInventarioData()
-  await fetchVentasMensuales()
+// ----------------------------
+// Inicializar y actualizar gráficos
 
+function renderPieChart() {
   const pieCtx = document.getElementById('myPieChart').getContext('2d')
-  new Chart(pieCtx, {
+
+  if (pieChart) pieChart.destroy()
+
+  pieChart = new Chart(pieCtx, {
     type: 'pie',
     data: {
       labels: ['Telas', 'Hilos', 'Uniformes'],
@@ -164,7 +169,9 @@ onMounted(async () => {
       }
     }
   })
+}
 
+function renderBarChart() {
   const barCtx = document.getElementById('bestMonthChart').getContext('2d')
   new Chart(barCtx, {
     type: 'bar',
@@ -186,6 +193,28 @@ onMounted(async () => {
       scales: { y: { beginAtZero: true } }
     }
   })
+}
+
+// ----------------------------
+// Ejecutar al montar y escuchar eventos
+
+onMounted(async () => {
+  await fetchInventarioData()
+  await fetchVentasMensuales()
+  renderPieChart()
+  renderBarChart()
+})
+
+bus.on('inventario-actualizado', async () => {
+  await fetchInventarioData()
+  if (pieChart) {
+    pieChart.data.datasets[0].data = [
+      inventarioData.value.Telas,
+      inventarioData.value.Hilos,
+      inventarioData.value.Uniformes
+    ]
+    pieChart.update()
+  }
 })
 </script>
 

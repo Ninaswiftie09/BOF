@@ -46,6 +46,9 @@ const go = path => router.push(path)
   border:2px solid rgba(255,255,255,.15);
   border-radius:18px;cursor:pointer;
   backdrop-filter:blur(4px);
+
+  height: 60px;
+
   box-shadow:0 4px 20px rgba(0,0,0,.25);
   display:flex;justify-content:center;align-items:center;
   transition:background .2s , transform .2s;

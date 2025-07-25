@@ -275,9 +275,11 @@ export default {
           return alert('Error: ' + (err.error || 'Desconocido'));
         }
 
-        alert(`${this.accion} completado con éxito`);
-        this.cerrarFormulario();
-        this.obtenerInventario(this.tipoFormulario, this.tipoFormulario.toLowerCase());
+        alert(`${this.accion} completado con éxito`)
+        bus.emit('inventario-actualizado') // 🔄 Notifica a home.vue que recargue el gráfico
+        this.cerrarFormulario()
+        this.obtenerInventario(this.tipoFormulario, this.tipoFormulario.toLowerCase())
+
 
       } catch (error) {
         alert('Error en la conexión con el servidor');

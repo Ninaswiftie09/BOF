@@ -95,10 +95,11 @@ export default {
   top: 0;
   left: 0;
   right: 0;
+  height: 60px;
   z-index: 1000;
 }
 .logo {
-  width: 150px;
+  width: 100px;
   height: auto;
   cursor: pointer;
 }
