@@ -10,6 +10,8 @@ from django.contrib.auth import authenticate, login
 from django.shortcuts import get_object_or_404
 from django.db.models import Sum, Count
 from django.db.models.functions import TruncDate
+from django.db import transaction
+from decimal import Decimal
 
 # DRF
 from rest_framework import viewsets
@@ -23,8 +25,8 @@ from rest_framework import status
 from .models import Proveedor, Compra
 from .serializers import ProveedorSerializer, CompraSerializer
 
-from .models import Venta, DetalleVenta, Hilo, Tela, Uniforme, Operacion
-from .serializers import VentaSerializer, HiloSerializer, TelaSerializer, UniformeSerializer, OperacionSerializer
+from .models import Venta, DetalleVenta, Hilo, Tela, Uniforme, Operacion, Venta, DetalleVenta, Producto
+from .serializers import VentaSerializer, HiloSerializer, TelaSerializer, UniformeSerializer, OperacionSerializer, VentaSerializer
 from django.utils.decorators import method_decorator
 
 
@@ -432,3 +434,35 @@ class VentasPorFechaAPIView(APIView):
             'numero_facturas': numero_facturas,
             'ventas': serializer.data
         }, status=status.HTTP_200_OK)
+
+# VENTAS
+class CrearVentaAPIView(APIView):
+    @transaction.atomic
+    def post(self, request):
+        detalles_data = request.data.pop("detalles", [])
+
+        venta_serializer = VentaSerializer(data=request.data)
+        if not venta_serializer.is_valid():
+            return Response(venta_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        venta = venta_serializer.save(total=0)             
+        total = Decimal("0")
+
+        for item in detalles_data:
+            producto = get_object_or_404(Producto, pk=item["producto"])
+            cantidad = int(item["cantidad"])
+            precio_unitario = Decimal(item.get("precio_unitario", producto.precio))
+            subtotal = cantidad * precio_unitario
+
+            DetalleVenta.objects.create(
+                venta=venta,
+                producto=producto,
+                cantidad=cantidad,
+                precio_unitario=precio_unitario,
+                subtotal=subtotal,
+            )
+            total += subtotal
+
+        venta.total = total
+        venta.save()
+        return Response(VentaSerializer(venta).data, status=status.HTTP_201_CREATED)
