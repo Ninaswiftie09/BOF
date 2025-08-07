@@ -224,12 +224,17 @@ export default {
     async submitFormulario() {
       try {
         const tipo = this.tipoFormulario.slice(0, -1).toLowerCase();
-        const urlBase = `${BASE_URL}/api/`;
+        const urlBase = `${BASE_URL}/api`;
         let url = '';
         let method = '';
+        const agregarEndpoints = {
+          tela: 'agregar-nueva-tela',
+          hilo: 'agregar-nuevo-hilo',
+          uniforme: 'agregar-nuevo-uniforme'
+        };
 
         if (this.accion === 'agregar') {
-          url = `${urlBase}/inventario/agregar-nuevo-${tipo}/`;
+          url = `${urlBase}/inventario/${agregarEndpoints[tipo]}/`;
           method = 'POST';
         } else if (this.accion === 'editar') {
           if (!this.formData.id) return alert('Debe especificar el ID');
