@@ -160,6 +160,7 @@
 <script>
 import { BASE_URL } from '@/config';
 import { useRouter } from 'vue-router';
+import { bus } from '@/event-bus';
 
 export default {
   setup() {
