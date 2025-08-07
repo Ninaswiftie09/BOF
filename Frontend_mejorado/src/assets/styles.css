@@ -1,144 +1,90 @@
-/* ==========================
-   🎨 Paleta de colores base
-   ========================== */
+/* --- Colores --- */
 :root {
+    --color-primary: #1e293b;       
+    --color-secondary: #2AA68F;     
+    --color-tertiary: #84C8C0;      
+    --color-quaternary: #C9E8F5;    
+    --color-quinary: #2B5CA8;     
+    --color-senary: #374666;        
+    --color-septenary: #83A4CC;    
+    --color-octonary: #0a0f2c;   
+    --color-novenary: #ffffff;
+    --colo-texto-negro: #000000;
+    --colo-texto-blanco: #ffffff;
+    /* colores que agrego*/ 
+    :root {
   --color-primary: #1e293b;
-  --color-secondary: #2AA68F;
-  --color-tertiary: #84C8C0;
-  --color-quaternary: #C9E8F5;
-  --color-quinary: #2B5CA8;
-  --color-senary: #374666;
-  --color-septenary: #83A4CC;
-  --color-octonary: #0a0f2c;
-  --color-white: #ffffff;
-  --color-black: #000000;
+  --color-secondary: #f8fafc;
+  --color-novenary: #ffffff;
+  --color-septenary: #cbd5e1;
+  --color-senary: #334155;
+  --color-quinary: #94a3b8;
+  --color-octonary: #0f172a;
 }
 
-/* ==========================
-   🔤 Tipografías personalizadas
-   ========================== */
-@font-face {
-  font-family: 'Archivo Black';
-  src: url('./fonts/ArchivoBlack-Regular.ttf') format('truetype');
-}
 
-@font-face {
-  font-family: 'Kollektif';
-  src: url('./fonts/Kollektif.ttf') format('truetype');
-  font-weight: normal;
-}
+  }
+  
+  /* --- Tipografías --- */
+  @font-face {
+    font-family: 'Archivo Black';
+    src: url('./fonts/ArchivoBlack-Regular.ttf') format('truetype');
+  }
+  
+  @font-face {
+    font-family: 'Kollektif';
+    src: url('./fonts/Kollektif.ttf') format('truetype');
+  }
+  
+  @font-face {
+    font-family: 'Kollektif';
+    src: url('./fonts/Kollektif-Bold.ttf') format('truetype');
+    font-weight: bold;
+  }
+  
+  @font-face {
+    font-family: 'Kollektif';
+    src: url('./fonts/Kollektif-Italic.ttf') format('truetype');
+    font-style: italic;
+  }
+  
+  @font-face {
+    font-family: 'Kollektif';
+    src: url('./fonts/Kollektif-BoldItalic.ttf') format('truetype');
+    font-weight: bold;
+    font-style: italic;
+  }
+  
+  /* --- Estilos generales --- */
+  body {
+    font-family: 'Kollektif', sans-serif;
+    background-color: var(--color-octonary);
+    color: var(--color-primary);
+    margin: 0;
+    padding: 0;
+  }
+  
+  /* --- Encabezados --- */
+  h1, h2, h3, h4 {
+    font-family: 'Archivo Black', sans-serif;
+    color: var(--color-primary);
+  }
+  
+  /* --- Botones --- */
+  button {
+    background-color: var(--color-secondary);
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    cursor: pointer;
+    font-family: 'Kollektif', sans-serif;
+  }
+  
+  button:hover {
+    background-color: var(--color-quaternary);
+  }
 
-@font-face {
-  font-family: 'Kollektif';
-  src: url('./fonts/Kollektif-Bold.ttf') format('truetype');
-  font-weight: bold;
-}
-
-@font-face {
-  font-family: 'Kollektif';
-  src: url('./fonts/Kollektif-Italic.ttf') format('truetype');
-  font-style: italic;
-}
-
-@font-face {
-  font-family: 'Kollektif';
-  src: url('./fonts/Kollektif-BoldItalic.ttf') format('truetype');
-  font-weight: bold;
-  font-style: italic;
-}
-
-/* ==========================
-   🧱 Estilos base generales
-   ========================== */
-body {
-  font-family: 'Kollektif', sans-serif;
-  background-color: var(--color-octonary);
-  color: var(--color-white);
-  margin: 0;
-  padding: 0;
-  line-height: 1.6;
-}
-
-/* Encabezados */
-h1, h2, h3, h4 {
-  font-family: 'Archivo Black', sans-serif;
-  color: var(--color-primary);
-  margin-bottom: 1rem;
-}
-
-/* Contenedor general */
-.container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 2rem;
-}
-
-/* ==========================
-   🧭 Navbar
-   ========================== */
-.navbar {
-  background-color: var(--color-primary);
-  color: var(--color-white);
-  padding: 1rem 2rem;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-/* ==========================
-   📦 Cards
-   ========================== */
-.card {
-  background-color: var(--color-white);
-  color: var(--color-black);
-  padding: 1.5rem;
-  border-radius: 8px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  margin: 1rem 0;
-}
-
-/* ==========================
-   📋 Tablas
-   ========================== */
-.table {
-  width: 100%;
-  border-collapse: collapse;
-  margin: 1rem 0;
-}
-
-.table th,
-.table td {
-  padding: 10px 12px;
-  border-bottom: 1px solid var(--color-quinary);
-  text-align: left;
-  color: var(--color-black);
-}
-
-.table th {
-  background-color: var(--color-tertiary);
-}
-
-/* ==========================
-   🔘 Botones
-   ========================== */
-.btn {
-  background-color: var(--color-secondary);
-  color: var(--color-white);
-  padding: 10px 16px;
-  border: none;
-  border-radius: 5px;
-  font-weight: bold;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-}
-
-.btn:hover {
-  background-color: var(--color-quaternary);
-}
-
-/* ==========================
-   🧩 Íconos SVG navegación
-   ========================== */
+  /* --- Íconos SVG en la navegación --- */
 .icon-circle svg {
   width: 20px;
   height: 20px;
@@ -147,9 +93,9 @@ h1, h2, h3, h4 {
 }
 
 .icon-circle {
-  color: var(--color-white);
+  color: var(--color-novenary); /* Blanco */
 }
 
 .nav-item:hover .icon-circle {
-  color: var(--color-secondary);
+  color: var(--color-secondary); /* Verde agua al pasar el mouse */
 }
