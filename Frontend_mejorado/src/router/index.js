@@ -14,6 +14,7 @@ import Clientes from '../views/clientes.vue'
 import ClientesRegistro from '../views/clientesregistro.vue'
 import Proveedores from '../views/proveedores.vue'
 import LandingPage from '@/views/LandingPage.vue'
+import Envios from '../views/envios.vue' 
 
 
 const routes = [
@@ -30,6 +31,7 @@ const routes = [
   { path: '/clientesregistro', name: 'clientesregistro', component: ClientesRegistro },
   { path: '/proveedores', name: 'proveedores', component: Proveedores },
   { path: '/LandingPage', name: 'inicio', component: LandingPage },
+  { path: '/envios', name: 'Envios', component: Envios },
 
 
   // Manejo de rutas inexistentes (404)

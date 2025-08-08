@@ -89,7 +89,9 @@ const navItems = [
   { label: 'Contabilidad', icon: IconContabilidad, route: '/accounting' },
   { label: 'Inventario', icon: IconInventario, route: '/mi_inventario' },
   { label: 'Reporte de ventas', icon: IconReporteVentas, route: '/ReporteVentas' },
-  { label: 'Gestión de Usuarios', icon: IconUser, route: '/register' }
+  { label: 'Gestión de Usuarios', icon: IconUser, route: '/register' },
+  { label: 'Pedidos', icon: IconUser, route: '/envios' }
+
 ]
 
 const calendarAttrs = ref([
