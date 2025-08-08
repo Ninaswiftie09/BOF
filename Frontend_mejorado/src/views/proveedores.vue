@@ -16,7 +16,6 @@
               <th>Correo</th>
               <th>Teléfono</th>
               <th>Dirección</th>
-              <th>NIT</th>
               <th>Acciones</th>
             </tr>
           </thead>
@@ -26,7 +25,6 @@
               <td>{{ prov.correo }}</td>
               <td>{{ prov.telefono }}</td>
               <td>{{ prov.direccion }}</td>
-              <td>{{ prov.nit }}</td>
               <td>
                 <button class="btn-action edit" @click="open('proveedor', prov)">✏️</button>
                 <button class="btn-action delete" @click="eliminarProveedor(prov.id)">🗑️</button>
@@ -58,7 +56,6 @@
           <label>Correo<input v-model="proveedorForm.correo" type="email" /></label>
           <label>Teléfono<input v-model="proveedorForm.telefono" /></label>
           <label>Dirección<input v-model="proveedorForm.direccion" /></label>
-          <label>NIT<input v-model="proveedorForm.nit" required /></label>
 
           <button class="save-big" type="submit">Guardar</button>
           <button class="cancel-btn" type="button" @click="close">Cancelar</button>
@@ -83,7 +80,7 @@ const currentProveedor = ref(null)
 const proveedores = ref([])
 const searchQuery = ref('')
 
-const proveedorForm = reactive({ nombre: '', correo: '', telefono: '', direccion: '', nit: '' })
+const proveedorForm = reactive({ nombre: '', correo: '', telefono: '', direccion: '' })
 
 const filteredProveedores = computed(() =>
   proveedores.value.filter(p =>
