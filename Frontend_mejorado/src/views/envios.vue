@@ -3,7 +3,7 @@
     <!-- Top Bar -->
     <header class="top-bar">
       <img src="@/assets/logo_bof_blanco.png" alt="Logo del cliente" class="logo" @click="goHome" />
-      <h1>ENVÍOS</h1>
+      <h1>PEDIDOS</h1>
     </header>
 
     <!-- Tabla principal -->
@@ -34,24 +34,24 @@
             <td>{{ p.estado || '—' }}</td>
             <td>${{ toMoney(p.total) }}</td>
             <td>
-              <button class="mini-btn" @click="abrirDetalles(p)">Ver detalle</button>
-            </td>
-            <td>
               <div class="flex-gap">
                 <button class="mini-btn sky" @click="abrirFormulario('editar', p)">Editar</button>
                 <button class="mini-btn danger" @click="abrirFormulario('eliminar', p)">Eliminar</button>
               </div>
             </td>
           </tr>
-          <tr v-if="!pedidos.length">
-            <td colspan="8" style="text-align:center; padding:16px; color:#6b7280">Sin pedidos aún</td>
+          <tr v-if="!cargando && !pedidos.length">
+            <td colspan="7" style="text-align:center; padding:16px; color:#6b7280">Sin pedidos aún</td>
+          </tr>
+          <tr v-if="cargando">
+            <td colspan="7" style="text-align:center; padding:16px; color:#6b7280">Cargando…</td>
           </tr>
         </tbody>
       </table>
 
-      <!-- Botones inferiores (solo estos dos) -->
+      <!-- Botones inferiores -->
       <div class="button-row">
-        <button @click="abrirFormulario('agregar')">Agregar envío</button>
+        <button @click="abrirFormulario('agregar')">Agregar pedido</button>
         <button @click="toggleVerTodos">{{ verTodos ? 'Ocultar' : 'Ver Todos' }}</button>
       </div>
     </section>
@@ -59,9 +59,9 @@
     <!-- Modal Agregar / Editar / Eliminar -->
     <div v-if="formVisible" class="modal-overlay">
       <div class="modal-content large-modal">
-        <h3 v-if="accion==='agregar'">Agregar nuevo envío</h3>
-        <h3 v-else-if="accion==='editar'">Editar envío #{{ formData.id }}</h3>
-        <h3 v-else>Eliminar envío #{{ formData.id }}</h3>
+        <h3 v-if="accion==='agregar'">Agregar nuevo pedido</h3>
+        <h3 v-else-if="accion==='editar'">Editar pedido #{{ formData.id }}</h3>
+        <h3 v-else>Eliminar pedido #{{ formData.id }}</h3>
 
         <form v-if="accion!=='eliminar'" class="form-vertical" @submit.prevent="submitFormulario">
           <label>Cliente</label>
@@ -97,15 +97,23 @@
             <span>Total</span>
             <span></span>
           </div>
+
           <div v-for="(d, i) in formData.detalles" :key="i" class="detalle-grid">
-            <input type="number" min="1" v-model.number="d.producto" placeholder="ID de producto" />
-            <input type="number" min="1" v-model.number="d.cantidad" />
-            <input type="number" step="0.01" min="0" v-model.number="d.precio_unitario" />
+            <input
+              type="number"
+              min="1"
+              v-model.number="d.producto"
+              placeholder="ID de producto"
+              @change="onProductoChange(i)"
+            />
+            <input type="number" min="1" v-model.number="d.cantidad" @input="recalcularTotales" />
+            <input type="number" step="0.01" min="0" v-model.number="d.precio_unitario" @input="recalcularTotales" />
             <div class="cell-total">
               ${{ toMoney((d.cantidad || 0) * (d.precio_unitario || 0)) }}
             </div>
             <button type="button" class="mini-btn danger" @click="quitarDetalle(i)">Quitar</button>
           </div>
+
           <button type="button" class="mini-btn" @click="agregarDetalle">+ Agregar línea</button>
 
           <div class="totales">
@@ -120,7 +128,7 @@
         </form>
 
         <div v-else class="form-vertical">
-          <p>¿Seguro que deseas eliminar el envío <strong>#{{ formData.id }}</strong>?</p>
+          <p>¿Seguro que deseas eliminar el pedido <strong>#{{ formData.id }}</strong>?</p>
           <div class="buttons-row">
             <button class="btn-primary" @click="submitFormulario">Eliminar</button>
             <button class="btn-cancel" @click="cerrarFormulario">Cancelar</button>
@@ -129,50 +137,15 @@
       </div>
     </div>
 
-    <!-- Modal Detalles (solo lectura) -->
-    <div v-if="detallesVisible" class="modal-overlay">
-      <div class="modal-content large-modal">
-        <button class="close-btn-top" @click="detallesVisible=false">✕</button>
-        <h3>
-          Pedido #{{ (pedidoSeleccionado && pedidoSeleccionado.id) || '' }} —
-          {{ (pedidoSeleccionado && pedidoSeleccionado.cliente_nombre) || '' }}
-        </h3>
-        <p style="margin-bottom:12px;color:#475569">
-          {{ formatFecha((pedidoSeleccionado && pedidoSeleccionado.fecha) || '') }}
-        </p>
-        <table>
-          <thead>
-            <tr>
-              <th>Producto (ID)</th>
-              <th>Cantidad</th>
-              <th>Precio unitario</th>
-              <th>Total</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="(d, idx) in (pedidoSeleccionado && pedidoSeleccionado.detalles) || []" :key="idx">
-              <td style="text-align:left">{{ d.producto }}</td>
-              <td>{{ d.cantidad }}</td>
-              <td>${{ toMoney(d.precio_unitario) }}</td>
-              <td>${{ toMoney(d.cantidad * d.precio_unitario) }}</td>
-            </tr>
-          </tbody>
-        </table>
-        <div class="totales">
-          <div class="total-row total-final">
-            <span>Total:</span><strong>${{ toMoney((pedidoSeleccionado && pedidoSeleccionado.total) || 0) }}</strong>
-          </div>
-        </div>
-        <button class="btn-cancel" @click="detallesVisible=false">Cerrar</button>
-      </div>
-    </div>
   </div>
 </template>
 
 <script>
 import { BASE_URL } from '@/config'
 import { useRouter } from 'vue-router'
-import { bus } from '@/event-bus'
+
+// 👉 Cambia esto si tu lookup de producto NO es /api/productos/:id/
+const PRODUCTS_ENDPOINT = `${BASE_URL}/api/productos/` // termina en '/'
 
 export default {
   setup(){
@@ -182,9 +155,10 @@ export default {
   },
   data(){
     return {
-      headers: ['id','Cliente','Fecha','Método','Estado','Total','Detalle','Acciones'],
+      headers: ['id','Cliente','Fecha','Método','Estado','Total','Acciones'],
       pedidos: [],
       verTodos: false,
+      cargando: false,
 
       // buscador
       tablaQuery: '',
@@ -199,14 +173,12 @@ export default {
         metodo_pago: 'efectivo',
         estado: 'pendiente',
         detalles: [],         // { producto, cantidad, precio_unitario }
-        precio_total: 0       // usado para mostrar; backend calcula total real
+        precio_total: 0       // mostrado; backend calcula 'total' real
       },
 
-      // modal ver detalle
-      detallesVisible: false,
-      pedidoSeleccionado: null,
-
-      clientes: []
+      clientes: [],
+      // cache simple de productos {id: {precio_unitario: ...}}
+      productosCache: {}
     }
   },
   computed: {
@@ -281,17 +253,60 @@ export default {
           precio_total: 0
         }
       } else if(accion==='editar' && pedido){
-        this.cargarPedido(pedido.id, true)
+        // Precargar desde la fila (no tenemos GET detalle estándar)
+        this.formData = {
+          id: pedido.id,
+          cliente: pedido.cliente_id || '',
+          fecha: (pedido.fecha || '').slice(0,10),
+          metodo_pago: pedido.metodo_pago || 'efectivo',
+          estado: pedido.estado || 'pendiente',
+          detalles: [], // sin endpoint detalle, el usuario vuelve a ingresar líneas
+          precio_total: pedido.total || 0
+        }
       } else if(accion==='eliminar' && pedido){
         this.formData = { id: pedido.id }
       }
     },
     cerrarFormulario(){ this.formVisible = false },
 
-    abrirDetalles(p){ this.cargarPedido(p.id, false) },
+    agregarDetalle(){
+      if(!Array.isArray(this.formData.detalles)) this.formData.detalles = []
+      this.formData.detalles.push({ producto:null, cantidad:1, precio_unitario:0 })
+    },
+    quitarDetalle(i){
+      if(Array.isArray(this.formData.detalles)) this.formData.detalles.splice(i,1)
+      this.recalcularTotales()
+    },
+    recalcularTotales(){
+      // dispara el watcher de subtotal al mutar el array
+      this.formData.detalles = [...this.formData.detalles]
+    },
 
-    agregarDetalle(){ this.formData.detalles.push({ producto:null, cantidad:1, precio_unitario:0 }) },
-    quitarDetalle(i){ this.formData.detalles.splice(i,1) },
+    async onProductoChange(index){
+      const d = this.formData.detalles[index]
+      if(!d || !d.producto) return
+      try{
+        // cache
+        if(this.productosCache[d.producto]){
+          d.precio_unitario = Number(this.productosCache[d.producto].precio_unitario) || 0
+          this.recalcularTotales()
+          return
+        }
+        // 👉 Ajusta si tu endpoint de productos es otro:
+        const r = await fetch(`${PRODUCTS_ENDPOINT}${d.producto}/`)
+        if(!r.ok) throw new Error('Producto no encontrado')
+        const prod = await r.json()
+        // intenta varias claves comunes
+        const precio = Number(
+          prod.precio_unitario ?? prod.precio ?? prod.costo ?? prod.price ?? 0
+        )
+        this.productosCache[d.producto] = { precio_unitario: precio }
+        d.precio_unitario = precio || 0
+        this.recalcularTotales()
+      }catch(e){
+        console.warn('No se pudo obtener precio del producto', d.producto, e)
+      }
+    },
 
     // API
     async cargarClientes(){
@@ -301,74 +316,67 @@ export default {
       }catch(e){ console.error('Error clientes', e) }
     },
     async cargarPedidos(){
-      try{
-        const r = await fetch(`${BASE_URL}/api/ventas/`)  // lista
-        const data = await r.json()
-        this.pedidos = data.map(p => ({
-          ...p,
-          cliente_nombre: p.cliente_nombre || (p.cliente && p.cliente.nombre) || '—',
-          metodo_pago: p.metodo_pago || '—',
-          estado: p.estado || '—',
-          total: p.total ?? p.precio_total ?? 0
-        }))
-      }catch(e){ console.error('Error ventas', e) }
-    },
-    async cargarPedido(id, paraEditar){
-      try{
-        const r = await fetch(`${BASE_URL}/api/ventas/${id}/`) // detalle
-        const p = await r.json()
-        if(paraEditar){
-          this.formData = {
-            id: p.id,
-            cliente: p.cliente_id || (p.cliente && p.cliente.id) || '',
-            fecha: (p.fecha || '').slice(0,10),
-            metodo_pago: p.metodo_pago || 'efectivo',
-            estado: p.estado || 'pendiente',
-            detalles: (p.detalles||[]).map(d=>({
-              producto: d.producto,
-              cantidad: d.cantidad,
-              precio_unitario: d.precio_unitario
-            })),
-            precio_total: p.total ?? p.precio_total ?? 0
-          }
-          this.formVisible = true
-        } else {
-          this.pedidoSeleccionado = {
-            ...p,
-            cliente_nombre: p.cliente_nombre || (p.cliente && p.cliente.nombre),
-            total: p.total ?? p.precio_total ?? 0
-          }
-          this.detallesVisible = true
+      this.cargando = true
+      this.pedidos = []
+      // Intentamos varias fuentes de lista
+      const fuentes = [
+        `${BASE_URL}/api/ventas/`,
+        `${BASE_URL}/api/ordenes/historial/`,
+        `${BASE_URL}/api/ventas/detalles/`,
+      ]
+      for (const url of fuentes){
+        try{
+          const r = await fetch(url)
+          if(!r.ok) continue
+          const data = await r.json()
+          const arr = Array.isArray(data) ? data : (Array.isArray(data.results) ? data.results : [])
+          if(!arr.length) continue
+          this.pedidos = arr.map(p => ({
+            id: p.id ?? p.pedido_id ?? p.venta_id ?? p.pk,
+            cliente_nombre: p.cliente_nombre ?? p.cliente?.nombre ?? '—',
+            fecha: p.fecha ?? p.created_at ?? p.fecha_venta,
+            metodo_pago: p.metodo_pago ?? p.payment_method ?? '—',
+            estado: p.estado ?? p.status ?? '—',
+            total: p.total ?? p.precio_total ?? p.monto_total ?? 0,
+            cliente_id: p.cliente_id ?? p.cliente?.id
+          })).filter(p => p.id != null)
+          if(this.pedidos.length) break
+        }catch(e){
+          // prueba la siguiente fuente
         }
-      }catch(e){ console.error('Error venta', e) }
+      }
+      this.cargando = false
     },
 
     async submitFormulario(){
       try{
         const csrftoken = this.getCookie('csrftoken')
-        const baseWrite = `${BASE_URL}/api/ventas/`  // create/update/delete
-        let url = baseWrite
+        const createUrl = `${BASE_URL}/api/ventas/crear/`
+        const updateUrl = (id) => `${BASE_URL}/api/ventas/editar/${id}/`
+        const deleteUrl = (id) => `${BASE_URL}/api/ventas/eliminar/${id}/`
+
+        let url = createUrl
         let method = 'POST'
         let body = null
 
-        if(this.accion==='agregar' || this.accion==='editar'){
+        if (this.accion === 'agregar' || this.accion === 'editar') {
           body = JSON.stringify({
             fecha: this.formData.fecha,
             cliente_id: this.formData.cliente,
             metodo_pago: this.formData.metodo_pago,
             estado: this.formData.estado,
-            detalles: this.formData.detalles.map(d => ({
+            detalles: (this.formData.detalles || []).map(d => ({
               producto: d.producto,
               cantidad: d.cantidad,
               precio_unitario: Number(d.precio_unitario).toFixed(2)
             }))
           })
         }
-        if(this.accion==='editar'){
-          url = `${baseWrite}${this.formData.id}/`
+        if (this.accion === 'editar') {
+          url = updateUrl(this.formData.id)
           method = 'PUT'
-        } else if(this.accion==='eliminar'){
-          url = `${baseWrite}${this.formData.id}/`
+        } else if (this.accion === 'eliminar') {
+          url = deleteUrl(this.formData.id)
           method = 'DELETE'
         }
 
@@ -376,7 +384,7 @@ export default {
           method,
           credentials: 'include',
           headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrftoken },
-          body: method==='DELETE' ? null : body
+          body: method === 'DELETE' ? null : body
         })
 
         if(!res.ok){
@@ -387,7 +395,6 @@ export default {
 
         this.formVisible = false
         await this.cargarPedidos()
-        bus.emit('ventas-actualizado')
       } catch (e) {
         console.error(e)
         alert('Error en la conexión con el servidor')
