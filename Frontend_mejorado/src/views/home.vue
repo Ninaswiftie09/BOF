@@ -2,6 +2,7 @@
   <div class="dashboard-container">
     <aside class="sidebar">
       <img src="@/assets/logo_bof_blanco.png" alt="logo del cliente" class="logo" />
+
       <nav class="nav-links">
         <router-link
           v-for="item in navItems"
@@ -25,13 +26,15 @@
       </header>
 
       <section class="content">
+        <!-- Pie -->
         <div class="chart-area">
           <canvas id="myPieChart"></canvas>
         </div>
 
+        <!-- Widgets derecha -->
         <div class="side-panels">
           <!-- Calendario -->
-          <div class="panel">
+          <div class="panel panel--calendar">
             <v-calendar
               is-inline
               :is-dark="true"
@@ -41,12 +44,12 @@
             />
           </div>
 
-          <!-- Gráfica de barras simulada: Ventas por mes -->
+          <!-- Ventas por mes -->
           <div class="panel">
             <canvas id="bestMonthChart"></canvas>
           </div>
 
-          <!-- clientes nuevos -->
+          <!-- Clientes nuevos -->
           <div class="panel">
             <div class="kpi">
               <h3>Clientes nuevos</h3>
@@ -64,6 +67,7 @@
 import { onMounted, ref } from 'vue'
 import Chart from 'chart.js/auto'
 import { bus } from '@/event-bus'
+import { BASE_URL } from '@/config'
 
 import IconClientes from '@/components/icons/IconClientes.vue'
 import IconFacturas from '@/components/icons/IconFacturas.vue'
@@ -72,16 +76,11 @@ import IconInventario from '@/components/icons/IconInventario.vue'
 import IconReporteVentas from '@/components/icons/IconRVentas.vue'
 import IconUser from '@/components/icons/IconUser.vue'
 
-const inventarioData = ref({
-  Telas: 0,
-  Hilos: 0,
-  Uniformes: 0
-})
+/* --------- Estado --------- */
+const MONTHS = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic']
 
-ventasPorMes: ref({
-  Ene: 0, Feb: 0, Mar: 0, Abr: 0, May: 0, Jun: 0,
-  Jul: 0, Ago: 0, Sep: 0, Oct: 0, Nov: 0, Dic: 0
-})
+const inventarioData = ref({ Telas: 0, Hilos: 0, Uniformes: 0 })
+const ventasPorMes = ref(MONTHS.reduce((acc, m) => (acc[m] = 0, acc), {}))
 
 const navItems = [
   { label: 'Clientes y Proveedores', icon: IconClientes, route: '/clientes' },
@@ -91,75 +90,64 @@ const navItems = [
   { label: 'Reporte de ventas', icon: IconReporteVentas, route: '/ReporteVentas' },
   { label: 'Gestión de Usuarios', icon: IconUser, route: '/register' },
   { label: 'Pedidos', icon: IconUser, route: '/envios' }
-
 ]
 
-const calendarAttrs = ref([
-  { key: 'hoy', highlight: true, dates: new Date() }
-])
+const calendarAttrs = ref([{ key: 'hoy', highlight: true, dates: new Date() }])
 
-// ----------------------------
-// Gráfico de pastel reactivo
+/* --------- Charts refs --------- */
 let pieChart = null
+let barChart = null
 
-async function fetchInventarioData() {
-  const tipos = ['telas', 'hilos', 'uniformes']
-  for (const tipo of tipos) {
-    try {
-      const res = await fetch(`https://abriluniformes.shop/api/${tipo}/`)
-      const data = await res.json()
-      inventarioData.value[tipo.charAt(0).toUpperCase() + tipo.slice(1)] = data.reduce(
-        (total, item) => total + (item.stock || 0),
-        0
-      )
-    } catch (err) {
-      console.error(`Error cargando ${tipo}:`, err)
-    }
-  }
+/* --------- Fetch inventario (pie) --------- */
+async function fetchInventarioData () {
+  const endpoints = [
+    { key: 'Telas', path: '/api/telas/' },
+    { key: 'Hilos', path: '/api/hilos/' },
+    { key: 'Uniformes', path: '/api/uniformes/' }
+  ]
+  try {
+    const resps = await Promise.all(endpoints.map(e => fetch(`${BASE_URL}${e.path}`)))
+    const datasets = await Promise.all(resps.map(r => r.json()))
+    datasets.forEach((data, i) => {
+      const key = endpoints[i].key
+      inventarioData.value[key] = Array.isArray(data)
+        ? data.reduce((sum, it) => sum + (Number(it.stock) || 0), 0)
+        : 0
+    })
+  } catch (err) { console.error('Error cargando inventario:', err) }
 }
 
-async function fetchVentasMensuales() {
+/* --------- Fetch ventas (barras) --------- */
+async function fetchVentasMensuales () {
   try {
-    const res = await fetch('http://localhost:8000/api/ventas/evolucion/')
+    const res = await fetch(`${BASE_URL}/api/ventas/evolucion/`)
     const data = await res.json()
 
-    // Reiniciamos a 0
-    Object.keys(ventasPorMes.value).forEach(m => ventasPorMes.value[m] = 0)
+    MONTHS.forEach(m => (ventasPorMes.value[m] = 0))
 
     data.forEach(v => {
       const fecha = new Date(v.dia)
-      const mes = fecha.toLocaleString('es-ES', { month: 'short' }) // ej: "jul"
-      const clave = mes.charAt(0).toUpperCase() + mes.slice(1) // ej: "Jul"
-
-      if (ventasPorMes.value[clave] !== undefined) {
-        ventasPorMes.value[clave] += parseFloat(v.total)
-      }
+      const m = fecha.toLocaleString('es-ES', { month: 'short' }) // "jul"
+      const key = m.charAt(0).toUpperCase() + m.slice(1)          // "Jul"
+      if (key in ventasPorMes.value) ventasPorMes.value[key] += Number(v.total) || 0
     })
-  } catch (error) {
-    console.error('Error al cargar ventas reales:', error)
-  }
+  } catch (e) { console.error('Error al cargar ventas reales:', e) }
 }
 
-// ----------------------------
-// Inicializar y actualizar gráficos
-
-function renderPieChart() {
-  const pieCtx = document.getElementById('myPieChart').getContext('2d')
-
+/* --------- Render pie --------- */
+function renderPieChart () {
+  const ctx = document.getElementById('myPieChart')?.getContext('2d')
+  if (!ctx) return
   if (pieChart) pieChart.destroy()
 
-  pieChart = new Chart(pieCtx, {
+  pieChart = new Chart(ctx, {
     type: 'pie',
     data: {
       labels: ['Telas', 'Hilos', 'Uniformes'],
       datasets: [{
-        data: [
-          inventarioData.value.Telas,
-          inventarioData.value.Hilos,
-          inventarioData.value.Uniformes
-        ],
+        data: [inventarioData.value.Telas, inventarioData.value.Hilos, inventarioData.value.Uniformes],
         backgroundColor: ['#839A2D', '#2AA68F', '#2B5CA8'],
-        borderColor: '#fff',
+        borderColor: '#ffffff',
         borderWidth: 1
       }]
     },
@@ -173,16 +161,24 @@ function renderPieChart() {
   })
 }
 
-function renderBarChart() {
-  const barCtx = document.getElementById('bestMonthChart').getContext('2d')
-  new Chart(barCtx, {
+/* --------- Render barras --------- */
+function renderBarChart () {
+  const ctx = document.getElementById('bestMonthChart')?.getContext('2d')
+  if (!ctx) return
+  if (barChart) barChart.destroy()
+
+  const labels = MONTHS
+  const values = labels.map(m => ventasPorMes.value[m])
+  const currentIdx = new Date().getMonth() // 0-11
+
+  barChart = new Chart(ctx, {
     type: 'bar',
     data: {
-      labels: Object.keys(ventasPorMes.value).slice(0, 6),
+      labels,
       datasets: [{
         label: 'Ventas',
-        data: Object.values(ventasPorMes.value).slice(0, 6),
-        backgroundColor: context => context.dataIndex === 4 ? '#2AA68F' : '#84C8C0',
+        data: values,
+        backgroundColor: (c) => c.dataIndex === currentIdx ? '#2B5CA8' : '#84C8C0',
         borderColor: '#fff',
         borderWidth: 1
       }]
@@ -190,16 +186,24 @@ function renderBarChart() {
     options: {
       maintainAspectRatio: false,
       plugins: {
-        title: { display: true, text: 'Ventas por mes' }
+        title: { display: true, text: 'Ventas por mes' },
+        tooltip: {
+          callbacks: {
+            label: (ctx) => {
+              const v = Number(ctx.parsed.y || 0)
+              return ` ${v.toLocaleString('es-CL', { style: 'currency', currency: 'CLP' })}`
+            }
+          }
+        }
       },
-      scales: { y: { beginAtZero: true } }
+      scales: {
+        y: { beginAtZero: true, ticks: { callback: v => Number(v).toLocaleString('es-CL') } }
+      }
     }
   })
 }
 
-// ----------------------------
-// Ejecutar al montar y escuchar eventos
-
+/* --------- Mount --------- */
 onMounted(async () => {
   await fetchInventarioData()
   await fetchVentasMensuales()
@@ -207,6 +211,7 @@ onMounted(async () => {
   renderBarChart()
 })
 
+/* --------- Eventos para refrescar --------- */
 bus.on('inventario-actualizado', async () => {
   await fetchInventarioData()
   if (pieChart) {
@@ -216,7 +221,17 @@ bus.on('inventario-actualizado', async () => {
       inventarioData.value.Uniformes
     ]
     pieChart.update()
-  }
+  } else { renderPieChart() }
+})
+
+bus.on('ventas-actualizadas', async () => {
+  await fetchVentasMensuales()
+  if (barChart) {
+    const labels = MONTHS
+    barChart.data.labels = labels
+    barChart.data.datasets[0].data = labels.map(m => ventasPorMes.value[m])
+    barChart.update()
+  } else { renderBarChart() }
 })
 </script>
 
@@ -229,6 +244,7 @@ bus.on('inventario-actualizado', async () => {
   font-family: 'Segoe UI', sans-serif;
 }
 
+/* Sidebar */
 .sidebar {
   width: 240px;
   background-color: #1e293b;
@@ -236,146 +252,95 @@ bus.on('inventario-actualizado', async () => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 2rem;
-}
-
-/* LOGO ajustado + animación hover */
-.logo {
-  width: 180px;
-  height: auto;
-  margin-bottom: 1rem;
-  transition: transform 0.3s ease-in-out;
-}
-
-.logo:hover {
-  transform: scale(1.05);
-}
-
-.nav-links {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.nav-item {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 0.6rem;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: background 0.3s, transform 0.3s;
-  color: white;
-  text-decoration: none;
-}
-
-.nav-item:hover {
-  background-color: #334155;
-  transform: translateX(4px);
-}
-
-.router-link-exact-active {
-  background-color: #334155;
-}
-
-.icon-circle {
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  background-color: #64748b;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: transform 0.3s ease;
-}
-
-.nav-item:hover .icon-circle {
-  transform: scale(1.15);
-}
-
-.main-area {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-}
-
-.topbar {
-  background-color: #1e293b;
-  padding: 1rem;
-  display: flex;
   justify-content: space-between;
-  align-items: center;
 }
+.logo { width: 180px; height: auto; margin-bottom: 1rem; transition: transform .3s ease-in-out; }
+.logo:hover { transform: scale(1.05); }
+.nav-links { width: 100%; display: flex; flex-direction: column; gap: .5rem; flex-grow: 1; justify-content: center; }
+.nav-item { display: flex; align-items: center; gap: .75rem; padding: .6rem; border-radius: 8px; cursor: pointer; transition: background .3s, transform .3s; color: white; text-decoration: none; }
+.nav-item:hover { background-color: #334155; transform: translateX(4px); }
+.router-link-exact-active { background-color: #334155; }
+.icon-circle { width: 44px; height: 44px; border-radius: 50%; background-color: #64748b; display: flex; align-items: center; justify-content: center; transition: transform .3s; }
+.nav-item:hover .icon-circle { transform: scale(1.15); }
 
-.view-name {
-  font-size: 1.25rem;
-  font-weight: bold;
-}
+/* Main */
+.main-area { flex: 1; display: flex; flex-direction: column; }
+.topbar { background-color: #1e293b; padding: 1rem; display: flex; justify-content: space-between; align-items: center; }
+.view-name { font-size: 1.25rem; font-weight: bold; }
+.user-circle { width: 36px; height: 36px; background-color: white; border-radius: 50%; }
 
-.user-circle {
-  width: 36px;
-  height: 36px;
-  background-color: white;
-  border-radius: 50%;
-}
+.content { display: flex; flex: 1; padding: 1rem; gap: 1rem; overflow: hidden; }
 
-.content {
-  display: flex;
-  flex: 1;
-  padding: 1rem;
-  gap: 1rem;
-  overflow: hidden;
-}
-
+/* Pie */
 .chart-area {
   flex: 2;
   background-color: #1e293b;
   border-radius: 16px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  display: flex; align-items: center; justify-content: center;
 }
+.chart-area canvas { width: 100% !important; height: 100% !important; }
 
-.chart-area canvas {
-  width: 100% !important;
-  height: 100% !important;
-}
-
-.side-panels {
+/* Widgets derecha */
+.side-panels{
   flex: 1;
   display: flex;
   flex-direction: column;
   gap: 1rem;
-  overflow: hidden;
+  min-height: 0; /* permite que se repartan en columna sin cortar */
 }
-
-.panel {
+.panel{
   background-color: #334155;
   border-radius: 12px;
   padding: 1rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  display: flex; align-items: center; justify-content: center;
   position: relative;
+  min-height: 0;
+  overflow: visible; /* no cortar hijos (calendario) */
 }
 
-.panel canvas {
-  width: 100% !important;
-  height: 100% !important;
-}
+/* Proporciones: calendario más alto para que no se recorte */
+.side-panels .panel:nth-child(1){ flex: 0.90; } /* Calendario */
+.side-panels .panel:nth-child(2){ flex: 0.90; } /* Ventas por mes */
+.side-panels .panel:nth-child(3){ flex: 0.75; } /* Clientes nuevos */
 
-.kpi {
-  text-align: center;
+/* Calendario ocupa el panel completo */
+.panel--calendar{
+  align-items: stretch; /* estira el v-calendar */
+  padding: .75rem;
 }
-
-.kpi .value {
-  font-size: 2rem;
-  margin: 0.5rem 0;
-  color: #2AA68F;
+.panel--calendar :deep(.vc-container){
+  width: 100%;
+  height: 80%;
+  background: transparent;
+  box-shadow: none;
+  border: 0;
+  border-radius: 10px;
 }
+.panel--calendar :deep(.vc-pane){ background: transparent; box-shadow: none; }
+.panel--calendar :deep(.vc-header){ position: static; }
+.panel--calendar { padding: 0.5rem; }                 /* un poco menos de padding */
+.panel--calendar :deep(.vc-container) {
+  transform: scale(0.85);                             /* << tamaño del calendario */
+  transform-origin: top center;                       /* ancla el escalado arriba */
+}
+/* Canvas ocupa todo el panel */
+.panel canvas{ width:100% !important; height:100% !important; }
 
-.kpi small {
-  color: #cbd5e1;
+/* KPI */
+.kpi{ text-align:center; width:100%; }
+.kpi h3{ margin:0 0 .25rem 0; }
+.kpi .value{ font-size:2rem; margin:.5rem 0; color:#2AA68F; }
+.kpi small{ color:#cbd5e1; }
+
+/* Responsive: si la pantalla es bajita, seguimos dando aire al calendario */
+@media (max-height: 850px){
+  .side-panels .panel:nth-child(1){ flex: 1.10; }
+  .side-panels .panel:nth-child(2){ flex: 0.85; }
+  .side-panels .panel:nth-child(3){ flex: 0.70; }
+}
+@media (max-height: 780px){
+  .side-panels .panel:nth-child(1){ flex: 1.05; }
+  .side-panels .panel:nth-child(2){ flex: 0.80; }
+  .side-panels .panel:nth-child(3){ flex: 0.70; }
 }
 </style>
