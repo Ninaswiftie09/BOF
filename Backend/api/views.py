@@ -501,3 +501,12 @@ class EditarVentaAPIView(APIView):
         venta.total = total
         venta.save()
         return Response(VentaSerializer(venta).data, status=status.HTTP_200_OK)
+
+class EliminarVentaAPIView(APIView):
+    def delete(self, request, pk):
+        venta = get_object_or_404(Venta, pk=pk)
+        venta.delete()
+        return Response(
+            {"mensaje": "Venta eliminada correctamente"},
+            status=status.HTTP_204_NO_CONTENT,
+        )

@@ -37,7 +37,7 @@ from .views import (
 	HistorialPedidosAPIView,
     CrearVentaAPIView,
     EditarVentaAPIView,
-
+    EliminarVentaAPIView,
 )
 
 from clientes.views import ClienteViewSet
@@ -94,6 +94,7 @@ urlpatterns = [
     #Ventas
     path("ventas/crear/", CrearVentaAPIView.as_view(), name="crear-venta"),
     path("ventas/editar/<int:pk>/", EditarVentaAPIView.as_view(), name="editar-venta"),
+    path("ventas/eliminar/<int:pk>/", EliminarVentaAPIView.as_view(), name="eliminar-venta"),
 
     # Rutas automáticas
     path('', include(router.urls)),
