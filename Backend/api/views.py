@@ -466,3 +466,38 @@ class CrearVentaAPIView(APIView):
         venta.total = total
         venta.save()
         return Response(VentaSerializer(venta).data, status=status.HTTP_201_CREATED)
+
+class EditarVentaAPIView(APIView):
+    @transaction.atomic
+    def put(self, request, pk):
+        venta = get_object_or_404(Venta, pk=pk)
+
+        detalles_data = request.data.pop("detalles", [])
+
+        venta_serializer = VentaSerializer(venta, data=request.data, partial=True)
+        if not venta_serializer.is_valid():
+            return Response(venta_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        venta = venta_serializer.save(total=Decimal("0"))
+
+        venta.detalles.all().delete()
+        total = Decimal("0")
+
+        for item in detalles_data:
+            producto = get_object_or_404(Producto, pk=item["producto"])
+            cantidad = int(item["cantidad"])
+            precio_unitario = Decimal(item.get("precio_unitario", producto.precio))
+            subtotal = cantidad * precio_unitario
+
+            DetalleVenta.objects.create(
+                venta=venta,
+                producto=producto,
+                cantidad=cantidad,
+                precio_unitario=precio_unitario,
+                subtotal=subtotal,
+            )
+            total += subtotal
+
+        venta.total = total
+        venta.save()
+        return Response(VentaSerializer(venta).data, status=status.HTTP_200_OK)
