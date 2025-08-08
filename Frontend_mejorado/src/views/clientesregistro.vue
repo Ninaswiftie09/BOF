@@ -72,22 +72,16 @@ function resetForm() {
 async function saveCliente() {
   if (!clienteForm.nombre) return alert('El nombre es requerido')
 
-  const method = clienteForm.id ? 'PUT' : 'POST'
-  const url = method === 'PUT'
+  const isUpdating = !!clienteForm.id;
+  const method = isUpdating ? 'PUT' : 'POST'
+  const url = isUpdating
     ? `/api/clientes/${clienteForm.id}/`
     : `/api/clientes/`
 
-  const payload = {
-    nombre: clienteForm.nombre,
-    contacto: clienteForm.contacto,
-    nit: clienteForm.nit,
-    direccion: clienteForm.direccion,
-    direccion_entrega: clienteForm.direccion_entrega,
-    telefono: clienteForm.telefono,
-    email: clienteForm.email,
-    cartera: clienteForm.cartera,
-    estado: clienteForm.estado,
-  };
+  const payload = { ...clienteForm };
+
+  delete payload.id;
+  delete payload.codigo_cliente;
 
   try {
     await apiFetch(url, method, payload)
