@@ -32,7 +32,7 @@
             <td>{{ formatFecha(p.fecha) }}</td>
             <td>{{ p.metodo_pago || '—' }}</td>
             <td>{{ p.estado || '—' }}</td>
-            <td>${{ toMoney(p.total) }}</td>
+            <td>Q{{ toMoney(p.total) }}</td>
             <td>
               <div class="flex-gap">
                 <button class="mini-btn sky" @click="abrirFormulario('editar', p)">Editar</button>
