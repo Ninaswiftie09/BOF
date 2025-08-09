@@ -71,4 +71,4 @@ Recuerda agregar un servidor nuevo y usar estos datos para conectarte a PostgreS
 Se creo una pagina web usando Domain, AWS y Cloudflare
 el nombre del dominio es "abriluniformes.shop"
 
-Hecho por el equipo de BOF 💻.
+Hecho por el equipo de BOF 💻.,
