@@ -1,6 +1,6 @@
 /* clientesregistro.vue */
 <script setup>
-import { reactive, ref, computed, watch } from 'vue'
+import { reactive, ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import NavBar from '@/components/NavBar.vue'
 import { onMounted } from 'vue'
@@ -10,23 +10,37 @@ const router = useRouter()
 const go = path => router.push(path)
 
 const search = ref('')
-const modal = reactive({ visible:false, type:'' })
-const open = t => { modal.type = t; modal.visible = true }
-const close = () => { modal.visible = false }
-
-
+const modal = reactive({ visible: false, type: '', searchTerm: '', searchResults: [] })
+const open = t => {
+  modal.type = t;
+  modal.visible = true;
+  if (t === 'buscar') {
+    modal.searchTerm = '';
+    modal.searchResults = [];
+  }
+}
+const close = () => { modal.visible = false; resetForm();  }
 
 /* FORMULARIO CLIENTES */
 const clienteForm = reactive({
-  codigo:'', estado:'Activo', nombre:'', contacto:'', nit:'',
-  direccion:'', direccionEntrega:'', telefono:'', email:'', cartera:0
+  id: null,
+  codigo_cliente: '',
+  estado: true,
+  nombre: '',
+  contacto: '',
+  nit: '',
+  direccion: '',
+  direccion_entrega: '',
+  telefono: '',
+  email: '',
+  cartera: 0,
 })
 const clientes = ref([])
 
 /* FUNCIÓN FETCH */
-async function fetchClientes () {
+async function fetchClientes() {
   try {
-    const data = await apiFetch('http://localhost:8000/api/clientes/')
+    const data = await apiFetch('/api/clientes/')
     clientes.value = data
   } catch (error) {
     console.error('Error al obtener clientes:', error)
@@ -37,73 +51,63 @@ onMounted(() => {
   fetchClientes()
 })
 
-/* FUNCIÓN GUARDAR CLIENTE */
+
 function resetForm() {
   Object.assign(clienteForm, {
-    estado: 'Activo',
+    id: null,
+    codigo_cliente: '',
+    estado: true,
     nombre: '',
     contacto: '',
     nit: '',
     direccion: '',
-    direccionEntrega: '',
+    direccion_entrega: '',
     telefono: '',
     email: '',
     cartera: 0
   })
 }
 
-async function saveCliente () {
+/* GUARDAR CLIENTE */
+async function saveCliente() {
   if (!clienteForm.nombre) return alert('El nombre es requerido')
-  
-  const method = clienteForm.id ? 'PUT' : 'POST'
-  const url = method === 'PUT'
-    ? `http://localhost:8000/api/clientes/${clienteForm.id}/`
-    : `http://localhost:8000/api/clientes/`
+
+  const isUpdating = !!clienteForm.id;
+  const method = isUpdating ? 'PUT' : 'POST'
+  const url = isUpdating
+    ? `/api/clientes/${clienteForm.id}/`
+    : `/api/clientes/`
+
+  const payload = { ...clienteForm };
+
+  delete payload.id;
+  delete payload.codigo_cliente;
 
   try {
-    await apiFetch(url, method, {
-      estado: clienteForm.estado === 'Activo',
-      nombre: clienteForm.nombre,
-      contacto: clienteForm.contacto,
-      nit: clienteForm.nit,
-      direccion: clienteForm.direccion,
-      direccion_entrega: clienteForm.direccionEntrega,
-      telefono: clienteForm.telefono,
-      email: clienteForm.email,
-      cartera: clienteForm.cartera,
-      empresa_id: clienteForm.empresa_id || null
-    })
-    
-
+    await apiFetch(url, method, payload)
     await fetchClientes()
-    Object.keys(clienteForm).forEach(k =>
-      clienteForm[k] = k === 'estado' ? 'Activo' : (typeof clienteForm[k] === 'number' ? 0 : '')
-    )
     close()
   } catch (err) {
-    console.error('Error al guardar cliente:', err)
-} }
-
+    console.error('Error al guardar cliente:', err);
+    alert('Hubo un error al guardar el cliente.');
+  }
+}
 
 /* EDITAR CLIENTE */
 function editCliente(cliente) {
-  Object.assign(clienteForm, {
-    ...cliente,
-    codigo: cliente.codigo_cliente,
-    id: cliente.id
-  })
+  Object.assign(clienteForm, { ...cliente, id: cliente.id })
   modal.type = 'clientes'
   modal.visible = true
 }
 
 /* ELIMINAR CLIENTE */
 async function deleteCliente(id) {
-  if (!confirm('¿Seguro que deseas eliminar este cliente?')) return
+  if (!confirm(`¿Seguro que deseas eliminar al cliente con ID ${id}?`)) return
 
   try {
-    await apiFetch(`http://localhost:8000/api/clientes/${id}/`, 'DELETE')
-    // Si llegamos aquí, la eliminación fue exitosa
+    await apiFetch(`/api/clientes/${id}/`, 'DELETE')
     await fetchClientes()
+    close()
   } catch (err) {
     console.error('Error al eliminar cliente:', err)
     alert('Error al eliminar el cliente')
@@ -118,80 +122,19 @@ const filteredClientes = computed(() =>
   )
 )
 
-/* NUEVA ORDEN */
-const orderHeader = reactive({ cliente:'', fecha:'' })
-const orderLines  = ref([
-  { producto:'', talla:'', color:'', tela:'', bordado:'', cantidad:1, precio:0, descuento:0 }
-])
-const addLine    = () => orderLines.value.push({ producto:'', talla:'', color:'', tela:'', bordado:'', cantidad:1, precio:0, descuento:0 })
-const removeLine = i => orderLines.value.splice(i,1)
-const lineTotal  = l => (l.precio*l.cantidad) - l.descuento
-const grandTotal = computed(()=> orderLines.value.reduce((s,l)=>s+lineTotal(l),0))
-
-/* GUARDAR NUEVA ORDEN */
-async function saveOrder () {
-  if (!orderHeader.cliente || !orderHeader.fecha) {
-    alert('Completa el cliente y la fecha')
-    return
+/* FILTRO DE BÚSQUEDA POR NOMBRE */
+function searchClientsInModal() {
+  if (!modal.searchTerm) {
+    modal.searchResults = [];
+    return;
   }
-
-  try {
-    // Encontrar el ID del cliente seleccionado
-    const clienteSeleccionado = clientes.value.find(c => c.nombre === orderHeader.cliente)
-    if (!clienteSeleccionado) {
-      throw new Error('Cliente no encontrado')
-    }
-
-    const payload = {
-      cliente_id: clienteSeleccionado.id,
-      fecha: orderHeader.fecha,
-      precio_total: grandTotal.value,
-      detalles: orderLines.value.map(l => ({
-        descripcion_producto: `${l.producto} - Talla: ${l.talla}, Color: ${l.color}, Tela: ${l.tela}, Bordado: ${l.bordado}`,
-        cantidad: l.cantidad,
-        precio_unitario: l.precio
-      }))
-    }
-
-    await apiFetch('http://localhost:8000/api/cliente/pedidos/', 'POST', payload)
-
-    // Limpiar el formulario
-    orderHeader.cliente = ''
-    orderHeader.fecha = ''
-    orderLines.value = [{ producto:'', talla:'', color:'', tela:'', bordado:'', cantidad:1, precio:0, descuento:0 }]
-    close()
-    alert('Orden guardada exitosamente')
-  } catch (err) {
-    console.error('Error al guardar la orden:', err)
-    alert('Error al guardar la orden')
-  }
+  modal.searchResults = clientes.value.filter(c =>
+    c.nombre.toLowerCase().includes(modal.searchTerm.toLowerCase())
+  );
 }
 
 
-/* CARGAR HISTORIAL */
-async function fetchPedidos() {
-  try {
-    const res = await apiFetch('http://localhost:8000/api/cliente/pedidos/')
-    pedidos.value = res
-  } catch (e) {
-    console.error('Error al cargar historial de pedidos:', e)
-  }
-}
 
-onMounted(() => {
-  fetchClientes()
-})
-
-watch(() => modal.type, (newVal) => {
-  if (newVal === 'historial') fetchPedidos()
-})
-
-
-
-
-const pedidos  = ref([])
-const pagadas  = ref([])
-const porPagar = ref([])
 </script>
 
 <template>
@@ -203,30 +146,9 @@ const porPagar = ref([])
       </template>
     </NavBar>
 
-    <div class="new-order-wrapper">
-      <button class="new-order-btn" @click="open('orden')">NUEVA ORDEN</button>
-    </div>
-
     <div class="body-wrapper">
       
-      <!-- módulo 1: Tarjetas -->
-      <section class="module cards-module">
-        <div class="cards-container">
-          <section class="big-card">
-            <h2>ACTUALIZACIÓN</h2>
-            <ul><li @click="open('clientes')">Clientes</li></ul>
-          </section>
-          <section class="big-card">
-            <h2>REPORTES</h2>
-            <ul>
-              <li @click="open('historial')">Historial de pedidos</li>
-              <li @click="open('pagadas')">Cuentas pagadas</li>
-            </ul>
-          </section>
-        </div>
-      </section>
-
-      <!-- módulo 2: Tabla de clientes -->
+      <!-- Tabla de clientes -->
       <section class="module">
         <table>
           <thead>
@@ -240,7 +162,7 @@ const porPagar = ref([])
             </tr>
           </thead>
           <tbody>
-            <tr v-for="c in filteredClientes" :key="c.codigo">
+            <tr v-for="c in filteredClientes" :key="c.codigo_cliente">
               <td>{{ c.codigo_cliente }}</td>
               <td>{{ c.nombre }}</td>
               <td>{{ c.contacto }}</td>
@@ -258,126 +180,96 @@ const porPagar = ref([])
         </table>
       </section>
 
+      <!-- Tarjetas de acción -->
+      <section class="module cards-module">
+        <div class="cards-container">
+          <section class="big-card">
+            <h2>ACTUALIZACIÓN</h2>
+            <ul>
+              <li @click="open('clientes')">Agregar Cliente</li>
+              <li @click="open('buscar')">Modificar Cliente (por Nombre)</li>
+              <li @click="open('buscar')">Eliminar Cliente (por Nombre)</li>
+            </ul>
+          </section>
+        </div>
+      </section>
+
     </div>
 
-    <div v-if="modal.visible" class="modal-overlay" @click.self="close">
+    <!-- Modal de Clientes -->
+    <div v-if="modal.visible && modal.type==='clientes'" class="modal-overlay" @click.self="close">
       <div class="modal-window">
-
-        <!-- Clientes -->
-        <template v-if="modal.type==='clientes'">
-          <h3>Clientes</h3>
-          <form class="modal-form grid-two" @submit.prevent="saveCliente">
-            <label>Nombre<input v-model="clienteForm.nombre" required/></label>
-            <label>Contacto<input v-model="clienteForm.contacto"/></label>
-            <label>NIT<input v-model="clienteForm.nit"/></label>
-            <label>Dirección<input v-model="clienteForm.direccion"/></label>
-            <label>Entrega<input v-model="clienteForm.direccionEntrega"/></label>
-            <label>Teléfono<input v-model="clienteForm.telefono"/></label>
-            <label>E-mail<input type="email" v-model="clienteForm.email"/></label>
+        <h3>{{ clienteForm.id ? 'Editar Cliente' : 'Nuevo Cliente' }}</h3>
+        <form class="modal-form grid-two" @submit.prevent="saveCliente">
+          <label>Nombre<input v-model="clienteForm.nombre" required/></label>
+          <label>Contacto<input v-model="clienteForm.contacto"/></label>
+          <label>NIT<input v-model="clienteForm.nit"/></label>
+          <label>Dirección<input v-model="clienteForm.direccion"/></label>
+          <label>Dirección Entrega<input v-model="clienteForm.direccionEntrega"/></label>
+          <label>Teléfono<input v-model="clienteForm.telefono"/></label>
+          <label>E-mail<input type="email" v-model="clienteForm.email"/></label>
+          <div class="actions">
             <button type="submit" class="save-big">Guardar</button>
             <button type="button" class="cancel-btn" @click="close">Cancelar</button>
-          </form>
-        </template>
-
-        <!-- Historial / Pagar / Pagadas -->
-        <template v-else-if="['historial','pagar','pagadas'].includes(modal.type)">
-          <h3>{{ {historial:'Historial de pedidos',pagadas:'Cuentas pagadas'}[modal.type] }}</h3>
-          <div class="table-wrapper">
-            <table>
-              <thead>
-                <tr v-if="modal.type==='historial'">
-                  <th>Id</th><th>Cliente</th><th>Monto</th><th>Fecha ven.</th><th>Estado</th>
-                </tr>
-                <tr v-else>
-                  <th>Id</th><th>Id pedido</th><th>Cliente</th><th>Fecha pago</th><th>Monto</th>
-                </tr>
-              </thead>
-              <tbody>
-                <template v-if="modal.type==='historial'">
-                  <tr v-for="p in pedidos" :key="p.id">
-                    <td>{{p.id}}</td>
-                    <td>{{p.cliente_nombre}}</td>
-                    <td>{{p.precio_total}}</td>
-                    <td>{{new Date(p.fecha).toLocaleDateString()}}</td>
-                    <td>{{p.estado || 'Pendiente'}}</td>
-                  </tr>
-                </template>
-                <template v-else-if="modal.type==='pagadas'">
-                  <tr v-for="(p,i) in pagadas" :key="i">
-                    <td>{{p.id}}</td><td>{{p.idPedido}}</td><td>{{p.cliente}}</td><td>{{p.fecha}}</td><td>{{p.monto}}</td>
-                  </tr>
-                </template>
-                <template v-else>
-                  <tr v-for="(p,i) in porPagar" :key="i">
-                    <td>{{p.id}}</td><td>{{p.idPedido}}</td><td>{{p.cliente}}</td><td>{{p.fecha}}</td><td>{{p.monto}}</td>
-                  </tr>
-                </template>
-                <tr v-if="(modal.type==='historial' ? pedidos : modal.type==='pagadas' ? pagadas : porPagar).length===0">
-                  <td :colspan="modal.type==='historial'?5:5">&nbsp;</td>
-                </tr>
-              </tbody>
-            </table>
           </div>
-          <button class="cancel-btn" @click="close">Cerrar</button>
-        </template>
-
-        <!-- Nueva Orden -->
-        <template v-else-if="modal.type==='orden'">
-          <h3>Nueva orden</h3>
-          <div class="grid-two mb-3">
-            <label>Cliente
-              <select v-model="orderHeader.cliente">
-                <option v-for="c in clientes" :key="c.codigo" :value="c.nombre">{{c.nombre}}</option>
-              </select>
-            </label>
-            <label>Fecha<input type="date" v-model="orderHeader.fecha"/></label>
-          </div>
-          <table class="order-table">
-            <thead>
-              <tr>
-                <th>Producto</th><th>Talla</th><th>Color</th><th>Tela</th><th>Bordado</th>
-                <th>Cant.</th><th>Precio</th><th>Desc.</th><th>Total</th><th>Eliminar</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="(l,i) in orderLines" :key="i">
-                <td><input v-model="l.producto"/></td>
-                <td><input v-model="l.talla"/></td>
-                <td><input v-model="l.color"/></td>
-                <td><input v-model="l.tela"/></td>
-                <td><input v-model="l.bordado"/></td>
-                <td><input type="number" min="1" v-model.number="l.cantidad"/></td>
-                <td><input type="number" min="0" v-model.number="l.precio"/></td>
-                <td><input type="number" min="0" v-model.number="l.descuento"/></td>
-                <td>{{ lineTotal(l) }}</td>
-                <td><button class="remove-btn" @click="removeLine(i)">✕</button></td>
-              </tr>
-              <tr><td colspan="10">&nbsp;</td></tr>
-            </tbody>
-          </table>
-          <button class="add-line" @click="addLine">+ Agregar otro producto</button>
-          <div class="grand-total">TOTAL: {{ grandTotal }}</div>
-          <div class="actions">
-            <button class="cancel-btn" @click="close">Cancelar</button>
-            <button class="save-big" @click="saveOrder">Guardar</button>
-          </div>
-        </template>
-
+        </form>
       </div>
     </div>
+
+    <!-- Modal de busqueda por nombre -->
+<div v-if="modal.visible && modal.type === 'buscar'" class="modal-overlay" @click.self="close">
+  <div class="modal-window">
+    <h3>Buscar Cliente para Modificar o Eliminar</h3>
+    <input 
+      v-model="modal.searchTerm" 
+      @input="searchClientsInModal"
+      class="search-in-modal" 
+      placeholder="Escribe un nombre para buscar..."
+    />
+    <div class="search-results-container">
+      <table v-if="modal.searchResults.length > 0" class="results-table">
+        <tbody>
+          <tr v-for="cliente in modal.searchResults" :key="cliente.id">
+            <td>{{ cliente.nombre }}</td>
+            <td>
+              <button class="edit-btn" @click="editCliente(cliente)">✎</button>
+              <button class="remove-btn" @click="deleteCliente(cliente.id)">✕</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <p v-else-if="modal.searchTerm">No se encontraron clientes.</p>
+      <p v-else>Comienza a escribir para ver los resultados.</p>
+    </div>
+    <div class="actions">
+        <button type="button" class="cancel-btn" @click="close">Cerrar</button>
+    </div>
+  </div>
+</div>
+
 
   </div>
 </template>
 
+
+
+
 <style scoped>
-*{color:#fff}
 .crm-home{
   min-height:100vh;
   background:#0a0f2c;
   display:flex;
   flex-direction:column;
-  font-family:'Segoe UI',sans-serif
-  }
+  font-family:'Segoe UI',sans-serif;
+  color: #fff;
+}
+
+.body-wrapper{
+  padding: 5rem 2rem;
+  display:flex;
+  flex-direction:column;
+  gap:2rem;
+}
 
 .search{
   flex:1 1 300px;
@@ -388,7 +280,7 @@ const porPagar = ref([])
   border:none;
   background:#fff;
   color:#000
-  }
+}
 
 .avatar-btn{
   width:36px;
@@ -397,71 +289,76 @@ const porPagar = ref([])
   background:#fff;
   border:none;
   cursor:pointer
-  }
+}
+
+.module{
+  background:#0d1130;
+  border:2px solid #1e2236;
+  border-radius:16px;
+  padding:1.5rem;
+}
+.cards-module{
+  justify-content:center;
+  display:flex
+}
 
 
-/* NUEVA ORDEN */
-.new-order-wrapper{
-  display:flex;
-  justify-content:flex-end;
-  padding:1.5rem 2rem
-  }
+/* TABLA CLIENTES */
+table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0 4px; /* Espacio vertical entre filas */
+  min-width: 800px;
+}
+th {
+  background-color: transparent;
+  padding: 12px 16px;
+  color: #fff; /* Texto de encabezado gris */
+  font-size: 0.9rem;
+  text-align: left;
+  border-bottom: 2px solid #334155; /* Línea inferior */
+}
+td {
+  padding: 16px;
+  background-color: #1e293b; /* Fondo oscuro para las filas */
+  color: #ffffff;
+  text-align: left;
+  vertical-align: middle;
+  border: none;
+}
+/* Estilo para la fila de "No hay resultados" */
+tr[v-if="filteredClientes.length===0"] td {
+  background-color: transparent;
+  text-align: center;
+  padding: 2rem;
+  font-style: italic;
+  color: #94a3b8;
+}
 
-.new-order-btn{
-  background:#1d4ed8;
-  border:none;
-  color:#fff;
-  border-radius:12px;
-  padding:.7rem 1.6rem;
-  font-weight:600;
-  cursor:pointer
-  }
-  
-.new-order-btn:hover{transform:translateY(-2px)}
 
 
 
-/* Body Wrapper */
-.body-wrapper{display:flex;flex-direction:column;gap:2rem;padding:1rem 2rem}
-.module{background:#0d1130;border:2px solid #1e2236;border-radius:16px;padding:1.5rem}
-.cards-module{justify-content:center;display:flex}
-
-/* Boton edición en tabla */
-.edit-btn {
+.edit-btn, .remove-btn {
   background: transparent;
   border: none;
-  color: #60a5fa;
   cursor: pointer;
   font-size: 1.1rem;
 }
-.edit-btn:hover {
-  color: #93c5fd;
-}
+.edit-btn { color: #60a5fa; }
+.remove-btn { color: #e74c3c; }
+.edit-btn:hover { color: #93c5fd; }
+.remove-btn:hover { color: #f87171; }
 
-/* Boton eliminar en tabla */
-.remove-btn {
-  background: transparent;
-  border: none;
-  color: #e74c3c;
-  cursor: pointer;
-  font-size: 1.1rem;
-}
-.remove-btn:hover {
-  color: #ff6b6b;
-}
-
-/* Tarjetas */
 .cards-container{
   display:flex;
   gap:3rem;
   flex-wrap:wrap;
   justify-content:center;
   padding:0
-  }
-
+}
 .big-card{
   width:340px;
-  min-height:200px;
+  min-height:150px;
   background:#101222;
   border:2px solid #1e2236;
   border-radius:18px;
@@ -469,63 +366,87 @@ const porPagar = ref([])
   display:flex;
   flex-direction:column;
   gap:1rem
-  }
-  
-.big-card h2{margin:0;font-size:1.1rem;letter-spacing:.5px;border-bottom:1px solid #2c3148;padding-bottom:.5rem;color:#fff}
-.big-card ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:.8rem}
-.big-card li{cursor:pointer;padding:.4rem .2rem;border-radius:6px}
-.big-card li:hover{background:#1e2236}
-
+}
+.big-card h2{
+  margin:0;
+  font-size:1.1rem;
+  letter-spacing:.5px;
+  border-bottom:1px solid #2c3148;
+  padding-bottom:.5rem;
+  color:#fff
+}
+.big-card ul{
+  list-style:none;
+  margin: 0;
+  padding: 0;
+  display:flex;
+  flex-direction:column;
+  gap:.8rem
+}
+.big-card li{
+  cursor:pointer;
+  padding:.4rem .2rem;
+  border-radius:6px
+}
+.big-card li:hover{ background:#1e2236 }
 
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);display:flex;justify-content:center;align-items:center;z-index:2000}
 .modal-window{background:#1e293b;padding:2rem;border-radius:14px;min-width:600px;max-width:90%;max-height:90vh;overflow:auto;display:flex;flex-direction:column;gap:1rem}
-
 .modal-form{display:flex;flex-direction:column;gap:.8rem}
-.grid-two{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:.8rem}
+.grid-two{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
 .modal-form label{display:flex;flex-direction:column;font-size:.9rem;gap:.25rem}
-.modal-form input,.modal-form select{padding:.45rem .6rem;border:none;border-radius:6px;background:#111827;color:#fff}
+.modal-form input{padding:.45rem .6rem;border:none;border-radius:6px;background:#111827;color:#fff}
+.actions{display:flex;gap:.6rem;justify-content:center; grid-column: 1 / -1;}
+.cancel-btn{padding:.6rem 1.4rem;border:none;border-radius:8px;background:#9ca3af;color:#1e293b;font-weight:600;cursor:pointer}
+.save-big{padding:.6rem 1.4rem;border:none;border-radius:8px;background:#2563eb;font-weight:600;cursor:pointer;color:#fff}
 
-.table-wrapper{max-height:60vh;overflow:auto;margin-bottom:1rem}
-.table-wrapper table{width:100%;border-collapse:collapse;font-size:.8rem}
-.table-wrapper th,.table-wrapper td{padding:.4rem .6rem;border-bottom:1px solid #2c3148}
-.table-wrapper thead{position:sticky;top:0;background:#1e293b}
 
-.order-table{
-  width:100%;
-  border-collapse:collapse;
-  margin-bottom:1rem;
-  font-size:.8rem;
-  color: #000
-  }
-
-.order-table th,.order-table td{
-  border:1px solid #2c3148;
-  padding:.3rem .4rem;
-  text-align:center;}
-
-.order-table input {
-  color: #000;
-  background-color: #fff;
+.remove-btn-modal { 
+  background-color: #e74c3c; 
 }
-  
-
-input[type="date"] {
-  background: #fff;
-  color: #000;
+.remove-btn-modal:hover { 
+  background-color: #ff6b6b; 
 }
 
-.modal-window select,
-.modal-window input {
+.search-in-modal {
+  width: 100%;
+  padding: .6rem .8rem;
+  border-radius: 6px;
+  border: 1px solid #334155;
   background: #111827;
   color: #fff;
+  font-size: 1rem;
+  margin-bottom: 1rem;
+}
+.search-results-container {
+  min-height: 200px;
+  max-height: 40vh;
+  overflow-y: auto;
+  background: #0d1130;
+  border-radius: 8px;
+  padding: 1rem;
+}
+.results-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.results-table tr {
+  border-bottom: 1px solid #2c3148;
+}
+.results-table tr:last-child {
+  border-bottom: none;
+}
+.results-table td {
+  padding: .75rem;
+}
+.results-table td:last-child {
+  text-align: right;
+}
+.search-results-container p {
+  color: #94a3b8;
+  text-align: center;
+  margin-top: 2rem;
 }
 
-.remove-btn{background:transparent;border:none;color:#e74c3c;cursor:pointer}
-.add-line{background:#059669;border:none;color:#fff;border-radius:8px;padding:.4rem 1rem;cursor:pointer;margin-bottom:.6rem}
-.grand-total{text-align:right;font-weight:700;margin-bottom:.4rem}
-.actions{display:flex;gap:.6rem;justify-content:center}
-.cancel-btn{align-self:center;padding:.4rem 1.4rem;border:none;border-radius:8px;background:#9ca3af;color:#1e293b;font-weight:600;cursor:pointer}
-.cancel-btn:hover{background:#d1d5db}
-.save-big{padding:.6rem 1rem;border:none;border-radius:8px;background:#2563eb;font-weight:600;cursor:pointer;color:#fff}
 
 </style>

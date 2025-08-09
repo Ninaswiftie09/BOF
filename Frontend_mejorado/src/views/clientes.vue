@@ -45,7 +45,7 @@ const proveedoresRecientes = [
           </ul>
 
           <div class="footer" @click.stop>
-            <button class="btn btn--primary" @click="go('/clientesregistro')">Nuevo cliente</button>
+            <button class="btn btn--primary" @click="go('/clientesregistro')">Ver más</button>
           </div>
         </button>
 
@@ -72,7 +72,7 @@ const proveedoresRecientes = [
           </ul>
 
           <div class="footer" @click.stop>
-            <button class="btn btn--green" @click="go('/proveedores')">Nuevo proveedor</button>
+            <button class="btn btn--green" @click="go('/proveedores')">Ver más</button>
           </div>
         </button>
       </main>

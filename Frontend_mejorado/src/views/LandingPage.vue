@@ -1,43 +1,61 @@
 <template>
-  <div class="landing-container">
-    <!-- Menú flotante -->
+  <!-- Versión completa con mejoras: carrusel con movimiento y controles, hero usa ep2.jpg, subtítulo actualizado, íconos de contacto un poco más grandes -->
+  <div class="landing-container" :class="{ 'menu-open': menuOpen }">
+    <!-- Menú lateral (scrollspy) -->
     <nav class="menu-lateral">
-      <a href="#mision">Misión</a>
-      <a href="#vision">Visión</a>
-      <a href="#productos">Productos</a>
-      <a href="#contacto">Contacto</a>
+      <a
+        v-for="item in sections"
+        :key="item.id"
+        :href="`#${item.id}`"
+        :class="{ active: activeSection === item.id }"
+      >
+        <span class="icon">•</span>
+        <span class="label">{{ item.label }}</span>
+      </a>
     </nav>
 
-    <!-- Título principal -->
-    <header class="titulo-principal fade-in">
-      <div class="titulo-con-logo">
-        <img src="@/assets/logo_bof_blanco.png" alt="Logo de Abril Uniformes" class="logo-header" />
-        <h1>Abril Uniformes</h1>
+    <!-- HERO -->
+    <header id="hero" class="hero">
+      <div class="hero-bg">
+        <img :src="heroImage" alt="Abril Uniformes" />
       </div>
-      <p>Uniformes que distinguen</p>
+      <div class="hero-overlay" />
+      <div class="hero-content">
+        <div class="brand">
+          <img src="@/assets/logo_bof_blanco.png" alt="Logo Abril Uniformes" class="logo-header" />
+          <h1>Abril Uniformes</h1>
+        </div>
+        <p class="subtitle">Uniformes que combinan estilo, comodidad y funcionalidad</p>
+        <div class="cta">
+          <a class="btn btn-primary" :href="whatsappCta" target="_blank" rel="noopener">Cotizar ahora</a>
+          <a class="btn btn-ghost" href="#productos">Ver catálogo</a>
+        </div>
+      </div>
     </header>
 
     <!-- Misión y Visión -->
-    <section class="landing-section mision-vision">
-      <div id="mision" class="info-box fade-in">
+    <section class="landing-section mision-vision" id="mision">
+      <div class="info-box fade-in">
         <div class="texto">
           <h2>Misión</h2>
           <p>
-            Ofrecer bordados personalizados y confección de uniformes médicos e institucionales de alta calidad, 
-            combinando diseño, funcionalidad y confort. Nos comprometemos a brindar soluciones únicas que reflejen la 
+            Ofrecer bordados personalizados y confección de uniformes médicos e institucionales de alta calidad,
+            combinando diseño, funcionalidad y confort. Nos comprometemos a brindar soluciones únicas que reflejen la
             identidad de nuestros clientes y fortalezcan su imagen, con un servicio cercano, profesional y puntual.
           </p>
         </div>
         <img src="@/assets/images/mision.jpg" alt="Imagen de misión" />
       </div>
+    </section>
 
-      <div id="vision" class="info-box reverse fade-in">
+    <section class="landing-section mision-vision" id="vision">
+      <div class="info-box reverse fade-in">
         <div class="texto">
           <h2>Visión</h2>
           <p>
             Ser una empresa reconocida en bordados profesionales y confección de uniformes en nuestra región y a nivel nacional,
-             reconocida por la calidad, el diseño y la confiabilidad de nuestros productos. Aspiramos a vestir e inspirar a profesionales
-              e instituciones con prendas que transmitan identidad, profesionalismo y estilo.
+            reconocida por la calidad, el diseño y la confiabilidad de nuestros productos. Aspiramos a vestir e inspirar a profesionales
+            e instituciones con prendas que transmitan identidad, profesionalismo y estilo.
           </p>
         </div>
         <img src="@/assets/images/vision.jpg" alt="Imagen de visión" />
@@ -46,16 +64,41 @@
 
     <!-- Productos -->
     <section id="productos" class="landing-section productos fade-in">
-      <h2>Nuestros productos</h2>
-      <div class="productos-grid">
+      <div class="section-head">
+        <h2>Nuestros productos</h2>
+        <div class="chips">
+          <button
+            v-for="cat in categorias"
+            :key="cat"
+            class="chip"
+            :class="{ active: filtro === cat }"
+            @click="filtro = cat; resetAutoScroll()"
+          >
+            {{ cat }}
+          </button>
+        </div>
+      </div>
+
+      <!-- Controles del carrusel (desktop) -->
+      <button class="car-arrow left" @click="scrollPrev" aria-label="Anterior">‹</button>
+      <button class="car-arrow right" @click="scrollNext" aria-label="Siguiente">›</button>
+
+      <!-- Grid en desktop / carrusel en móvil (con auto-scroll) -->
+      <div ref="track" class="productos-track" :class="{ carousel: isMobile }">
         <div
-          v-for="producto in productos"
+          v-for="producto in productosFiltrados"
           :key="producto.nombre"
           class="producto-card"
           @click="ampliarImagen(producto.imagen)"
         >
-          <img :src="producto.imagen" :alt="producto.nombre" />
-          <p>{{ producto.nombre }}</p>
+          <div class="img-wrap">
+            <img :src="producto.imagen" :alt="producto.nombre" />
+            <div class="overlay">
+              <span>Ver</span>
+            </div>
+          </div>
+          <p class="nombre">{{ producto.nombre }}</p>
+          <span class="tag">{{ producto.categoria }}</span>
         </div>
       </div>
     </section>
@@ -63,299 +106,299 @@
     <!-- Modal para ampliar imagen -->
     <div v-if="imagenAmpliada" class="modal" @click.self="cerrarImagen">
       <img :src="imagenAmpliada" alt="Imagen ampliada" class="imagen-ampliada" />
+      <button class="close" @click="cerrarImagen">×</button>
     </div>
 
     <!-- Contacto -->
-    <section id="contacto" class="landing-section fade-in">
+    <section id="contacto" class="landing-section contacto fade-in">
       <h2>Contáctanos</h2>
-      <div class="redes redes-iconos">
-        <a href="https://www.facebook.com/abriluniformesybordados" target="_blank" aria-label="Facebook"><IconFc /></a>
-        <a href="https://www.instagram.com/abril_uniformesborda2" target="_blank" aria-label="Instagram"><IconIg /></a>
-        <a href="https://wa.me/message/HDT3ABF7BPCHB1" target="_blank" aria-label="WhatsApp"><IconWs /></a>
+
+      <div class="contact-grid">
+        <form class="contact-form" @submit.prevent="enviarFormulario">
+          <div class="row">
+            <input v-model="form.nombre" type="text" placeholder="Nombre" required />
+            <input v-model="form.email" type="email" placeholder="Email" required />
+          </div>
+          <textarea v-model="form.mensaje" rows="4" placeholder="Mensaje" required></textarea>
+          <button type="submit" class="btn btn-primary">Enviar</button>
+        </form>
+
+        <div class="panel-redes">
+          <div class="redes redes-iconos">
+            <a href="https://www.facebook.com/abriluniformesybordados" target="_blank" aria-label="Facebook"><IconFc /></a>
+            <a href="https://www.instagram.com/abril_uniformesborda2" target="_blank" aria-label="Instagram"><IconIg /></a>
+            <a href="https://wa.me/message/HDT3ABF7BPCHB1" target="_blank" aria-label="WhatsApp"><IconWs /></a>
+          </div>
+          <div class="mapa">
+            <!-- Reemplaza el src por el embed real de tu ubicación -->
+            <iframe
+              title="Ubicación"
+              loading="lazy"
+              allowfullscreen
+              referrerpolicy="no-referrer-when-downgrade"
+              src="l.facebook.com/l.php?u=https%3A%2F%2Fmaps.app.goo.gl%2FnMYVWQRB6ZcUo1fTA%3Ffbclid%3DIwZXh0bgNhZW0CMTAAYnJpZBExalk1cXJ5VG8wUHl1clZuZAEers4lx0oWQjxgJTuEQGfGU012Cs4LdIRnel2IUMxG7Ddch19ea6Poe2LgmAs_aem_Z6SRC-Se5FeoMGB5O2lRIQ&h=AT18l6y7iD-zSWH0BrC6JjHWqg3KQcqXKjRv5_68otIVHbJE_tZmWZTLL6101HTemEBF_OQUG6fETQw9f7KAR8N8a1CvsbaHocGv1-DsrwLwqP5hTGVerRAXOIh7X_39-GGHwCMTyv_VlkcdcolBdQ"
+            ></iframe>
+          </div>
+        </div>
       </div>
     </section>
 
-    <!-- Botón login -->
-    <div class="ingreso-login fade-in">
-      <router-link to="/login" class="btn-login">
-  <IconUser class="icono-login" />
-  Login
-</router-link>
-    </div>
+    <!-- Botón login fijo en esquina -->
+    <router-link to="/login" class="btn-login floating">
+      <IconUser class="icono-login" />
+      <span>Login</span>
+    </router-link>
   </div>
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import IconFc from '@/components/icons/fc.vue'
 import IconIg from '@/components/icons/ig.vue'
 import IconWs from '@/components/icons/ws.vue'
 import IconUser from '@/components/icons/IconUser.vue'
 
+// Hero: usar ep2.jpg
+const heroImage = new URL('@/assets/images/ep2.jpg', import.meta.url).href
 
-
+// Productos (usando imágenes existentes)
 const productos = [
-  { nombre: 'Uniformes Médicos', imagen: new URL('@/assets/images/model2.jpg', import.meta.url).href },
-  { nombre: 'Gorros Quirúrgicos', imagen: new URL('@/assets/images/gorro.jpg', import.meta.url).href },
-  { nombre: 'Uniformes Empresariales', imagen: new URL('@/assets/images/ep2.jpg', import.meta.url).href },
-  { nombre: 'Bordados Personalizados', imagen: new URL('@/assets/images/bordado1.jpg', import.meta.url).href },
-  { nombre: 'Toallas Personalizadas', imagen: new URL('@/assets/images/toalla.jpg', import.meta.url).href },
-  { nombre: 'Uniformes ', imagen: new URL('@/assets/images/uniformes1.jpg', import.meta.url).href },
-  
+  { nombre: 'Uniformes Médicos', categoria: 'Médico', imagen: new URL('@/assets/images/model2.jpg', import.meta.url).href },
+  { nombre: 'Gorros Quirúrgicos', categoria: 'Accesorios', imagen: new URL('@/assets/images/gorro.jpg', import.meta.url).href },
+  { nombre: 'Uniformes Empresariales', categoria: 'Empresarial', imagen: new URL('@/assets/images/ep2.jpg', import.meta.url).href },
+  { nombre: 'Bordados Personalizados', categoria: 'Bordado', imagen: new URL('@/assets/images/bordado1.jpg', import.meta.url).href },
+  { nombre: 'Toallas Personalizadas', categoria: 'Bordado', imagen: new URL('@/assets/images/toalla.jpg', import.meta.url).href },
+  { nombre: 'Uniformes', categoria: 'Médico', imagen: new URL('@/assets/images/uniformes1.jpg', import.meta.url).href },
 ]
 
+const categorias = ['Todos', 'Médico', 'Empresarial', 'Bordado', 'Accesorios']
+const filtro = ref('Todos')
 const imagenAmpliada = ref(null)
-const ampliarImagen = (src) => {
-  imagenAmpliada.value = src
+const isMobile = ref(false)
+const track = ref(null)
+let autoTimer = null
+
+const productosFiltrados = computed(() =>
+  filtro.value === 'Todos' ? productos : productos.filter(p => p.categoria === filtro.value)
+)
+
+const ampliarImagen = (src) => (imagenAmpliada.value = src)
+const cerrarImagen = () => (imagenAmpliada.value = null)
+
+const whatsappCta = 'https://wa.me/message/HDT3ABF7BPCHB1'
+
+// Scrollspy
+const sections = [
+  { id: 'hero', label: 'Inicio' },
+  { id: 'mision', label: 'Misión' },
+  { id: 'vision', label: 'Visión' },
+  { id: 'productos', label: 'Productos' },
+  { id: 'contacto', label: 'Contacto' },
+]
+const activeSection = ref('hero')
+let observer
+
+function updateIsMobile() {
+  isMobile.value = matchMedia('(max-width: 760px)').matches
 }
-const cerrarImagen = () => {
-  imagenAmpliada.value = null
+
+onMounted(() => {
+  updateIsMobile()
+  window.addEventListener('resize', updateIsMobile)
+
+  const options = { root: null, rootMargin: '0px', threshold: 0.6 }
+  observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) activeSection.value = entry.target.id
+    })
+  }, options)
+
+  sections.forEach((s) => {
+    const el = document.getElementById(s.id)
+    if (el) observer.observe(el)
+  })
+
+  startAutoScroll()
+})
+
+onBeforeUnmount(() => {
+  if (observer) observer.disconnect()
+  window.removeEventListener('resize', updateIsMobile)
+  stopAutoScroll()
+})
+
+// Carrusel: auto-scroll suave en móvil, y flechas en desktop
+function startAutoScroll() {
+  stopAutoScroll()
+  autoTimer = setInterval(() => {
+    if (!track.value) return
+    const el = track.value
+    const maxScroll = el.scrollWidth - el.clientWidth
+    const step = Math.max(220, el.clientWidth * 0.4)
+
+    if (Math.ceil(el.scrollLeft) >= maxScroll - 4) {
+      el.scrollTo({ left: 0, behavior: 'smooth' })
+    } else {
+      el.scrollBy({ left: step, behavior: 'smooth' })
+    }
+  }, 3500)
 }
+function stopAutoScroll() {
+  if (autoTimer) { clearInterval(autoTimer); autoTimer = null }
+}
+function resetAutoScroll() { startAutoScroll() }
+
+function scrollNext() {
+  if (!track.value) return
+  const step = Math.max(260, track.value.clientWidth * 0.6)
+  track.value.scrollBy({ left: step, behavior: 'smooth' })
+}
+function scrollPrev() {
+  if (!track.value) return
+  const step = Math.max(260, track.value.clientWidth * 0.6)
+  track.value.scrollBy({ left: -step, behavior: 'smooth' })
+}
+
+// Formulario de contacto (placeholder a WhatsApp)
+const form = ref({ nombre: '', email: '', mensaje: '' })
+const enviarFormulario = () => {
+  const msg = `Hola, soy ${form.value.nombre}. ${form.value.mensaje} (Email: ${form.value.email})`
+  window.open(`${whatsappCta}?text=${encodeURIComponent(msg)}`, '_blank')
+}
+
+// Menú responsive (si implementas hamburguesa)
+const menuOpen = ref(false)
 </script>
 
 <style scoped>
-html {
-  scroll-behavior: smooth;
+html { scroll-behavior: smooth; }
+
+:root {
+  --bg-1: #0a0f2c;
+  --bg-2: #1e293b;
+  --brand: #2AA68F;
+  --brand-2: #22b893;
+  --ink: #e2e8f0;
+  --card: #334155;
 }
 
 .landing-container {
-  font-family: 'Segoe UI', sans-serif;
-  padding-bottom: 4rem;
-  background: #0a0f2c;
+  font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
   color: white;
+  background: linear-gradient(135deg, var(--bg-1), var(--bg-2));
+  min-height: 100vh;
+  padding-bottom: 6rem;
+  position: relative;
 }
 
-/* Título principal */
-.titulo-principal {
-  text-align: center;
-  padding: 2rem 1rem 1rem;
-  background-color: #1e293b;
-  border-bottom: 2px solid #334155;
-}
-
-.titulo-con-logo {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 1rem;
-  flex-wrap: wrap;
-}
-
-.logo-header {
-  height: 60px;
-  width: auto;
-  filter: drop-shadow(0 0 4px rgba(0, 0, 0, 0.4));
-}
-
-.titulo-principal h1 {
-  font-size: 3rem;
-  color: #2AA68F;
-  text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.5);
-  margin: 0;
-}
-
-.titulo-principal p {
-  font-size: 1.2rem;
-  color: #cbd5e1;
-  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
-}
-
-/* Misión y visión */
-.mision-vision .info-box {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  gap: 2rem;
-  margin-bottom: 3rem;
-  flex-wrap: wrap;
-  background-color: #1e293b;
-  padding: 2rem;
-  border-radius: 12px;
-}
-
-.mision-vision .info-box.reverse {
-  flex-direction: row-reverse;
-}
-
-.mision-vision .texto {
-  flex: 1;
-  min-width: 280px;
-}
-
-.mision-vision img {
-  width: 300px;
-  max-width: 100%;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-}
-
-/* Secciones */
-.landing-section {
-  padding: 2rem;
-  max-width: 900px;
-  margin: 0 auto;
-}
-
-.landing-section h2 {
-  font-size: 1.8rem;
-  color: #2AA68F;
-  border-bottom: 2px solid #2AA68F;
-  padding-bottom: 0.3rem;
-  margin-bottom: 0.5rem;
-}
-
-.landing-section p {
-  font-size: 1.1rem;
-  line-height: 1.6;
-  color: #e2e8f0;
-}
-
-/* Productos */
-.productos-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 1.5rem;
-  margin-top: 1.5rem;
-}
-
-.producto-card {
-  background: #334155;
-  padding: 1rem;
-  border-radius: 12px;
-  text-align: center;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  cursor: pointer;
-  color: white;
-}
-
-.producto-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
-}
-
-.producto-card img {
-  width: 100%;
-  height: 140px;
-  object-fit: cover;
-  border-radius: 8px;
-  margin-bottom: 0.5rem;
-}
-
-/* Modal imagen */
-.modal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.85);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 999;
-}
-
-.imagen-ampliada {
-  max-width: 90%;
-  max-height: 90%;
-  border-radius: 12px;
-  box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
-}
-
-/* Redes sociales */
-.redes {
-  display: flex;
-  justify-content: center;
-  gap: 2rem;
-  margin-top: 1rem;
-}
-
-.redes-iconos a {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  background: #334155;
-  padding: 0.5rem;
-  border-radius: 50%;
-  width: 48px;
-  height: 48px;
-  transition: background 0.3s ease;
-}
-
-.redes-iconos a:hover {
-  background: #2AA68F;
-}
-
-.redes-iconos svg {
-  fill: white;
-  width: 24px;
-  height: 24px;
-}
-
-/* Botón login */
-.btn-login {
-  background: #2AA68F;
-  color: white;
-  padding: 0.75rem 2rem;
-  border-radius: 8px;
-  font-weight: bold;
-  text-decoration: none;
-  transition: background 0.3s ease;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.btn-login:hover {
-  background: #22b893;
-}
-
-.icono-login {
-  width: 20px;
-  height: 20px;
-  fill: white;
-}
-
-
-/* Menú lateral */
+/* MENÚ LATERAL */
 .menu-lateral {
-  position: fixed;
-  top: 40%;
-  right: 0;
-  background-color: #1e293b;
-  padding: 0.5rem 1rem;
-  border-radius: 8px 0 0 8px;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  z-index: 100;
+  position: fixed; right: 0.75rem; top: 40%; transform: translateY(-40%);
+  display: flex; flex-direction: column; gap: 0.5rem; z-index: 20;
 }
-
 .menu-lateral a {
-  color: #ffffff;
-  text-decoration: none;
-  font-weight: bold;
-  font-size: 0.9rem;
+  display: flex; align-items: center; gap: 0.5rem;
+  background: rgba(30,41,59,.7); backdrop-filter: blur(6px);
+  padding: 0.4rem 0.6rem; border-radius: 999px; text-decoration: none;
+  color: #fff; font-weight: 600; font-size: .9rem; transition: .2s ease;
 }
+.menu-lateral a:hover { background: var(--brand); }
+.menu-lateral a.active { background: var(--brand); box-shadow: 0 0 0 3px rgba(42,166,143,.25); }
+.menu-lateral .icon { font-size: 1.1rem; line-height: 1; }
 
-.menu-lateral a:hover {
-  color: #2AA68F;
-}
+/* HERO */
+.hero { position: relative; height: 72vh; min-height: 520px; overflow: hidden; }
+.hero-bg { position: absolute; inset: 0; }
+.hero-bg img { width: 100%; height: 100%; object-fit: cover; filter: saturate(1) contrast(1.05) brightness(.75); }
+.hero-overlay { position: absolute; inset: 0; background: radial-gradient(60% 60% at 50% 40%, rgba(255,255,255,.05), transparent), linear-gradient(180deg, rgba(10,15,44,.6), rgba(10,15,44,.9)); }
+.hero-content { position: relative; z-index: 1; height: 100%; display: grid; place-items: center; text-align: center; padding: 0 1rem; }
+.brand { display: inline-flex; align-items: center; gap: .8rem; flex-wrap: wrap; justify-content: center; }
+.logo-header { height: 64px; width: auto; filter: drop-shadow(0 0 4px rgba(0,0,0,.4)); }
+.brand h1 { font-size: clamp(2.2rem, 5vw, 3.4rem); margin: 0; letter-spacing: .5px; color: #fff; }
+/* Subtítulo más grande según pedido */
+.subtitle { color: var(--ink); margin: .5rem 0 1.2rem; font-size: clamp(1.1rem, 2.8vw, 1.35rem); font-weight: 500; opacity: .95; }
+.cta { display: flex; gap: .75rem; justify-content: center; flex-wrap: wrap; }
 
-/* Animación fade in */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
+.btn { border: 2px solid transparent; padding: .75rem 1.2rem; border-radius: 10px; font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: .5rem; }
+.btn-primary { background: var(--brand); color: #fff; }
+.btn-primary:hover { background: var(--brand-2); }
+.btn-ghost { background: transparent; color: #fff; border-color: rgba(255,255,255,.45); }
+.btn-ghost:hover { background: rgba(255,255,255,.1); }
 
-.fade-in {
-  animation: fadeIn 1s ease-out;
+/* SECCIONES BASE */
+.landing-section { padding: 3rem 1rem; max-width: 1100px; margin: 0 auto; position: relative; }
+.landing-section h2 { font-size: 1.9rem; color: var(--brand); border-bottom: 2px solid var(--brand); padding-bottom: .35rem; margin-bottom: .8rem; }
+.landing-section p { font-size: 1.08rem; line-height: 1.65; color: var(--ink); }
+
+/* MISIÓN/VISIÓN */
+.mision-vision .info-box { display: flex; align-items: center; gap: 2rem; flex-wrap: wrap; background: var(--bg-2); padding: 2rem; border-radius: 16px; box-shadow: 0 10px 24px rgba(0,0,0,.25); }
+.mision-vision .info-box.reverse { flex-direction: row-reverse; }
+.mision-vision .texto { flex: 1; min-width: 280px; }
+.mision-vision img { width: 360px; max-width: 100%; border-radius: 12px; box-shadow: 0 6px 16px rgba(0,0,0,.35); }
+
+/* PRODUCTOS */
+.section-head { display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
+.chips { display: flex; gap: .5rem; flex-wrap: wrap; }
+.chip { background: var(--card); color: #fff; border: 1px solid rgba(255,255,255,.1); border-radius: 999px; padding: .45rem .85rem; font-weight: 600; cursor: pointer; transition: .2s; }
+.chip:hover { background: #3b4b63; }
+.chip.active { background: var(--brand); }
+
+.productos-track { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.2rem; margin-top: 1.2rem; }
+.productos-track.carousel { display: grid; grid-auto-flow: column; grid-auto-columns: 70%; gap: 0.8rem; overflow-x: auto; scroll-snap-type: x mandatory; padding-bottom: .4rem; }
+.productos-track.carousel .producto-card { scroll-snap-align: start; }
+
+/* Flechas del carrusel (solo visibles cuando hay overflow en desktop) */
+.car-arrow { position: absolute; top: 50%; transform: translateY(-50%); border: none; background: rgba(0,0,0,.3); color: #fff; font-size: 2rem; width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; cursor: pointer; z-index: 5; backdrop-filter: blur(4px); }
+.car-arrow:hover { background: rgba(0,0,0,.45); }
+.car-arrow.left { left: -6px; }
+.car-arrow.right { right: -6px; }
+@media (max-width: 760px) { .car-arrow { display: none; } }
+
+.producto-card { background: var(--card); border-radius: 14px; padding: .9rem; text-align: center; box-shadow: 0 6px 14px rgba(0,0,0,.25); transition: transform .25s ease, box-shadow .25s ease; cursor: pointer; color: white; }
+.producto-card:hover { transform: translateY(-6px); box-shadow: 0 10px 20px rgba(0,0,0,.35); }
+.img-wrap { position: relative; border-radius: 10px; overflow: hidden; }
+.img-wrap img { width: 100%; height: 180px; object-fit: cover; display: block; transition: transform .35s ease; }
+.producto-card:hover .img-wrap img { transform: scale(1.05); }
+.overlay { position: absolute; inset: 0; display: grid; place-items: center; background: linear-gradient(180deg, transparent, rgba(0,0,0,.45)); opacity: 0; transition: .25s; font-weight: 700; letter-spacing: .5px; }
+.producto-card:hover .overlay { opacity: 1; }
+.nombre { margin: .6rem 0 .15rem; font-weight: 700; }
+.tag { font-size: .8rem; opacity: .85; background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.12); padding: .2rem .5rem; border-radius: 999px; }
+
+/* MODAL */
+.modal { position: fixed; inset: 0; background: rgba(0,0,0,.85); display: grid; place-items: center; z-index: 50; }
+.imagen-ampliada { max-width: 92%; max-height: 92%; border-radius: 12px; box-shadow: 0 0 24px rgba(255,255,255,.2); }
+.modal .close { position: fixed; top: 1.2rem; right: 1.2rem; font-size: 2rem; background: transparent; border: none; color: #fff; cursor: pointer; }
+
+/* CONTACTO */
+.contact-grid { display: grid; grid-template-columns: 1.2fr .8fr; gap: 1.2rem; }
+.contact-form { background: var(--bg-2); padding: 1.2rem; border-radius: 12px; box-shadow: 0 8px 20px rgba(0,0,0,.25); }
+.contact-form .row { display: grid; grid-template-columns: 1fr 1fr; gap: .8rem; }
+.contact-form input, .contact-form textarea { width: 100%; background: #0f172a; border: 1px solid rgba(255,255,255,.1); color: #fff; border-radius: 10px; padding: .75rem .9rem; font-size: .95rem; }
+.contact-form textarea { resize: vertical; }
+.contact-form button { margin-top: .8rem; }
+.panel-redes { display: grid; gap: 1rem; align-content: start; }
+
+/* Íconos de contacto: blancos y un poquito más grandes */
+.redes-iconos a { display: inline-flex; align-items: center; justify-content: center; background: #334155; padding: 0.5rem; border-radius: 50%; width: 40px; height: 40px; transition: background 0.3s ease; }
+.redes-iconos a:hover { background: var(--brand); }
+.redes-iconos svg { fill: white; width: 20px; height: 20px; }
+
+.mapa iframe { width: 100%; height: 240px; border: 0; border-radius: 12px; box-shadow: 0 6px 16px rgba(0,0,0,.25); }
+
+/* BOTÓN LOGIN FLOTANTE */
+.btn-login.floating { position: fixed; bottom: 1rem; right: 1rem; background: var(--brand); color: #fff; padding: .7rem 1rem; border-radius: 999px; font-weight: 800; display: inline-flex; align-items: center; gap: .5rem; z-index: 40; text-decoration: none; box-shadow: 0 10px 16px rgba(42,166,143,.35); }
+.btn-login.floating:hover { background: var(--brand-2); }
+.icono-login { width: 20px; height: 20px; fill: white; }
+
+/* UTILIDADES */
+.fade-in { animation: fadeIn .9s ease both; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+
+/* RESPONSIVE */
+@media (max-width: 980px) { .contact-grid { grid-template-columns: 1fr; } }
+@media (max-width: 760px) {
+  .menu-lateral { right: .4rem; }
+  .hero { height: 64vh; }
+  .productos-track.carousel { grid-auto-columns: 82%; }
 }
 </style>
