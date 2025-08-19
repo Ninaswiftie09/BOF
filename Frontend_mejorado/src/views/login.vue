@@ -44,12 +44,13 @@
 
 <script>
 export default {
-  name: "LoginView", 
+  name: "LoginView",
   data() {
     return {
       email: "",
       password: "",
-      message: "" 
+      message: "",
+      messageType: ""   // <-- lo usas más abajo
     };
   },
   methods: {
@@ -57,7 +58,7 @@ export default {
       const loginData = {
         email: this.email,
         password: this.password
-    };
+      };
 
       const BASE_URL = process.env.NODE_ENV === 'development'
         ? 'http://localhost:8000'
@@ -68,38 +69,41 @@ export default {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
-        },
+          },
           body: JSON.stringify(loginData)
-      });
+        });
 
         if (response.ok) {
           const data = await response.json();
           console.log("Respuesta del servidor:", data);
 
+          // 🔐 marca la "sesión" en el navegador
+          localStorage.setItem('isLoggedIn', 'true');
+
           this.message = "¡Bienvenido! Inicio de sesión exitoso.";
           this.messageType = "success";
 
-          this.email = ''; 
+          this.email = '';
           this.password = '';
 
-          this.$router.push('/home'); 
-
-      } else {
+          // si el guard guardó "next", vuelve allí; si no, a /home
+          const next = this.$route.query.next || '/home';
+          this.$router.replace(next);
+        } else {
           const data = await response.json();
           this.message = data.message || 'Credenciales incorrectas. Intenta de nuevo.';
           this.messageType = "error";
-      }
-    }   catch (error) {
+        }
+      } catch (error) {
         console.error("Error de login:", error);
         this.message = 'Error al conectar con el servidor. Intenta nuevamente más tarde.';
         this.messageType = "error";
+      }
     }
-}
-
-}
-
+  }
 };
 </script>
+
 
 <style scoped>
 .background {
