@@ -79,6 +79,16 @@ class Uniforme(models.Model):
     material = models.ForeignKey(Tela, on_delete=models.SET_NULL, null=True, blank=True)
     stock = models.PositiveIntegerField(default=0)
 
+    categoria = models.ForeignKey(
+        'Categoria',                 
+        on_delete=models.SET_NULL,   # si se borra la categoría, el uniforme no se borra
+        null=True,
+        blank=True,
+        related_name='uniformes'
+    )
+    def __str__(self):
+        return f"{self.tipo} - {self.talla} - {self.color}"
+    
 class Proveedor(models.Model):
     id = models.AutoField(primary_key=True)
     nombre = models.CharField(max_length=200, unique=True)

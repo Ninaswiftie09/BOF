@@ -25,8 +25,17 @@ from rest_framework import status
 from .models import Proveedor, Compra
 from .serializers import ProveedorSerializer, CompraSerializer
 
-from .models import Venta, DetalleVenta, Hilo, Tela, Uniforme, Operacion, Venta, DetalleVenta, Producto
-from .serializers import VentaSerializer, HiloSerializer, TelaSerializer, UniformeSerializer, OperacionSerializer, VentaSerializer
+from .models import Categoria, Venta, DetalleVenta, Hilo, Tela, Uniforme, Operacion, Producto, Orden
+from .serializers import (
+    CategoriaSerializer,
+    VentaSerializer,
+    HiloSerializer,
+    TelaSerializer,
+    UniformeSerializer,
+    OperacionSerializer,
+    OrdenSerializer,
+)
+
 from django.utils.decorators import method_decorator
 
 
@@ -34,6 +43,10 @@ from rest_framework.generics import ListAPIView
 from .models import Tela
 from .serializers import TelaSerializer
 from clientes.models import Compra
+
+#categorias
+from .models import Categoria
+from .serializers import CategoriaSerializer
 
 # Nueva Orden
 from .models import Orden
@@ -159,7 +172,7 @@ class EditarHilo(APIView):
 class EditarUniforme(APIView):
     def put(self, request, pk):
         uniforme = get_object_or_404(Uniforme, pk=pk)
-        serializer = UniformeSerializer(uniforme, data=request.data)
+        serializer = UniformeSerializer(uniforme, data=request.data, partial=True)  # 👈 partial=True
         if serializer.is_valid():
             serializer.save()
             return Response({'mensaje': 'Uniforme actualizado correctamente', 'uniforme': serializer.data})
@@ -182,6 +195,39 @@ class UniformeListAPIView(APIView):
         uniformes = Uniforme.objects.all()
         serializer = UniformeSerializer(uniformes, many=True)
         return Response(serializer.data)
+
+
+class CategoriaListAPIView(APIView):
+    def get(self, request):
+        categorias = Categoria.objects.all().order_by('nombre')
+        serializer = CategoriaSerializer(categorias, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+class AgregarNuevaCategoria(APIView):
+    def post(self, request):
+        serializer = CategoriaSerializer(data=request.data)
+        if serializer.is_valid():
+            categoria = serializer.save()
+            return Response(
+                {"message": "Categoría creada", "categoria": serializer.data},
+                status=status.HTTP_201_CREATED
+            )
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class EditarCategoria(APIView):
+    def put(self, request, pk):
+        categoria = get_object_or_404(Categoria, pk=pk)
+        serializer = CategoriaSerializer(categoria, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"message": "Categoría actualizada", "categoria": serializer.data})
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class EliminarCategoria(APIView):
+    def delete(self, request, pk):
+        categoria = get_object_or_404(Categoria, pk=pk)
+        categoria.delete()
+        return Response({"mensaje": "Categoría eliminada correctamente"}, status=status.HTTP_204_NO_CONTENT)
 
 class VentasPorFechaAPIView(APIView):
     def get(self, request):
@@ -352,17 +398,33 @@ class AgregarNuevaTela(APIView):
 class AgregarNuevoUniforme(APIView):
     def post(self, request):
         material_id = request.data.get('material')
-        try:
-            material = Tela.objects.get(id=material_id)
-        except Tela.DoesNotExist:
-            return Response({'error': 'Material no encontrado'}, status=status.HTTP_400_BAD_REQUEST)
+        categoria_id = request.data.get('categoria')
+
+        material = None
+        if material_id:
+            try:
+                material = Tela.objects.get(id=material_id)
+            except Tela.DoesNotExist:
+                return Response({'error': 'Material no encontrado'}, status=status.HTTP_400_BAD_REQUEST)
+
+        categoria = None
+        if categoria_id:
+            try:
+                categoria = Categoria.objects.get(id=categoria_id)
+            except Categoria.DoesNotExist:
+                return Response({'error': 'Categoría no encontrada'}, status=status.HTTP_400_BAD_REQUEST)
 
         serializer = UniformeSerializer(data=request.data)
         if serializer.is_valid():
-            if Uniforme.objects.filter(tipo=serializer.validated_data['tipo'], talla=serializer.validated_data['talla'], color=serializer.validated_data['color']).exists():
+            # Evitar duplicados por combinación
+            if Uniforme.objects.filter(
+                tipo=serializer.validated_data['tipo'],
+                talla=serializer.validated_data['talla'],
+                color=serializer.validated_data['color']
+            ).exists():
                 return Response({'error': 'Ya existe un uniforme con esas características'}, status=status.HTTP_400_BAD_REQUEST)
 
-            uniforme = serializer.save(material=material)
+            uniforme = serializer.save(material=material, categoria=categoria)
             return Response({'message': 'Uniforme agregado exitosamente', 'uniforme': uniforme.tipo}, status=status.HTTP_201_CREATED)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

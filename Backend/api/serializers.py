@@ -1,9 +1,11 @@
 from rest_framework import serializers
 from .models import Categoria, Producto, Venta, DetalleVenta
-from .models import Hilo, Tela, Uniforme
+from .models import Categoria, Hilo, Tela, Uniforme
 from .models import Proveedor, Compra, Operacion
 from clientes.models import Compra as CompraCliente
 from .models import Orden, DetalleOrden
+
+
 
 
 class CategoriaSerializer(serializers.ModelSerializer):
@@ -77,9 +79,21 @@ class TelaSerializer(serializers.ModelSerializer):
         return instance
 
 class UniformeSerializer(serializers.ModelSerializer):
+    material_nombre = serializers.SerializerMethodField(read_only=True)
+    categoria_nombre = serializers.SerializerMethodField(read_only=True)
+
     class Meta:
         model = Uniforme
-        fields = ['id', 'tipo', 'talla', 'color','stock', 'material']
+        fields = [
+            'id', 'tipo', 'talla', 'color', 'stock',
+            'material', 'material_nombre',
+            'categoria', 'categoria_nombre',
+        ]
+    def get_material_nombre(self, obj):
+        return obj.material.nombre if obj.material else None
+
+    def get_categoria_nombre(self, obj):
+        return obj.categoria.nombre if obj.categoria else None
 
     def update(self, instance, validated_data):
         if 'stock' in validated_data:

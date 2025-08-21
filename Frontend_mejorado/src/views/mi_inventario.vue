@@ -12,7 +12,7 @@
     </header>
 
     <div v-for="(items, tipo) in inventarios" :key="tipo" class="inventory-section">
-      <h2>{{ tipo }}</h2>
+      <h2>{{ titulosVisibles[tipo] || tipo }}</h2>
       <table>
         <thead>
           <tr>
@@ -21,23 +21,36 @@
         </thead>
         <tbody>
           <tr
-            v-for="(item, index) in mostrarLimitado(tipo) ? items.slice(0, 6) : items"
+            v-for="(item, index) in (mostrarLimitado(tipo) ? items.slice(0, 6) : items)"
             :key="index"
             :class="{ 'en-escasez': item.stock < 6 }"
           >
+            <!-- Telas -->
             <template v-if="tipo === 'Telas'">
               <td>{{ item.id }}</td><td>{{ item.nombre }}</td><td>{{ item.tipo }}</td>
               <td>{{ item.composicion }}</td><td>{{ item.color }}</td>
               <td>{{ item.codigo }}</td><td>{{ item.stock }}</td><td>{{ item.descripcion }}</td>
             </template>
+
+            <!-- Hilos -->
             <template v-else-if="tipo === 'Hilos'">
               <td>{{ item.id }}</td><td>{{ item.nombre }}</td><td>{{ item.material }}</td>
               <td>{{ item.codigo_color }}</td><td>{{ item.color }}</td>
               <td>{{ item.codigo }}</td><td>{{ item.stock }}</td><td>{{ item.descripcion }}</td>
             </template>
+
+            <!-- Uniformes (UI: Productos) -->
             <template v-else-if="tipo === 'Uniformes'">
               <td>{{ item.id }}</td><td>{{ item.tipo }}</td><td>{{ item.talla }}</td>
-              <td>{{ item.color }}</td><td>{{ item.stock }}</td><td>{{ item.material_nombre }}</td>
+              <td>{{ item.color }}</td><td>{{ item.stock }}</td>
+              <td>{{ item.categoria_nombre || 'N/A' }}</td>
+              <td>{{ item.material_nombre || 'N/A' }}</td>
+            </template>
+
+            <!-- Categorías -->
+            <template v-else-if="tipo === 'Categorias'">
+              <td>{{ item.id }}</td>
+              <td>{{ item.nombre }}</td>
             </template>
           </tr>
         </tbody>
@@ -50,21 +63,24 @@
         <button @click="abrirVerTodos(tipo)">Ver Todos</button>
       </div>
     </div>
-    
 
+    <!-- Modal Formulario -->
     <div v-if="formVisible" class="modal-overlay">
       <div class="modal-content">
-        <h3 v-if="accion === 'agregar'">Agregar nuevo {{ tipoFormulario }}</h3>
-        <h3 v-else-if="accion === 'editar'">Editar {{ tipoFormulario }}</h3>
-        <h3 v-else-if="accion === 'eliminar'">Eliminar {{ tipoFormulario }}</h3>
+        <h3 v-if="accion === 'agregar'">Agregar nuevo {{ titulosVisibles[tipoFormulario] || tipoFormulario }}</h3>
+        <h3 v-else-if="accion === 'editar'">Editar {{ titulosVisibles[tipoFormulario] || tipoFormulario }}</h3>
+        <h3 v-else-if="accion === 'eliminar'">Eliminar {{ titulosVisibles[tipoFormulario] || tipoFormulario }}</h3>
 
         <form @submit.prevent="submitFormulario" class="form-vertical">
+          <!-- ID cuando no es agregar -->
           <div v-if="accion !== 'agregar'">
             <label>ID del producto:</label>
             <input v-model.number="formData.id" type="number" min="1" required />
           </div>
 
+          <!-- Campos cuando no es eliminar -->
           <div v-if="accion !== 'eliminar'">
+            <!-- TELAS -->
             <div v-if="tipoFormulario === 'Telas'">
               <label>Nombre</label>
               <input v-model="formData.nombre" placeholder="Nombre" />
@@ -81,6 +97,8 @@
               <label>Descripción</label>
               <textarea v-model="formData.descripcion" placeholder="Descripción"></textarea>
             </div>
+
+            <!-- HILOS -->
             <div v-if="tipoFormulario === 'Hilos'">
               <label>Nombre</label>
               <input v-model="formData.nombre" placeholder="Nombre" />
@@ -97,6 +115,8 @@
               <label>Descripción</label>
               <textarea v-model="formData.descripcion" placeholder="Descripción"></textarea>
             </div>
+
+            <!-- UNIFORMES (UI: Productos) -->
             <div v-if="tipoFormulario === 'Uniformes'">
               <label>Tipo</label>
               <input v-model="formData.tipo" placeholder="Tipo" />
@@ -108,6 +128,25 @@
               <input v-model.number="formData.material" />
               <label>Stock</label>
               <input v-model.number="formData.stock" type="number" />
+
+              <!-- NUEVO: Tipo de categoría -->
+              <label>Tipo de categoría</label>
+              <select v-model.number="formData.categoria">
+                <option :value="null" disabled>Seleccione una categoría</option>
+                <option v-for="c in categoriasOptions" :key="c.id" :value="c.id">
+                  {{ c.nombre }}
+                </option>
+              </select>
+            </div>
+
+            <!-- CATEGORÍAS -->
+            <div v-if="tipoFormulario === 'Categorias'">
+              <label>Nombre</label>
+              <input
+                v-model="formData.nombre"
+                placeholder="Nombre de la categoría"
+                required
+              />
             </div>
           </div>
 
@@ -121,10 +160,11 @@
       </div>
     </div>
 
+    <!-- Modal Ver Todos -->
     <div v-if="verTodosVisible" class="modal-overlay">
       <div class="modal-content full-table-modal">
         <button class="close-btn-top" @click="cerrarVerTodos">✕</button>
-        <h3>{{ tipoVerTodos }} - Lista Completa</h3>
+        <h3>{{ titulosVisibles[tipoVerTodos] || tipoVerTodos }} - Lista Completa</h3>
         <table>
           <thead>
             <tr>
@@ -133,19 +173,32 @@
           </thead>
           <tbody>
             <tr v-for="item in inventarios[tipoVerTodos]" :key="item.id">
+              <!-- Telas -->
               <template v-if="tipoVerTodos === 'Telas'">
                 <td>{{ item.id }}</td><td>{{ item.nombre }}</td><td>{{ item.tipo }}</td>
                 <td>{{ item.composicion }}</td><td>{{ item.color }}</td>
                 <td>{{ item.codigo }}</td><td>{{ item.stock }}</td><td>{{ item.descripcion }}</td>
               </template>
+
+              <!-- Hilos -->
               <template v-else-if="tipoVerTodos === 'Hilos'">
                 <td>{{ item.id }}</td><td>{{ item.nombre }}</td><td>{{ item.material }}</td>
                 <td>{{ item.codigo_color }}</td><td>{{ item.color }}</td>
                 <td>{{ item.codigo }}</td><td>{{ item.stock }}</td><td>{{ item.descripcion }}</td>
               </template>
+
+              <!-- Uniformes (UI: Productos) -->
               <template v-else-if="tipoVerTodos === 'Uniformes'">
                 <td>{{ item.id }}</td><td>{{ item.tipo }}</td><td>{{ item.talla }}</td>
-                <td>{{ item.color }}</td><td>{{ item.stock }}</td><td>{{ item.material_nombre }}</td>
+                <td>{{ item.color }}</td><td>{{ item.stock }}</td>
+                <td>{{ item.categoria_nombre || 'N/A' }}</td>
+                <td>{{ item.material_nombre || 'N/A' }}</td>
+              </template>
+
+              <!-- Categorías -->
+              <template v-else-if="tipoVerTodos === 'Categorias'">
+                <td>{{ item.id }}</td>
+                <td>{{ item.nombre }}</td>
               </template>
             </tr>
           </tbody>
@@ -155,7 +208,6 @@
     </div>
   </div>
 </template>
-
 
 <script>
 import { BASE_URL } from '@/config';
@@ -176,26 +228,48 @@ export default {
       inventarios: {
         Telas: [],
         Hilos: [],
-        Uniformes: []
+        Uniformes: [],
+        Categorias: [] // NUEVO
+      },
+      // Títulos visibles (UI): Uniformes -> Productos
+      titulosVisibles: {
+        Telas: 'Telas',
+        Hilos: 'Hilos',
+        Uniformes: 'Productos',
+        Categorias: 'Categorías'
       },
       columnasPorTipo: {
         Telas: ["id", "Nombre", "Tipo", "Composición", "Color", "Código", "Stock", "Descripción"],
         Hilos: ["id", "Nombre", "Material", "Código Color", "Color", "Código", "Stock", "Descripción"],
-        Uniformes: ["id", "Tipo", "Talla", "Color", "Stock", "Material (tela)"]
+        Uniformes: ["id", "Tipo", "Talla", "Color", "Stock", "Categoría", "Material (tela)"],
+        Categorias: ["id", "Nombre"]
       },
       formVisible: false,
       tipoFormulario: '',
       accion: '',
       formData: {},
       verTodosVisible: false,
-      tipoVerTodos: ''
+      tipoVerTodos: '',
+      categoriasOptions: [] // NUEVO: opciones para el select
     };
   },
   mounted() {
     this.obtenerInventario("Telas");
     this.obtenerInventario("Hilos");
     this.obtenerInventario("Uniformes");
+    this.obtenerInventario("Categorias"); // NUEVO
+    this.cargarCategorias(); // NUEVO
 
+    // refrescar tablas cuando alguien emite el evento global
+    if (bus && bus.on) {
+      bus.on('inventario-actualizado', () => {
+        this.obtenerInventario("Telas");
+        this.obtenerInventario("Hilos");
+        this.obtenerInventario("Uniformes");
+        this.obtenerInventario("Categorias");
+        this.cargarCategorias();
+      });
+    }
   },
   methods: {
     mostrarLimitado(tipo) {
@@ -209,6 +283,10 @@ export default {
       this.tipoFormulario = tipo;
       this.formVisible = true;
       this.formData = {};
+      // Asegurar categorías frescas cuando se abra el formulario de Productos o Categorías
+      if (tipo === 'Uniformes' || tipo === 'Categorias') {
+        this.cargarCategorias();
+      }
     },
     cerrarFormulario() {
       this.formVisible = false;
@@ -224,14 +302,16 @@ export default {
     },
     async submitFormulario() {
       try {
-        const tipo = this.tipoFormulario.slice(0, -1).toLowerCase();
+        const tipo = this.tipoFormulario.slice(0, -1).toLowerCase(); // telas->tela, hilos->hilo, uniformes->uniforme, categorias->categoria
         const urlBase = `${BASE_URL}/api`;
         let url = '';
         let method = '';
+
         const agregarEndpoints = {
           tela: 'agregar-nueva-tela',
           hilo: 'agregar-nuevo-hilo',
-          uniforme: 'agregar-nuevo-uniforme'
+          uniforme: 'agregar-nuevo-uniforme',
+          categoria: 'agregar-nueva-categoria' // NUEVO
         };
 
         if (this.accion === 'agregar') {
@@ -247,14 +327,13 @@ export default {
           method = 'DELETE';
         }
 
-        // Función para obtener el token CSRF
+        // Obtener token CSRF
         function getCookie(name) {
           let cookieValue = null;
           if (document.cookie && document.cookie !== '') {
             const cookies = document.cookie.split(';');
             for (let i = 0; i < cookies.length; i++) {
               const cookie = cookies[i].trim();
-              // Coincide con el nombre
               if (cookie.startsWith(name + '=')) {
                 cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
                 break;
@@ -264,46 +343,64 @@ export default {
           return cookieValue;
         }
 
-
         const res = await fetch(url, {
           method,
-          credentials: 'include',  
+          credentials: 'include',
           headers: {
             'Content-Type': 'application/json',
-            'X-CSRFToken': getCookie('csrftoken')  // token CSRF
+            'X-CSRFToken': getCookie('csrftoken')
           },
           body: method !== 'DELETE' ? JSON.stringify(this.formData) : null
         });
 
-
         if (!res.ok) {
-          const err = await res.json();
-          return alert('Error: ' + (err.error || 'Desconocido'));
+          const err = await res.json().catch(() => ({}));
+          return alert('Error: ' + (err.error || err.message || 'Desconocido'));
         }
 
-        alert(`${this.accion} completado con éxito`)
-        bus.emit('inventario-actualizado') // 🔄 Notifica a home.vue que recargue el gráfico
-        this.cerrarFormulario()
-        this.obtenerInventario(this.tipoFormulario, this.tipoFormulario.toLowerCase())
+        alert(`${this.accion} completado con éxito`);
+        bus?.emit?.('inventario-actualizado');
+        this.cerrarFormulario();
 
-
+        // refrescar tablas y opciones
+        this.obtenerInventario(this.tipoFormulario);
+        if (this.tipoFormulario === 'Categorias') {
+          await this.cargarCategorias();
+        }
+        if (this.tipoFormulario === 'Uniformes') {
+          // refrescar para ver categoria_nombre reflejada
+          this.obtenerInventario('Uniformes');
+        }
       } catch (error) {
         alert('Error en la conexión con el servidor');
         console.error(error);
       }
     },
-    async obtenerInventario(tipo, endpoint) {
+    async obtenerInventario(tipo) {
       try {
         const res = await fetch(`${BASE_URL}/api/${tipo.toLowerCase()}/`);
         const data = await res.json();
         this.inventarios[tipo] = data.map(item =>
-          tipo === "Uniformes" ? { ...item, material_nombre: item.material_nombre || "N/A" } : item
+          tipo === "Uniformes"
+            ? {
+                ...item,
+                material_nombre: item.material_nombre || "N/A",
+                categoria_nombre: item.categoria_nombre || "N/A"
+              }
+            : item
         );
       } catch (error) {
         console.error(`Error al obtener ${tipo}:`, error);
       }
+    },
+    async cargarCategorias() {
+      try {
+        const res = await fetch(`${BASE_URL}/api/categorias/`);
+        this.categoriasOptions = await res.json();
+      } catch (e) {
+        console.error('Error cargando categorías', e);
+      }
     }
-
   }
 };
 </script>
@@ -316,7 +413,7 @@ export default {
 }
 
 .inventory-container {
-  padding: 40px;
+  padding: 80px 40px 40px; /* margen superior por la top-bar fija */
   background-color: var(--color-octonary);
   min-height: 100vh;
 }
@@ -455,7 +552,8 @@ tr:nth-child(even) {
 }
 
 .form-vertical input,
-.form-vertical textarea {
+.form-vertical textarea,
+.form-vertical select {
   width: 100%;
   padding: 8px 10px;
   border-radius: 6px;
@@ -500,17 +598,19 @@ tr:nth-child(even) {
 .btn-cancel:hover {
   background-color: #eee;
 }
+
 .full-table-modal {
   background: white;
   padding: 25px 30px;
   border-radius: 12px;
   box-shadow: 0 8px 20px rgba(0,0,0,0.3);
-  max-width: 90vw; 
+  max-width: 90vw;
   width: 90vw;
   max-height: 90vh;
   overflow-y: auto;
-  position: relative; 
+  position: relative;
 }
+
 .close-btn-top {
   position: absolute;
   top: 10px;
@@ -526,6 +626,4 @@ tr:nth-child(even) {
 .close-btn-top:hover {
   color: #b00020;
 }
-
-
 </style>

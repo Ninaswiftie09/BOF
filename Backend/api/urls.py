@@ -38,7 +38,13 @@ from .views import (
     CrearVentaAPIView,
     EditarVentaAPIView,
     EliminarVentaAPIView,
+    CategoriaListAPIView,
+    AgregarNuevaCategoria,
+    EditarCategoria,
+    EliminarCategoria,
+
 )
+
 
 from clientes.views import ClienteViewSet
 
@@ -84,6 +90,12 @@ urlpatterns = [
     path('inventario/editar-tela/<int:pk>/', EditarTela.as_view(), name='editar-tela'),
     path('inventario/editar-hilo/<int:pk>/', EditarHilo.as_view(), name='editar-hilo'),
     path('inventario/editar-uniforme/<int:pk>/', EditarUniforme.as_view(), name='editar-uniforme'),
+
+    # Categorías
+    path('categorias/', CategoriaListAPIView.as_view(), name='listar_categorias'),
+    path('inventario/agregar-nueva-categoria/', AgregarNuevaCategoria.as_view(), name='agregar-nueva-categoria'),
+    path('inventario/editar-categoria/<int:pk>/', EditarCategoria.as_view(), name='editar-categoria'),
+    path('inventario/eliminar-categoria/<int:pk>/', EliminarCategoria.as_view(), name='eliminar-categoria'),
 
     # Operaciones resumen
     path('operaciones/summary/', OperacionSummaryAPIView.as_view(), name='operaciones-summary'),
