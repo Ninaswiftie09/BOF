@@ -27,7 +27,7 @@ const clienteForm = reactive({
   codigo_cliente: '',
   estado: true,
   nombre: '',
-  contacto: '',
+  contacto: '', /*eliminar contacto*/
   nit: '',
   direccion: '',
   direccion_entrega: '',
@@ -58,7 +58,7 @@ function resetForm() {
     codigo_cliente: '',
     estado: true,
     nombre: '',
-    contacto: '',
+    contacto: '', /*eliminar contacto*/
     nit: '',
     direccion: '',
     direccion_entrega: '',
@@ -78,7 +78,17 @@ async function saveCliente() {
     ? `/api/clientes/${clienteForm.id}/`
     : `/api/clientes/`
 
-  const payload = { ...clienteForm };
+  const payload = { 
+    nombre: clienteForm.nombre,
+    contacto: clienteForm.contacto,
+    nit: clienteForm.nit,
+    direccion: clienteForm.direccion,
+    direccion_entrega: clienteForm.direccion_entrega,
+    telefono: clienteForm.telefono,
+    email: clienteForm.email,
+    cartera: clienteForm.cartera,
+    estado: clienteForm.estado,
+  };
 
   delete payload.id;
   delete payload.codigo_cliente;
@@ -117,7 +127,7 @@ async function deleteCliente(id) {
 /* FILTRO DE BÚSQUEDA */
 const filteredClientes = computed(() =>
   clientes.value.filter(c =>
-    [c.codigo_cliente, c.nombre, c.contacto]
+    [c.codigo_cliente, c.nombre, c.contacto]  /*eliminar contacto*/
       .some(v => v?.toString().toLowerCase().includes(search.value.toLowerCase()))
   )
 )
@@ -150,12 +160,16 @@ function searchClientsInModal() {
       
       <!-- Tabla de clientes -->
       <section class="module">
+        <div class="search-wrapper">
+          <input v-model="search" class="search-clientes" placeholder="Buscar clientes…" />
+        </div>
+
         <table>
           <thead>
             <tr>
               <th>Código</th>
               <th>Nombre</th>
-              <th>Contacto</th>
+              <th>Contacto</th> <!-- eliminar contacto -->
               <th>Teléfono</th>
               <th>NIT</th>
               <th>Acciones</th>
@@ -165,7 +179,7 @@ function searchClientsInModal() {
             <tr v-for="c in filteredClientes" :key="c.codigo_cliente">
               <td>{{ c.codigo_cliente }}</td>
               <td>{{ c.nombre }}</td>
-              <td>{{ c.contacto }}</td>
+              <td>{{ c.contacto }}</td> <!-- eliminar contacto -->
               <td>{{ c.telefono }}</td>
               <td>{{ c.nit }}</td>
               <td>
@@ -181,18 +195,9 @@ function searchClientsInModal() {
       </section>
 
       <!-- Tarjetas de acción -->
-      <section class="module cards-module">
-        <div class="cards-container">
-          <section class="big-card">
-            <h2>ACTUALIZACIÓN</h2>
-            <ul>
-              <li @click="open('clientes')">Agregar Cliente</li>
-              <li @click="open('buscar')">Modificar Cliente (por Nombre)</li>
-              <li @click="open('buscar')">Eliminar Cliente (por Nombre)</li>
-            </ul>
-          </section>
-        </div>
-      </section>
+      <div class="add-button-wrapper">
+        <button class="add-button" @click="open('clientes')">Agregar Cliente</button>
+      </div>
 
     </div>
 
@@ -202,7 +207,7 @@ function searchClientsInModal() {
         <h3>{{ clienteForm.id ? 'Editar Cliente' : 'Nuevo Cliente' }}</h3>
         <form class="modal-form grid-two" @submit.prevent="saveCliente">
           <label>Nombre<input v-model="clienteForm.nombre" required/></label>
-          <label>Contacto<input v-model="clienteForm.contacto"/></label>
+          <label>Contacto<input v-model="clienteForm.contacto"/></label>  <!-- eliminar contacto -->
           <label>NIT<input v-model="clienteForm.nit"/></label>
           <label>Dirección<input v-model="clienteForm.direccion"/></label>
           <label>Dirección Entrega<input v-model="clienteForm.direccionEntrega"/></label>
@@ -271,17 +276,6 @@ function searchClientsInModal() {
   gap:2rem;
 }
 
-.search{
-  flex:1 1 300px;
-  max-width:300px;
-  margin-right:1rem;
-  padding:.4rem .8rem;
-  border-radius:6px;
-  border:none;
-  background:#fff;
-  color:#000
-}
-
 .avatar-btn{
   width:36px;
   height:36px;
@@ -348,6 +342,7 @@ tr[v-if="filteredClientes.length===0"] td {
 .remove-btn { color: #e74c3c; }
 .edit-btn:hover { color: #93c5fd; }
 .remove-btn:hover { color: #f87171; }
+
 
 .cards-container{
   display:flex;
@@ -448,5 +443,39 @@ tr[v-if="filteredClientes.length===0"] td {
   margin-top: 2rem;
 }
 
+/* barra de búsqueda*/
+.search-wrapper {
+  margin-bottom: 1rem;
+}
+.search-clientes {
+  max-width: 300px;
+  width: 100%;
+  padding: 0.4rem 0.8rem;
+  border-radius: 6px;
+  background: #fff;
+  color: #000;
+  font-size: 0.8rem;
+}
+
+/* Boton agregar clientes */
+.add-button-wrapper {
+  display: flex;
+  justify-content: flex-end; 
+  padding: 0 1.5rem;
+}
+.add-button {
+  background: #374666;
+  color: white;
+  border: none;
+  padding: .7rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+.add-button:hover {
+  background: #4a5568;
+}
 
 </style>
