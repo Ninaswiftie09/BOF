@@ -1,101 +1,110 @@
-/* --- Colores --- */
+/* === Tokens (sin anidar ni barras sueltas) === */
 :root {
-    --color-primary: #1e293b;       
-    --color-secondary: #2AA68F;  /*este color no*/   
-    --color-tertiary: #84C8C0;      
-    --color-quaternary: #C9E8F5;    
-    --color-quinary: #2B5CA8;     
-    --color-senary: #374666;        
-    --color-septenary: #83A4CC;    
-    --color-octonary: #0a0f2c;   
-    --color-novenary: #ffffff;
-    --colo-texto-negro: #000000;
-    --colo-texto-blanco: #ffffff;
-    /* colores que agrego*/ 
-    :root {
+  /* Paleta base */
   --color-primary: #1e293b;
-  --color-secondary: #f8fafc;
-  --color-novenary: #ffffff;
-  --color-septenary: #cbd5e1;
-  --color-senary: #334155;
-  --color-quinary: #94a3b8;
+  --color-quinary:  #2B5CA8;
+  --color-senary:   #334155;
+  --color-septenary:#cbd5e1;
   --color-octonary: #0f172a;
+  --color-novenary: #ffffff;
+
+  /* Extras que ya tenías */
+  --color-tertiary:   #84C8C0;
+  --color-quaternary: #C9E8F5;
+
+  /* Mantener compatibilidad: el “secondary” apunta al azul de acción */
+  --color-secondary: var(--color-quinary);
+
+  /* Texto y diseño */
+  --colo-texto-negro:  #000000;
+  --colo-texto-blanco: #ffffff;
+  --radius: 12px;
+  --shadow: 0 8px 24px rgba(0,0,0,.20);
 }
 
+/* === Tipografías === */
+@font-face { font-family: 'Archivo Black'; src: url('./fonts/ArchivoBlack-Regular.ttf') format('truetype'); }
+@font-face { font-family: 'Kollektif'; src: url('./fonts/Kollektif.ttf') format('truetype'); }
+@font-face { font-family: 'Kollektif'; src: url('./fonts/Kollektif-Bold.ttf') format('truetype'); font-weight: bold; }
+@font-face { font-family: 'Kollektif'; src: url('./fonts/Kollektif-Italic.ttf') format('truetype'); font-style: italic; }
+@font-face { font-family: 'Kollektif'; src: url('./fonts/Kollektif-BoldItalic.ttf') format('truetype'); font-weight: bold; font-style: italic; }
 
-  }
-  
-  /* --- Tipografías --- */
-  @font-face {
-    font-family: 'Archivo Black';
-    src: url('./fonts/ArchivoBlack-Regular.ttf') format('truetype');
-  }
-  
-  @font-face {
-    font-family: 'Kollektif';
-    src: url('./fonts/Kollektif.ttf') format('truetype');
-  }
-  
-  @font-face {
-    font-family: 'Kollektif';
-    src: url('./fonts/Kollektif-Bold.ttf') format('truetype');
-    font-weight: bold;
-  }
-  
-  @font-face {
-    font-family: 'Kollektif';
-    src: url('./fonts/Kollektif-Italic.ttf') format('truetype');
-    font-style: italic;
-  }
-  
-  @font-face {
-    font-family: 'Kollektif';
-    src: url('./fonts/Kollektif-BoldItalic.ttf') format('truetype');
-    font-weight: bold;
-    font-style: italic;
-  }
-  
-  /* --- Estilos generales --- */
-  body {
-    font-family: 'Kollektif', sans-serif;
-    background-color: var(--color-octonary);
-    color: var(--color-primary);
-    margin: 0;
-    padding: 0;
-  }
-  
-  /* --- Encabezados --- */
-  h1, h2, h3, h4 {
-    font-family: 'Archivo Black', sans-serif;
-    color: var(--color-primary);
-  }
-  
-  /* --- Botones --- */
-  button {
-    background-color: var(--color-secondary);
-    color: white;
-    padding: 10px 20px;
-    border: none;
-    cursor: pointer;
-    font-family: 'Kollektif', sans-serif;
-  }
-  
-  button:hover {
-    background-color: var(--color-quaternary);
-  }
+/* === Base === */
+* { box-sizing: border-box; }
+html, body, #app { height: 100%; }
 
-  /* --- Íconos SVG en la navegación --- */
+body {
+  font-family: 'Kollektif', sans-serif;
+  background-color: var(--color-octonary); /* fondo oscuro */
+  color: var(--color-novenary);            /* texto claro (mejor contraste) */
+  margin: 0;
+  padding: 0;
+}
+
+/* Encabezados: texto claro en fondo oscuro */
+h1, h2, h3, h4 {
+  font-family: 'Archivo Black', sans-serif;
+  color: var(--color-novenary);
+  margin: .5rem 0;
+}
+
+/* === Controles === */
+button {
+  background-color: var(--color-quinary); /* azul de acción */
+  color: var(--color-novenary);
+  padding: 10px 16px;
+  border: 1px solid transparent;
+  border-radius: var(--radius);
+  cursor: pointer;
+  font-family: 'Kollektif', sans-serif;
+  box-shadow: var(--shadow);
+  transition: filter .15s ease, transform .05s ease;
+}
+button:hover   { filter: brightness(1.08); }
+button:active  { transform: translateY(1px); }
+
+/* Variante secundaria sin relleno (*/
+button.secondary {
+  background: transparent;
+  border-color: var(--color-septenary);
+  color: var(--color-novenary);
+}
+
+/* Inputs */
+input, select, textarea {
+  width: 100%;
+  background: #111827; /* superficie oscura */
+  color: var(--color-novenary);
+  border: 1px solid #223043;
+  border-radius: var(--radius);
+  padding: 10px 12px;
+  outline: none;
+}
+input::placeholder, textarea::placeholder { color: var(--color-septenary); }
+input:focus, select:focus, textarea:focus { border-color: var(--color-quinary); }
+
+/* === Íconos SVG en la navegación === */
 .icon-circle svg {
   width: 20px;
   height: 20px;
   stroke: currentColor;
   fill: none;
 }
-
 .icon-circle {
-  color: var(--color-novenary); /* Blanco */
+  color: var(--color-novenary); /* Blanco por defecto */
+}
+.nav-item:hover .icon-circle {
+  color: var(--color-quinary);  /* Azul al hover */
 }
 
-.nav-item:hover .icon-circle {
-  color: var(--color-secondary); /* Verde agua al pasar el mouse */
+/* === Utilidades mínimas === */
+.card {
+  background: #0b1326;
+  border: 1px solid rgba(255,255,255,.06);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 16px;
 }
+.muted { color: var(--color-septenary); }
+.link  { color: var(--color-quinary); text-decoration: none; }
+.link:hover { text-decoration: underline; }
