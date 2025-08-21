@@ -2,6 +2,7 @@
 import json
 
 # Django
+from django.core.mail import send_mail  # Para enviar correos
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.models import User, Group
@@ -66,6 +67,7 @@ class TelaListAPIView(ListAPIView):
 def ping(request):
     return JsonResponse({"message": "pong"})
 
+
 @csrf_exempt
 def register_user(request):
     if request.method == 'POST':
@@ -75,7 +77,7 @@ def register_user(request):
             last_name = data.get('last_name')
             email = data.get('email')
             password = data.get('password')
-            role = data.get('role') 
+            role = data.get('role')
 
             if not first_name or not last_name or not email or not password or not role:
                 return JsonResponse({'message': 'Faltan datos requeridos'}, status=400)
@@ -92,9 +94,9 @@ def register_user(request):
             )
             user.save()
 
-            # Crear o obtener los grupos
-            admin_group, created = Group.objects.get_or_create(name='Administrador')
-            employee_group, created = Group.objects.get_or_create(name='Empleado')
+            # Crear o agregar al grupo
+            admin_group, _ = Group.objects.get_or_create(name='Administrador')
+            employee_group, _ = Group.objects.get_or_create(name='Empleado')
 
             if role == 'Administrador':
                 user.groups.add(admin_group)
@@ -103,12 +105,18 @@ def register_user(request):
             else:
                 return JsonResponse({'message': 'Rol no válido'}, status=400)
 
-            return JsonResponse({'message': 'Usuario creado exitosamente'}, status=201)
+            # Enviar correo con credenciales
+            subject = 'Bienvenido a Abril Uniformes y Bordados'
+            message = f''''''
+            send_mail(subject, message, None, [email], fail_silently=False)
+
+            return JsonResponse({'message': 'Usuario creado y correo enviado'}, status=201)
 
         except Exception as e:
             return JsonResponse({'message': f'Error: {str(e)}'}, status=500)
     else:
         return JsonResponse({'message': 'Método no permitido'}, status=405)
+
     
 @csrf_exempt
 def login_user(request):
