@@ -72,8 +72,33 @@
         <h3 v-else-if="accion === 'eliminar'">Eliminar {{ titulosVisibles[tipoFormulario] || tipoFormulario }}</h3>
 
         <form @submit.prevent="submitFormulario" class="form-vertical">
-          <!-- ID cuando no es agregar -->
-          <div v-if="accion !== 'agregar'">
+          
+          <!-- Selección de producto para edición -->
+          <div v-if="accion === 'editar'">
+            <label>Seleccionar producto:</label>
+            <select v-model.number="seleccionId" @change="autoCompletarProducto">
+              <option :value="null" disabled>Seleccione un producto</option>
+              <option
+                v-for="item in inventarios[tipoFormulario]"
+                :key="item.id"
+                :value="item.id"
+              >
+                {{ formatearProducto(item) }}
+              </option>
+            </select>
+            <label>O ID del producto:</label>
+            <input
+              v-model.number="formData.id"
+              type="number"
+              min="1"
+              @change="autoCompletarProducto"
+              required
+            />
+          </div>
+
+          <!-- ID cuando es eliminación -->
+          <div v-else-if="accion === 'eliminar'">
+
             <label>ID del producto:</label>
             <input v-model.number="formData.id" type="number" min="1" required />
           </div>
@@ -250,7 +275,8 @@ export default {
       formData: {},
       verTodosVisible: false,
       tipoVerTodos: '',
-      categoriasOptions: [] // NUEVO: opciones para el select
+      categoriasOptions: [], 
+      seleccionId: null  
     };
   },
   mounted() {
@@ -283,6 +309,7 @@ export default {
       this.tipoFormulario = tipo;
       this.formVisible = true;
       this.formData = {};
+      this.seleccionId = null;
       // Asegurar categorías frescas cuando se abra el formulario de Productos o Categorías
       if (tipo === 'Uniformes' || tipo === 'Categorias') {
         this.cargarCategorias();
@@ -291,6 +318,7 @@ export default {
     cerrarFormulario() {
       this.formVisible = false;
       this.formData = {};
+      this.seleccionId = null;
     },
     abrirVerTodos(tipo) {
       this.tipoVerTodos = tipo;
@@ -299,6 +327,39 @@ export default {
     cerrarVerTodos() {
       this.verTodosVisible = false;
       this.tipoVerTodos = '';
+    },
+    formatearProducto(item) {
+      if (this.tipoFormulario === 'Uniformes') {
+        return `${item.id} - ${item.tipo} ${item.talla}`;
+      }
+      return `${item.id} - ${item.nombre || item.tipo}`;
+    },
+    autoCompletarProducto() {
+      const id = this.seleccionId || this.formData.id;
+      if (!id) return;
+      const lista = this.inventarios[this.tipoFormulario] || [];
+      const item = lista.find(p => p.id === id);
+      if (!item) {
+        this.formData = { id };
+        this.seleccionId = null;
+        return;
+      }
+      if (this.tipoFormulario === 'Telas') {
+        const { id: i, nombre, tipo, composicion, color, codigo, stock, descripcion } = item;
+        this.formData = { id: i, nombre, tipo, composicion, color, codigo, stock, descripcion };
+      } else if (this.tipoFormulario === 'Hilos') {
+        const { id: i, nombre, material, codigo_color, color, codigo, stock, descripcion } = item;
+        this.formData = { id: i, nombre, material, codigo_color, color, codigo, stock, descripcion };
+      } else if (this.tipoFormulario === 'Uniformes') {
+        const { id: i, tipo, talla, color, stock, material, categoria } = item;
+        this.formData = { id: i, tipo, talla, color, stock, material, categoria };
+      } else if (this.tipoFormulario === 'Categorias') {
+        const { id: i, nombre } = item;
+        this.formData = { id: i, nombre };
+      } else {
+        this.formData = { ...item };
+      }
+      this.seleccionId = id;
     },
     async submitFormulario() {
       try {
