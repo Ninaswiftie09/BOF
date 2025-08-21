@@ -26,9 +26,9 @@
               <td>{{ prov.telefono }}</td>
               <td>{{ prov.direccion }}</td>
               <td>
-                <button class="btn-action edit" @click="open('proveedor', prov)">✏️</button>
-                <button class="btn-action delete" @click="eliminarProveedor(prov.id)">🗑️</button>
-              </td>
+                <button class="edit-btn" @click="open('proveedor', prov)">✎</button>
+                <button class="remove-btn" @click="eliminarProveedor(prov.id)">✕</button>
+                </td>
             </tr>
             <tr v-if="filteredProveedores.length === 0">
               <td colspan="6" style="text-align: center;">No se encontraron proveedores</td>
@@ -37,14 +37,9 @@
         </table>
       </section>
 
-      <section class="module cards-module">
-        <div class="cards-container">
-          <section class="big-card">
-            <h2>ACTUALIZACIÓN</h2>
-            <ul><li @click="open('proveedor')">Agregar proveedor</li></ul>
-          </section>
-        </div>
-      </section>
+      <div class="add-button-wrapper">
+        <button class="add-button" @click="open('clientes')">Agregar Proveedores</button>
+      </div>
     </div>
 
     <!-- Modal -->
@@ -154,8 +149,22 @@ onMounted(() => {
 * { color: #fff; box-sizing: border-box; }
 body, html { margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
 
-.crm-home { background: #0a0f2c; min-height: 100vh; display: flex; flex-direction: column; }
-.top-bar { display: flex; align-items: center; justify-content: space-between; background: #1e293b; padding: 0.75rem 2rem; }
+.crm-home { 
+  background: #0a0f2c; 
+  min-height: 100vh; 
+  display: flex; 
+  flex-direction: column;
+  padding-top: 80 px; 
+  }
+
+.top-bar { 
+  display: flex; 
+  align-items: center; 
+  justify-content: space-between; 
+  background: #1e293b; 
+  padding: 0.75rem 2rem; 
+  }
+
 .logo { width: 150px; cursor: pointer; }
 h1 { flex-grow: 1; text-align: center; font-size: 2rem; color: white; }
 .avatar-btn { width: 36px; height: 36px; border-radius: 50%; background: white; border: none; cursor: pointer; }
@@ -174,11 +183,44 @@ h1 { flex-grow: 1; text-align: center; font-size: 2rem; color: white; }
 .big-card li { cursor: pointer; padding: 0.4rem 0.2rem; border-radius: 6px; }
 .big-card li:hover { background: #1e2236; }
 
-.search { max-width: 300px; padding: 0.4rem 0.8rem; border-radius: 6px; border: none; background: white; color: black; margin-bottom: 1rem; }
+/* barra de búsqueda */
+.search { 
+  max-width: 300px; 
+  padding: 0.4rem 0.8rem; 
+  border-radius: 6px; 
+  border: none; 
+  background: white; 
+  color: black; 
+  margin-bottom: 1rem; }
+
+
+/* tabla proveedores */
 .table-wrapper { max-height: 60vh; overflow: auto; margin-bottom: 1rem; }
-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
-th, td { padding: 0.4rem 0.6rem; border-bottom: 1px solid #2c3148; }
-thead { position: sticky; top: 0; background: #1e2236; }
+table { 
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0 4px;
+  min-width: 800px;
+  }
+
+th {
+  background-color: transparent;
+  padding: 12px 16px;
+  color: #fff;
+  font-size: 0.9rem;
+  text-align: left;
+  border-bottom: 2px solid #334155;
+}
+td {
+  padding: 16px;
+  background-color: #1e293b;
+  color: #ffffff;
+  text-align: left;
+  vertical-align: middle;
+  border: none;
+}
+
+/* encabezado tabla → thead { position: sticky; top: 0; background: #1e2236; }*/
 
 .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: flex; justify-content: center; align-items: center; z-index: 2000; }
 .modal-window { background: #1e293b; padding: 2rem; border-radius: 14px; min-width: 600px; max-width: 90%; max-height: 90vh; overflow: auto; display: flex; flex-direction: column; gap: 1rem; }
@@ -217,24 +259,35 @@ th {
   font-weight: bold;
 }
 
-.btn-action {
+.edit-btn, .remove-btn {
   background: transparent;
   border: none;
   cursor: pointer;
+  font-size: 1.1rem;
+}
+.edit-btn { color: #60a5fa; }
+.remove-btn { color: #e74c3c; }
+.edit-btn:hover { color: #93c5fd; }
+.remove-btn:hover { color: #f87171; }
+
+.add-button-wrapper {
+  display: flex;
+  justify-content: flex-end; 
+  padding: 0 1.5rem;
+}
+.add-button {
+  background: #374666;
+  color: white;
+  border: none;
+  padding: .7rem 1.5rem;
   font-size: 1rem;
-  padding: 0.3rem;
-  border-radius: 4px;
-  color: white;
+  font-weight: 600;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s;
 }
-
-.btn-action.edit:hover {
-  background-color: #2563eb;
-  color: white;
-}
-
-.btn-action.delete:hover {
-  background-color: #dc2626;
-  color: white;
+.add-button:hover {
+  background: #4a5568;
 }
 
 </style>
