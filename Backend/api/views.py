@@ -2,7 +2,7 @@
 import json
 
 # Django
-from django.core.mail import send_mail  # Para enviar correos
+from django.core.mail import send_mail  # Enviar correos electrónicos
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.models import User, Group
@@ -67,7 +67,6 @@ class TelaListAPIView(ListAPIView):
 def ping(request):
     return JsonResponse({"message": "pong"})
 
-
 @csrf_exempt
 def register_user(request):
     if request.method == 'POST':
@@ -107,7 +106,21 @@ def register_user(request):
 
             # Enviar correo con credenciales
             subject = 'Bienvenido a Abril Uniformes y Bordados'
-            message = f''''''
+            message = f'''
+Hola {first_name},
+
+Te damos la bienvenida a Abril Uniformes y Bordados.
+
+Estas son tus credenciales de acceso:
+
+Correo: {email}
+Contraseña: {password}
+
+Por tu seguridad, cambia tu contraseña lo más pronto posible.
+
+Feliz día,
+Abril Uniformes y Bordados
+'''
             send_mail(subject, message, None, [email], fail_silently=False)
 
             return JsonResponse({'message': 'Usuario creado y correo enviado'}, status=201)
