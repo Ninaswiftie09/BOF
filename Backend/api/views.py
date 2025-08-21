@@ -21,6 +21,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 
+
 # App local
 from .models import Proveedor, Compra
 from .serializers import ProveedorSerializer, CompraSerializer
@@ -34,7 +35,9 @@ from .serializers import (
     UniformeSerializer,
     OperacionSerializer,
     OrdenSerializer,
+    ProductoSerializer,
 )
+
 
 from django.utils.decorators import method_decorator
 
@@ -154,20 +157,26 @@ class EliminarUniforme(APIView):
 class EditarTela(APIView):
     def put(self, request, pk):
         tela = get_object_or_404(Tela, pk=pk)
-        serializer = TelaSerializer(tela, data=request.data)
+        serializer = TelaSerializer(tela, data=request.data, partial=True)  # 👈
         if serializer.is_valid():
             serializer.save()
             return Response({'mensaje': 'Tela actualizada correctamente', 'tela': serializer.data})
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+    def patch(self, request, pk):
+        return self.put(request, pk)
+
 class EditarHilo(APIView):
     def put(self, request, pk):
         hilo = get_object_or_404(Hilo, pk=pk)
-        serializer = HiloSerializer(hilo, data=request.data)
+        serializer = HiloSerializer(hilo, data=request.data, partial=True)  # 👈
         if serializer.is_valid():
             serializer.save()
             return Response({'mensaje': 'Hilo actualizado correctamente', 'hilo': serializer.data})
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def patch(self, request, pk):
+        return self.put(request, pk)
 
 class EditarUniforme(APIView):
     def put(self, request, pk):
@@ -217,7 +226,7 @@ class AgregarNuevaCategoria(APIView):
 class EditarCategoria(APIView):
     def put(self, request, pk):
         categoria = get_object_or_404(Categoria, pk=pk)
-        serializer = CategoriaSerializer(categoria, data=request.data)
+        serializer = CategoriaSerializer(categoria, data=request.data, partial=True)  # 👈
         if serializer.is_valid():
             serializer.save()
             return Response({"message": "Categoría actualizada", "categoria": serializer.data})

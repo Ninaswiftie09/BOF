@@ -55,29 +55,32 @@ class ProveedorSerializer(serializers.ModelSerializer):
 
 #inventario
 
+# Hilo
 class HiloSerializer(serializers.ModelSerializer):
     class Meta:
         model = Hilo
-        fields = ['id', 'material', 'codigo_color','color', 'stock', 'nombre', 'codigo', 'descripcion']
+        fields = ['id', 'material', 'codigo_color', 'color', 'stock', 'nombre', 'codigo', 'descripcion']
 
     def update(self, instance, validated_data):
-        if 'stock' in validated_data:
-            instance.stock = validated_data['stock']
+       
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
         instance.save()
         return instance
 
-
+# Tela
 class TelaSerializer(serializers.ModelSerializer):
     class Meta:
         model = Tela
         fields = ['id', 'tipo', 'composicion', 'color', 'stock', 'nombre', 'codigo', 'descripcion']
 
     def update(self, instance, validated_data):
-        if 'stock' in validated_data:
-            instance.stock = validated_data['stock']
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
         instance.save()
         return instance
 
+# Uniforme
 class UniformeSerializer(serializers.ModelSerializer):
     material_nombre = serializers.SerializerMethodField(read_only=True)
     categoria_nombre = serializers.SerializerMethodField(read_only=True)
@@ -89,6 +92,7 @@ class UniformeSerializer(serializers.ModelSerializer):
             'material', 'material_nombre',
             'categoria', 'categoria_nombre',
         ]
+
     def get_material_nombre(self, obj):
         return obj.material.nombre if obj.material else None
 
@@ -96,10 +100,20 @@ class UniformeSerializer(serializers.ModelSerializer):
         return obj.categoria.nombre if obj.categoria else None
 
     def update(self, instance, validated_data):
-        if 'stock' in validated_data:
-            instance.stock = validated_data['stock']
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
         instance.save()
         return instance
+    
+class ProductoSerializer(serializers.ModelSerializer):
+    categoria = serializers.PrimaryKeyRelatedField(queryset=Categoria.objects.all())
+    
+    categoria_nombre = serializers.CharField(source='categoria.nombre', read_only=True)
+
+    class Meta:
+        model = Producto
+        fields = ['id', 'nombre', 'categoria', 'categoria_nombre', 'precio', 'descripcion']
+
 
 class OperacionSerializer(serializers.ModelSerializer):
     fecha = serializers.DateTimeField(

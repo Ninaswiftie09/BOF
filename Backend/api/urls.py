@@ -42,7 +42,6 @@ from .views import (
     AgregarNuevaCategoria,
     EditarCategoria,
     EliminarCategoria,
-
 )
 
 
@@ -55,6 +54,7 @@ router.register(r'compras', CompraViewSet, basename='compra')
 router.register(r'operaciones', OperacionViewSet, basename='operacion')
 router.register(r'ordenes', OrdenViewSet, basename='orden')
 router.register(r'clientes', ClienteViewSet, basename='cliente')
+
 
 urlpatterns = [
     path("ping/", ping, name='ping'),
