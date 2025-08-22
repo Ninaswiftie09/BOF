@@ -1,16 +1,7 @@
 <template>
   <div class="billpage-container">
-    <!-- HEADER con logo que regresa al Home -->
-    <header class="top-bar">
-      <img
-        src="@/assets/logo_bof_blanco.png"
-        alt="Logo del cliente"
-        class="logo"
-        @click="goHome"
-      />
-      <h1>OPCIONES DE FACTURACIÓN</h1>
-      <button class="avatar-btn"></button>
-    </header>
+    <!-- Header unificado -->
+    <NavBar title="OPCIONES DE FACTURACIÓN" />
 
     <!-- OPCIONES DE FACTURACIÓN -->
     <div class="actions-row">
@@ -25,7 +16,7 @@
     </div>
 
     <!-- LISTADO DE FACTURAS -->
-    <h1 class="title">LISTADO DE FACTURAS</h1>
+    <h2 class="title">LISTADO DE FACTURAS</h2>
     <ul class="invoice-list">
       <li v-for="invoice in invoices" :key="invoice.id" class="invoice-card">
         <div class="invoice-info">
@@ -41,14 +32,14 @@
 
 <script>
 import { useRouter } from 'vue-router'
+import NavBar from '@/components/NavBar.vue'
 
 export default {
   name: 'BillPage',
+  components: { NavBar },
   setup() {
     const router = useRouter()
-    const goHome = () => {
-      router.push({ name: 'home' })
-    }
+    const goHome = () => router.push({ name: 'home' })
     return { goHome }
   },
   data() {
@@ -76,46 +67,10 @@ export default {
 
 <style scoped>
 .billpage-container {
-  margin: 20px;
-  padding: 20px;
+  /* sin padding-top porque NavBar NO es fijo */
   min-height: 100vh;
-  background-color: var(--color-octonary);
-  padding-top: 120px; /* Para compensar el header fijo */
-}
-
-/* === HEADER UNIFICADO === */
-.top-bar {
-  display: flex;
-  align-items: center;
-  gap: 1.5rem;
-  padding: 0.75rem 2rem;
-  background: #1e293b;
-  justify-content: space-between;
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 60px;
-  z-index: 1000;
-}
-.logo {
-  width: 100px;
-  height: auto;
-  cursor: pointer;
-}
-h1 {
-  font-family: 'Segoe UI', sans-serif;
-  color: #ffffff;
-  font-size: 2rem;
-  flex-grow: 1;
-  text-align: center;
-}
-.avatar-btn {
-  width: 40px;
-  height: 40px;
-  background-color: transparent;
-  border: none;
-  cursor: pointer;
+  background: var(--color-octonary);
+  padding: 20px;
 }
 
 /* === CUERPO DE LA VISTA === */
@@ -134,20 +89,16 @@ h1 {
   cursor: pointer;
   transition: background-color 0.3s;
 }
-.action-box:hover {
-  background-color: var(--color-tertiary);
-}
+.action-box:hover { background-color: var(--color-tertiary); }
+
 .title {
-  font-size: 2rem;
-  margin-bottom: 20px;
-  color: var(--color-primary);
+  font-size: 1.5rem;
+  margin: 16px 0 12px;
+  color: var(--color-novenary);
   text-transform: uppercase;
 }
-.invoice-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
+
+.invoice-list { list-style: none; padding: 0; margin: 0; }
 .invoice-card {
   background-color: var(--color-quaternary);
   margin-bottom: 15px;
@@ -155,19 +106,11 @@ h1 {
   padding: 15px;
   transition: background-color 0.3s;
 }
-.invoice-card:hover {
-  background-color: #8cafdc;
-}
-.invoice-info {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-.invoice-description {
-  font-weight: 500;
-  color: var(--color-primary);
-  text-transform: uppercase;
-}
+.invoice-card:hover { background-color: #8cafdc; }
+
+.invoice-info { display: flex; justify-content: space-between; align-items: center; }
+.invoice-description { font-weight: 500; color: var(--color-primary); text-transform: uppercase; }
+
 .btn-download {
   background-color: var(--color-secondary);
   color: #fff;
@@ -179,7 +122,5 @@ h1 {
   transition: background-color 0.3s;
   text-transform: uppercase;
 }
-.btn-download:hover {
-  background-color: var(--color-tertiary);
-}
+.btn-download:hover { background-color: var(--color-tertiary); }
 </style>

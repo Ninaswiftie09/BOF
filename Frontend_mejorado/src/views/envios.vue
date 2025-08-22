@@ -1,10 +1,7 @@
 <template>
   <div class="inventory-container">
-    <!-- Top Bar -->
-    <header class="top-bar">
-      <img src="@/assets/logo_bof_blanco.png" alt="Logo del cliente" class="logo" @click="goHome" />
-      <h1>PEDIDOS</h1>
-    </header>
+    <!-- Header unificado -->
+    <NavBar title="PEDIDOS" />
 
     <!-- Tabla principal -->
     <section class="inventory-section">
@@ -143,11 +140,13 @@
 <script>
 import { BASE_URL } from '@/config'
 import { useRouter } from 'vue-router'
+import NavBar from '@/components/NavBar.vue'
 
 // 👉 Cambia esto si tu lookup de producto NO es /api/productos/:id/
 const PRODUCTS_ENDPOINT = `${BASE_URL}/api/productos/` // termina en '/'
 
 export default {
+  components: { NavBar },
   setup(){
     const router = useRouter()
     const goHome = () => router.push({ name:'home' })
@@ -173,16 +172,14 @@ export default {
         metodo_pago: 'efectivo',
         estado: 'pendiente',
         detalles: [],         // { producto, cantidad, precio_unitario }
-        precio_total: 0       // mostrado; backend calcula 'total' real
+        precio_total: 0
       },
 
       clientes: [],
-      // cache simple de productos {id: {precio_unitario: ...}}
       productosCache: {}
     }
   },
   computed: {
-    // filtro por id, cliente, fecha formateada y total
     pedidosFiltradosTabla(){
       const q = this.tablaQuery.trim().toLowerCase()
       if(!q) return this.pedidos
@@ -204,15 +201,9 @@ export default {
       )
     }
   },
-  watch: {
-    subtotal(val){ this.formData.precio_total = val }
-  },
-  mounted(){
-    this.cargarPedidos()
-    this.cargarClientes()
-  },
+  watch: { subtotal(val){ this.formData.precio_total = val } },
+  mounted(){ this.cargarPedidos(); this.cargarClientes() },
   methods: {
-    // utilidades
     toMoney(n){
       const v = Number(n||0)
       return v.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
@@ -237,7 +228,6 @@ export default {
       return cookieValue
     },
 
-    // UI
     toggleVerTodos(){ this.verTodos = !this.verTodos },
     abrirFormulario(accion, pedido=null){
       this.accion = accion
@@ -253,14 +243,13 @@ export default {
           precio_total: 0
         }
       } else if(accion==='editar' && pedido){
-        // Precargar desde la fila (no tenemos GET detalle estándar)
         this.formData = {
           id: pedido.id,
           cliente: pedido.cliente_id || '',
           fecha: (pedido.fecha || '').slice(0,10),
           metodo_pago: pedido.metodo_pago || 'efectivo',
           estado: pedido.estado || 'pendiente',
-          detalles: [], // sin endpoint detalle, el usuario vuelve a ingresar líneas
+          detalles: [],
           precio_total: pedido.total || 0
         }
       } else if(accion==='eliminar' && pedido){
@@ -277,26 +266,20 @@ export default {
       if(Array.isArray(this.formData.detalles)) this.formData.detalles.splice(i,1)
       this.recalcularTotales()
     },
-    recalcularTotales(){
-      // dispara el watcher de subtotal al mutar el array
-      this.formData.detalles = [...this.formData.detalles]
-    },
+    recalcularTotales(){ this.formData.detalles = [...this.formData.detalles] },
 
     async onProductoChange(index){
       const d = this.formData.detalles[index]
       if(!d || !d.producto) return
       try{
-        // cache
         if(this.productosCache[d.producto]){
           d.precio_unitario = Number(this.productosCache[d.producto].precio_unitario) || 0
           this.recalcularTotales()
           return
         }
-        // 👉 Ajusta si tu endpoint de productos es otro:
         const r = await fetch(`${PRODUCTS_ENDPOINT}${d.producto}/`)
         if(!r.ok) throw new Error('Producto no encontrado')
         const prod = await r.json()
-        // intenta varias claves comunes
         const precio = Number(
           prod.precio_unitario ?? prod.precio ?? prod.costo ?? prod.price ?? 0
         )
@@ -308,7 +291,6 @@ export default {
       }
     },
 
-    // API
     async cargarClientes(){
       try{
         const r = await fetch(`${BASE_URL}/api/clientes/`)
@@ -318,7 +300,6 @@ export default {
     async cargarPedidos(){
       this.cargando = true
       this.pedidos = []
-      // Intentamos varias fuentes de lista
       const fuentes = [
         `${BASE_URL}/api/ventas/`,
         `${BASE_URL}/api/ordenes/historial/`,
@@ -341,9 +322,7 @@ export default {
             cliente_id: p.cliente_id ?? p.cliente?.id
           })).filter(p => p.id != null)
           if(this.pedidos.length) break
-        }catch(e){
-          // prueba la siguiente fuente
-        }
+        }catch(e){ /* probar siguiente fuente */ }
       }
       this.cargando = false
     },
@@ -405,53 +384,59 @@ export default {
 </script>
 
 <style scoped>
-.logo { width: 100px; height: auto; cursor: pointer; }
-.inventory-container { padding: 40px; background-color: var(--color-octonary); min-height: 100vh; }
-.top-bar { display:flex; align-items:center; justify-content:space-between; background:#1e293b; padding: .75rem 2rem; position:fixed; top:0; left:0; right:0; height:60px; z-index:1000; box-shadow: 0 2px 5px rgba(0,0,0,.1);} 
-h1 { flex-grow: 1; text-align:center; color:#fff; font-size:1.8rem; font-weight:bold; margin:0; }
-h2 { color: var(--colo-texto-blanco); margin-top: 80px; margin-bottom: 10px; }
-.inventory-section { margin-top:10px; }
+/* Contenedor base (sin header fijo) */
+.inventory-container{
+  padding: 40px;
+  background-color: var(--color-octonary);
+  min-height: 100vh;
+}
+
+.inventory-section{ margin-top: 10px; }
+h2{ color: var(--colo-texto-blanco); margin-top: 10px; margin-bottom: 10px; }
 
 /* Buscador */
-.table-toolbar { display:flex; justify-content:flex-end; margin:10px 0 14px; }
-.top-search { width:320px; max-width:100%; padding:10px 12px; border-radius:10px; border:1px solid #cbd5e1; font-size:15px; }
-.top-search:focus { outline:none; box-shadow:0 0 0 3px rgba(99,102,241,.25); border-color:#6366f1; }
+.table-toolbar{ display:flex; justify-content:flex-end; margin:10px 0 14px; }
+.top-search{ width:320px; max-width:100%; padding:10px 12px; border-radius:10px; border:1px solid #cbd5e1; font-size:15px; }
+.top-search:focus{ outline:none; box-shadow:0 0 0 3px rgba(99,102,241,.25); border-color:#6366f1; }
 
 /* Tabla */
-table { width:100%; border-collapse:collapse; background:#fff; border-radius:12px; overflow:hidden; box-shadow:0 0 10px rgba(0,0,0,.05); margin-bottom:10px; }
-th { background: var(--color-senary); color:#fff; font-weight:bold; padding:16px; font-size:18px; }
-td { text-align:center; padding:12px; font-size:16px; color: var(--color-senary); }
+table{ width:100%; border-collapse:collapse; background:#fff; border-radius:12px; overflow:hidden; box-shadow:0 0 10px rgba(0,0,0,.05); margin-bottom:10px; }
+th{ background: var(--color-senary); color:#fff; font-weight:bold; padding:16px; font-size:18px; }
+td{ text-align:center; padding:12px; font-size:16px; color: var(--color-senary); }
 tr:nth-child(even){ background:#f9f9f9; }
 
-.button-row { display:flex; flex-wrap:wrap; gap:10px; margin: 10px 0 20px; }
-.button-row button { background: var(--color-senary); color:#fff; padding:10px 14px; border:none; border-radius:8px; font-weight:bold; cursor:pointer; transition: background-color .3s; }
-.button-row button:hover { background: var(--color-tertiary); }
-.mini-btn { background: #334155; color:#fff; padding:6px 10px; border:none; border-radius:6px; font-size:12px; cursor:pointer; }
-.mini-btn.sky { background:#0284c7; }
-.mini-btn.danger { background:#e11d48; }
-.flex-gap { display:flex; gap:8px; justify-content:center; }
+/* Botonera inferior */
+.button-row{ display:flex; flex-wrap:wrap; gap:10px; margin:10px 0 20px; }
+.button-row button{ background: var(--color-senary); color:#fff; padding:10px 14px; border:none; border-radius:8px; font-weight:bold; cursor:pointer; transition: background-color .3s; }
+.button-row button:hover{ background: var(--color-tertiary); }
+
+/* Mini botones de fila */
+.mini-btn{ background:#334155; color:#fff; padding:6px 10px; border:none; border-radius:6px; font-size:12px; cursor:pointer; }
+.mini-btn.sky{ background:#0284c7; }
+.mini-btn.danger{ background:#e11d48; }
+.flex-gap{ display:flex; gap:8px; justify-content:center; }
 
 /* Modales */
-.modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,.5); display:flex; align-items:center; justify-content:center; z-index:9999; }
-.modal-content { background:#fff; padding:25px 30px; border-radius:12px; box-shadow:0 8px 20px rgba(0,0,0,.3); width:90%; max-width: 520px; max-height:90vh; overflow-y:auto; position:relative; }
-.large-modal { max-width: 980px; }
-.close-btn-top { position:absolute; top:10px; right:15px; background:transparent; border:none; font-size:22px; cursor:pointer; font-weight:bold; color:#333; }
-.close-btn-top:hover { color:#b00020; }
+.modal-overlay{ position:fixed; inset:0; background:rgba(0,0,0,.5); display:flex; align-items:center; justify-content:center; z-index:9999; }
+.modal-content{ background:#fff; padding:25px 30px; border-radius:12px; box-shadow:0 8px 20px rgba(0,0,0,.3); width:90%; max-width: 520px; max-height:90vh; overflow-y:auto; position:relative; }
+.large-modal{ max-width: 980px; }
+.close-btn-top{ position:absolute; top:10px; right:15px; background:transparent; border:none; font-size:22px; cursor:pointer; font-weight:bold; color:#333; }
+.close-btn-top:hover{ color:#b00020; }
 
-.form-vertical label { font-weight:600; margin-top:12px; margin-bottom:5px; display:block; }
-.form-vertical input, .form-vertical textarea, .form-vertical select { width:100%; padding:8px 10px; border-radius:6px; border:1px solid #ccc; font-size:15px; resize:vertical; }
+.form-vertical label{ font-weight:600; margin-top:12px; margin-bottom:5px; display:block; }
+.form-vertical input, .form-vertical textarea, .form-vertical select{ width:100%; padding:8px 10px; border-radius:6px; border:1px solid #ccc; font-size:15px; resize:vertical; }
 
-.detalle-grid { display:grid; grid-template-columns: 3fr 1fr 1fr 1fr auto; align-items:center; gap:10px; margin-top:10px; }
-.detalle-header { font-weight:700; color:#334155; }
-.cell-total { text-align:right; padding-right:8px; }
+.detalle-grid{ display:grid; grid-template-columns: 3fr 1fr 1fr 1fr auto; align-items:center; gap:10px; margin-top:10px; }
+.detalle-header{ font-weight:700; color:#334155; }
+.cell-total{ text-align:right; padding-right:8px; }
 
-.totales { margin-top: 16px; display:flex; flex-direction:column; gap:8px; align-items:flex-end; }
-.total-row { display:flex; gap:16px; align-items:center; }
-.total-final { font-size: 18px; }
+.totales{ margin-top: 16px; display:flex; flex-direction:column; gap:8px; align-items:flex-end; }
+.total-row{ display:flex; gap:16px; align-items:center; }
+.total-final{ font-size: 18px; }
 
-.buttons-row { margin-top: 20px; display:flex; gap:15px; justify-content:flex-end; }
-.btn-primary { background: var(--color-senary); color: var(--colo-texto-blanco); padding:10px 22px; border-radius:8px; border:none; font-weight:600; cursor:pointer; transition: background-color .3s; }
-.btn-primary:hover { background: var(--color-tertiary); }
-.btn-cancel { background:transparent; color:#555; padding:10px 22px; border-radius:8px; border:1px solid #aaa; cursor:pointer; font-weight:600; transition: background-color .3s; }
-.btn-cancel:hover { background:#eee; }
+.buttons-row{ margin-top: 20px; display:flex; gap:15px; justify-content:flex-end; }
+.btn-primary{ background: var(--color-senary); color: var(--colo-texto-blanco); padding:10px 22px; border-radius:8px; border:none; font-weight:600; cursor:pointer; transition: background-color .3s; }
+.btn-primary:hover{ background: var(--color-tertiary); }
+.btn-cancel{ background:transparent; color:#555; padding:10px 22px; border-radius:8px; border:1px solid #aaa; cursor:pointer; font-weight:600; transition: background-color .3s; }
+.btn-cancel:hover{ background:#eee; }
 </style>
