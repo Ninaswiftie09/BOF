@@ -1,18 +1,15 @@
 <template>
   <div class="inventory-container">
-    <!-- Encabezado modernizado -->
-    <header class="top-bar">
-      <img
-        src="@/assets/logo_bof_blanco.png"
-        alt="Logo del cliente"
-        class="logo"
-        @click="goHome"
-      />
-      <h1>INVENTARIO</h1>
-    </header>
+    <!-- Header unificado -->
+    <NavBar title="INVENTARIO" />
 
-    <div v-for="(items, tipo) in inventarios" :key="tipo" class="inventory-section">
+    <div
+      v-for="(items, tipo) in inventarios"
+      :key="tipo"
+      class="inventory-section"
+    >
       <h2>{{ titulosVisibles[tipo] || tipo }}</h2>
+
       <table>
         <thead>
           <tr>
@@ -72,33 +69,21 @@
         <h3 v-else-if="accion === 'eliminar'">Eliminar {{ titulosVisibles[tipoFormulario] || tipoFormulario }}</h3>
 
         <form @submit.prevent="submitFormulario" class="form-vertical">
-          
           <!-- Selección de producto para edición -->
           <div v-if="accion === 'editar'">
             <label>Seleccionar producto:</label>
             <select v-model.number="seleccionId" @change="autoCompletarProducto">
               <option :value="null" disabled>Seleccione un producto</option>
-              <option
-                v-for="item in inventarios[tipoFormulario]"
-                :key="item.id"
-                :value="item.id"
-              >
+              <option v-for="item in inventarios[tipoFormulario]" :key="item.id" :value="item.id">
                 {{ formatearProducto(item) }}
               </option>
             </select>
             <label>O ID del producto:</label>
-            <input
-              v-model.number="formData.id"
-              type="number"
-              min="1"
-              @change="autoCompletarProducto"
-              required
-            />
+            <input v-model.number="formData.id" type="number" min="1" @change="autoCompletarProducto" required />
           </div>
 
           <!-- ID cuando es eliminación -->
           <div v-else-if="accion === 'eliminar'">
-
             <label>ID del producto:</label>
             <input v-model.number="formData.id" type="number" min="1" required />
           </div>
@@ -107,71 +92,44 @@
           <div v-if="accion !== 'eliminar'">
             <!-- TELAS -->
             <div v-if="tipoFormulario === 'Telas'">
-              <label>Nombre</label>
-              <input v-model="formData.nombre" placeholder="Nombre" />
-              <label>Tipo</label>
-              <input v-model="formData.tipo" placeholder="Tipo" />
-              <label>Composición</label>
-              <input v-model="formData.composicion" placeholder="Composición" />
-              <label>Color</label>
-              <input v-model="formData.color" placeholder="Color" />
-              <label>Código</label>
-              <input v-model="formData.codigo" placeholder="Código" />
-              <label>Stock</label>
-              <input v-model.number="formData.stock" type="number" />
-              <label>Descripción</label>
-              <textarea v-model="formData.descripcion" placeholder="Descripción"></textarea>
+              <label>Nombre</label><input v-model="formData.nombre" placeholder="Nombre" />
+              <label>Tipo</label><input v-model="formData.tipo" placeholder="Tipo" />
+              <label>Composición</label><input v-model="formData.composicion" placeholder="Composición" />
+              <label>Color</label><input v-model="formData.color" placeholder="Color" />
+              <label>Código</label><input v-model="formData.codigo" placeholder="Código" />
+              <label>Stock</label><input v-model.number="formData.stock" type="number" />
+              <label>Descripción</label><textarea v-model="formData.descripcion" placeholder="Descripción"></textarea>
             </div>
 
             <!-- HILOS -->
             <div v-if="tipoFormulario === 'Hilos'">
-              <label>Nombre</label>
-              <input v-model="formData.nombre" placeholder="Nombre" />
-              <label>Material</label>
-              <input v-model="formData.material" placeholder="Material" />
-              <label>Código de color</label>
-              <input v-model="formData.codigo_color" placeholder="Código de color" />
-              <label>Color</label>
-              <input v-model="formData.color" placeholder="Color" />
-              <label>Código</label>
-              <input v-model="formData.codigo" placeholder="Código" />
-              <label>Stock</label>
-              <input v-model.number="formData.stock" type="number" />
-              <label>Descripción</label>
-              <textarea v-model="formData.descripcion" placeholder="Descripción"></textarea>
+              <label>Nombre</label><input v-model="formData.nombre" placeholder="Nombre" />
+              <label>Material</label><input v-model="formData.material" placeholder="Material" />
+              <label>Código de color</label><input v-model="formData.codigo_color" placeholder="Código de color" />
+              <label>Color</label><input v-model="formData.color" placeholder="Color" />
+              <label>Código</label><input v-model="formData.codigo" placeholder="Código" />
+              <label>Stock</label><input v-model.number="formData.stock" type="number" />
+              <label>Descripción</label><textarea v-model="formData.descripcion" placeholder="Descripción"></textarea>
             </div>
 
             <!-- UNIFORMES (UI: Productos) -->
             <div v-if="tipoFormulario === 'Uniformes'">
-              <label>Tipo</label>
-              <input v-model="formData.tipo" placeholder="Tipo" />
-              <label>Talla</label>
-              <input v-model="formData.talla" placeholder="Talla" />
-              <label>Color</label>
-              <input v-model="formData.color" placeholder="Color" />
-              <label>ID de Tela relacionada</label>
-              <input v-model.number="formData.material" />
-              <label>Stock</label>
-              <input v-model.number="formData.stock" type="number" />
-
-              <!-- NUEVO: Tipo de categoría -->
+              <label>Tipo</label><input v-model="formData.tipo" placeholder="Tipo" />
+              <label>Talla</label><input v-model="formData.talla" placeholder="Talla" />
+              <label>Color</label><input v-model="formData.color" placeholder="Color" />
+              <label>ID de Tela relacionada</label><input v-model.number="formData.material" />
+              <label>Stock</label><input v-model.number="formData.stock" type="number" />
               <label>Tipo de categoría</label>
               <select v-model.number="formData.categoria">
                 <option :value="null" disabled>Seleccione una categoría</option>
-                <option v-for="c in categoriasOptions" :key="c.id" :value="c.id">
-                  {{ c.nombre }}
-                </option>
+                <option v-for="c in categoriasOptions" :key="c.id" :value="c.id">{{ c.nombre }}</option>
               </select>
             </div>
 
             <!-- CATEGORÍAS -->
             <div v-if="tipoFormulario === 'Categorias'">
               <label>Nombre</label>
-              <input
-                v-model="formData.nombre"
-                placeholder="Nombre de la categoría"
-                required
-              />
+              <input v-model="formData.nombre" placeholder="Nombre de la categoría" required />
             </div>
           </div>
 
@@ -198,32 +156,24 @@
           </thead>
           <tbody>
             <tr v-for="item in inventarios[tipoVerTodos]" :key="item.id">
-              <!-- Telas -->
               <template v-if="tipoVerTodos === 'Telas'">
                 <td>{{ item.id }}</td><td>{{ item.nombre }}</td><td>{{ item.tipo }}</td>
                 <td>{{ item.composicion }}</td><td>{{ item.color }}</td>
                 <td>{{ item.codigo }}</td><td>{{ item.stock }}</td><td>{{ item.descripcion }}</td>
               </template>
-
-              <!-- Hilos -->
               <template v-else-if="tipoVerTodos === 'Hilos'">
                 <td>{{ item.id }}</td><td>{{ item.nombre }}</td><td>{{ item.material }}</td>
                 <td>{{ item.codigo_color }}</td><td>{{ item.color }}</td>
                 <td>{{ item.codigo }}</td><td>{{ item.stock }}</td><td>{{ item.descripcion }}</td>
               </template>
-
-              <!-- Uniformes (UI: Productos) -->
               <template v-else-if="tipoVerTodos === 'Uniformes'">
                 <td>{{ item.id }}</td><td>{{ item.tipo }}</td><td>{{ item.talla }}</td>
                 <td>{{ item.color }}</td><td>{{ item.stock }}</td>
                 <td>{{ item.categoria_nombre || 'N/A' }}</td>
                 <td>{{ item.material_nombre || 'N/A' }}</td>
               </template>
-
-              <!-- Categorías -->
               <template v-else-if="tipoVerTodos === 'Categorias'">
-                <td>{{ item.id }}</td>
-                <td>{{ item.nombre }}</td>
+                <td>{{ item.id }}</td><td>{{ item.nombre }}</td>
               </template>
             </tr>
           </tbody>
@@ -235,456 +185,201 @@
 </template>
 
 <script>
-import { BASE_URL } from '@/config';
-import { useRouter } from 'vue-router';
-import { bus } from '@/event-bus';
+import { BASE_URL } from '@/config'
+import { useRouter } from 'vue-router'
+import { bus } from '@/event-bus'
+import NavBar from '@/components/NavBar.vue'
 
 export default {
+  components: { NavBar },
   setup() {
-    const router = useRouter();
-    const goHome = () => {
-      router.push({ name: 'home' });
-    };
-    return { goHome };
+    const router = useRouter()
+    const goHome = () => router.push({ name: 'home' })
+    return { goHome }
   },
   data() {
     return {
       vistaExtendida: {},
-      inventarios: {
-        Telas: [],
-        Hilos: [],
-        Uniformes: [],
-        Categorias: [] // NUEVO
-      },
-      // Títulos visibles (UI): Uniformes -> Productos
-      titulosVisibles: {
-        Telas: 'Telas',
-        Hilos: 'Hilos',
-        Uniformes: 'Productos',
-        Categorias: 'Categorías'
-      },
+      inventarios: { Telas: [], Hilos: [], Uniformes: [], Categorias: [] },
+      titulosVisibles: { Telas:'Telas', Hilos:'Hilos', Uniformes:'Productos', Categorias:'Categorías' },
       columnasPorTipo: {
-        Telas: ["id", "Nombre", "Tipo", "Composición", "Color", "Código", "Stock", "Descripción"],
-        Hilos: ["id", "Nombre", "Material", "Código Color", "Color", "Código", "Stock", "Descripción"],
-        Uniformes: ["id", "Tipo", "Talla", "Color", "Stock", "Categoría", "Material (tela)"],
-        Categorias: ["id", "Nombre"]
+        Telas:["id","Nombre","Tipo","Composición","Color","Código","Stock","Descripción"],
+        Hilos:["id","Nombre","Material","Código Color","Color","Código","Stock","Descripción"],
+        Uniformes:["id","Tipo","Talla","Color","Stock","Categoría","Material (tela)"],
+        Categorias:["id","Nombre"]
       },
-      formVisible: false,
-      tipoFormulario: '',
-      accion: '',
-      formData: {},
-      verTodosVisible: false,
-      tipoVerTodos: '',
-      categoriasOptions: [], 
-      seleccionId: null  
-    };
+      formVisible:false, tipoFormulario:'', accion:'', formData:{},
+      verTodosVisible:false, tipoVerTodos:'', categoriasOptions:[], seleccionId:null
+    }
   },
   mounted() {
-    this.obtenerInventario("Telas");
-    this.obtenerInventario("Hilos");
-    this.obtenerInventario("Uniformes");
-    this.obtenerInventario("Categorias"); // NUEVO
-    this.cargarCategorias(); // NUEVO
+    this.obtenerInventario('Telas')
+    this.obtenerInventario('Hilos')
+    this.obtenerInventario('Uniformes')
+    this.obtenerInventario('Categorias')
+    this.cargarCategorias()
 
-    // refrescar tablas cuando alguien emite el evento global
-    if (bus && bus.on) {
-      bus.on('inventario-actualizado', () => {
-        this.obtenerInventario("Telas");
-        this.obtenerInventario("Hilos");
-        this.obtenerInventario("Uniformes");
-        this.obtenerInventario("Categorias");
-        this.cargarCategorias();
-      });
-    }
+    bus?.on?.('inventario-actualizado', () => {
+      this.obtenerInventario('Telas')
+      this.obtenerInventario('Hilos')
+      this.obtenerInventario('Uniformes')
+      this.obtenerInventario('Categorias')
+      this.cargarCategorias()
+    })
   },
   methods: {
-    mostrarLimitado(tipo) {
-      return !this.vistaExtendida[tipo];
+    mostrarLimitado(tipo){ return !this.vistaExtendida[tipo] },
+    toggleVistaCompleta(tipo){ this.$set(this.vistaExtendida, tipo, !this.vistaExtendida[tipo]) },
+    abrirFormulario(accion, tipo){ this.accion=accion; this.tipoFormulario=tipo; this.formVisible=true; this.formData={}; this.seleccionId=null; if (tipo==='Uniformes'||tipo==='Categorias') this.cargarCategorias() },
+    cerrarFormulario(){ this.formVisible=false; this.formData={}; this.seleccionId=null },
+    abrirVerTodos(tipo){ this.tipoVerTodos=tipo; this.verTodosVisible=true },
+    cerrarVerTodos(){ this.verTodosVisible=false; this.tipoVerTodos='' },
+    formatearProducto(item){ return this.tipoFormulario==='Uniformes' ? `${item.id} - ${item.tipo} ${item.talla}` : `${item.id} - ${item.nombre || item.tipo}` },
+    autoCompletarProducto(){
+      const id=this.seleccionId||this.formData.id; if(!id) return
+      const lista=this.inventarios[this.tipoFormulario]||[]; const item=lista.find(p=>p.id===id)
+      if(!item){ this.formData={id}; this.seleccionId=null; return }
+      if(this.tipoFormulario==='Telas'){ const {id:i,nombre,tipo,composicion,color,codigo,stock,descripcion}=item; this.formData={id:i,nombre,tipo,composicion,color,codigo,stock,descripcion} }
+      else if(this.tipoFormulario==='Hilos'){ const {id:i,nombre,material,codigo_color,color,codigo,stock,descripcion}=item; this.formData={id:i,nombre,material,codigo_color,color,codigo,stock,descripcion} }
+      else if(this.tipoFormulario==='Uniformes'){ const {id:i,tipo,talla,color,stock,material,categoria}=item; this.formData={id:i,tipo,talla,color,stock,material,categoria} }
+      else if(this.tipoFormulario==='Categorias'){ const {id:i,nombre}=item; this.formData={id:i,nombre} }
+      else { this.formData={...item} }
+      this.seleccionId=id
     },
-    toggleVistaCompleta(tipo) {
-      this.$set(this.vistaExtendida, tipo, !this.vistaExtendida[tipo]);
-    },
-    abrirFormulario(accion, tipo) {
-      this.accion = accion;
-      this.tipoFormulario = tipo;
-      this.formVisible = true;
-      this.formData = {};
-      this.seleccionId = null;
-      // Asegurar categorías frescas cuando se abra el formulario de Productos o Categorías
-      if (tipo === 'Uniformes' || tipo === 'Categorias') {
-        this.cargarCategorias();
-      }
-    },
-    cerrarFormulario() {
-      this.formVisible = false;
-      this.formData = {};
-      this.seleccionId = null;
-    },
-    abrirVerTodos(tipo) {
-      this.tipoVerTodos = tipo;
-      this.verTodosVisible = true;
-    },
-    cerrarVerTodos() {
-      this.verTodosVisible = false;
-      this.tipoVerTodos = '';
-    },
-    formatearProducto(item) {
-      if (this.tipoFormulario === 'Uniformes') {
-        return `${item.id} - ${item.tipo} ${item.talla}`;
-      }
-      return `${item.id} - ${item.nombre || item.tipo}`;
-    },
-    autoCompletarProducto() {
-      const id = this.seleccionId || this.formData.id;
-      if (!id) return;
-      const lista = this.inventarios[this.tipoFormulario] || [];
-      const item = lista.find(p => p.id === id);
-      if (!item) {
-        this.formData = { id };
-        this.seleccionId = null;
-        return;
-      }
-      if (this.tipoFormulario === 'Telas') {
-        const { id: i, nombre, tipo, composicion, color, codigo, stock, descripcion } = item;
-        this.formData = { id: i, nombre, tipo, composicion, color, codigo, stock, descripcion };
-      } else if (this.tipoFormulario === 'Hilos') {
-        const { id: i, nombre, material, codigo_color, color, codigo, stock, descripcion } = item;
-        this.formData = { id: i, nombre, material, codigo_color, color, codigo, stock, descripcion };
-      } else if (this.tipoFormulario === 'Uniformes') {
-        const { id: i, tipo, talla, color, stock, material, categoria } = item;
-        this.formData = { id: i, tipo, talla, color, stock, material, categoria };
-      } else if (this.tipoFormulario === 'Categorias') {
-        const { id: i, nombre } = item;
-        this.formData = { id: i, nombre };
-      } else {
-        this.formData = { ...item };
-      }
-      this.seleccionId = id;
-    },
-    async submitFormulario() {
-      try {
-        const tipo = this.tipoFormulario.slice(0, -1).toLowerCase(); // telas->tela, hilos->hilo, uniformes->uniforme, categorias->categoria
-        const urlBase = `${BASE_URL}/api`;
-        let url = '';
-        let method = '';
+    async submitFormulario(){
+      try{
+        const tipo=this.tipoFormulario.slice(0,-1).toLowerCase()
+        const urlBase=`${BASE_URL}/api`
+        const agregar={ tela:'agregar-nueva-tela', hilo:'agregar-nuevo-hilo', uniforme:'agregar-nuevo-uniforme', categoria:'agregar-nueva-categoria' }
+        let url='', method=''
+        if(this.accion==='agregar'){ url=`${urlBase}/inventario/${agregar[tipo]}/`; method='POST' }
+        else if(this.accion==='editar'){ if(!this.formData.id) return alert('Debe especificar el ID'); url=`${urlBase}/inventario/editar-${tipo}/${this.formData.id}/`; method='PUT' }
+        else if(this.accion==='eliminar'){ if(!this.formData.id) return alert('Debe especificar el ID'); url=`${urlBase}/inventario/eliminar-${tipo}/${this.formData.id}/`; method='DELETE' }
 
-        const agregarEndpoints = {
-          tela: 'agregar-nueva-tela',
-          hilo: 'agregar-nuevo-hilo',
-          uniforme: 'agregar-nuevo-uniforme',
-          categoria: 'agregar-nueva-categoria' // NUEVO
-        };
+        function getCookie(name){ let v=null; if(document.cookie && document.cookie!==''){ const cs=document.cookie.split(';'); for(let i=0;i<cs.length;i++){ const c=cs[i].trim(); if(c.startsWith(name+'=')){ v=decodeURIComponent(c.substring(name.length+1)); break } } } return v }
 
-        if (this.accion === 'agregar') {
-          url = `${urlBase}/inventario/${agregarEndpoints[tipo]}/`;
-          method = 'POST';
-        } else if (this.accion === 'editar') {
-          if (!this.formData.id) return alert('Debe especificar el ID');
-          url = `${urlBase}/inventario/editar-${tipo}/${this.formData.id}/`;
-          method = 'PUT';
-        } else if (this.accion === 'eliminar') {
-          if (!this.formData.id) return alert('Debe especificar el ID');
-          url = `${urlBase}/inventario/eliminar-${tipo}/${this.formData.id}/`;
-          method = 'DELETE';
-        }
+        const res=await fetch(url,{ method, credentials:'include', headers:{ 'Content-Type':'application/json', 'X-CSRFToken': getCookie('csrftoken') }, body: method!=='DELETE' ? JSON.stringify(this.formData) : null })
+        if(!res.ok){ const err=await res.json().catch(()=>({})); return alert('Error: '+(err.error||err.message||'Desconocido')) }
 
-        // Obtener token CSRF
-        function getCookie(name) {
-          let cookieValue = null;
-          if (document.cookie && document.cookie !== '') {
-            const cookies = document.cookie.split(';');
-            for (let i = 0; i < cookies.length; i++) {
-              const cookie = cookies[i].trim();
-              if (cookie.startsWith(name + '=')) {
-                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                break;
-              }
-            }
-          }
-          return cookieValue;
-        }
-
-        const res = await fetch(url, {
-          method,
-          credentials: 'include',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': getCookie('csrftoken')
-          },
-          body: method !== 'DELETE' ? JSON.stringify(this.formData) : null
-        });
-
-        if (!res.ok) {
-          const err = await res.json().catch(() => ({}));
-          return alert('Error: ' + (err.error || err.message || 'Desconocido'));
-        }
-
-        alert(`${this.accion} completado con éxito`);
-        bus?.emit?.('inventario-actualizado');
-        this.cerrarFormulario();
-
-        // refrescar tablas y opciones
-        this.obtenerInventario(this.tipoFormulario);
-        if (this.tipoFormulario === 'Categorias') {
-          await this.cargarCategorias();
-        }
-        if (this.tipoFormulario === 'Uniformes') {
-          // refrescar para ver categoria_nombre reflejada
-          this.obtenerInventario('Uniformes');
-        }
-      } catch (error) {
-        alert('Error en la conexión con el servidor');
-        console.error(error);
-      }
+        alert(`${this.accion} completado con éxito`)
+        bus?.emit?.('inventario-actualizado')
+        this.cerrarFormulario()
+        this.obtenerInventario(this.tipoFormulario)
+        if(this.tipoFormulario==='Categorias') await this.cargarCategorias()
+        if(this.tipoFormulario==='Uniformes') this.obtenerInventario('Uniformes')
+      }catch(e){ alert('Error en la conexión con el servidor'); console.error(e) }
     },
-    async obtenerInventario(tipo) {
-      try {
-        const res = await fetch(`${BASE_URL}/api/${tipo.toLowerCase()}/`);
-        const data = await res.json();
-        this.inventarios[tipo] = data.map(item =>
-          tipo === "Uniformes"
-            ? {
-                ...item,
-                material_nombre: item.material_nombre || "N/A",
-                categoria_nombre: item.categoria_nombre || "N/A"
-              }
-            : item
-        );
-      } catch (error) {
-        console.error(`Error al obtener ${tipo}:`, error);
-      }
+    async obtenerInventario(tipo){
+      try{
+        const res=await fetch(`${BASE_URL}/api/${tipo.toLowerCase()}/`)
+        const data=await res.json()
+        this.inventarios[tipo]=data.map(item =>
+          tipo==='Uniformes' ? { ...item, material_nombre:item.material_nombre||'N/A', categoria_nombre:item.categoria_nombre||'N/A' } : item
+        )
+      }catch(e){ console.error(`Error al obtener ${tipo}:`, e) }
     },
-    async cargarCategorias() {
-      try {
-        const res = await fetch(`${BASE_URL}/api/categorias/`);
-        this.categoriasOptions = await res.json();
-      } catch (e) {
-        console.error('Error cargando categorías', e);
-      }
+    async cargarCategorias(){
+      try{ const res=await fetch(`${BASE_URL}/api/categorias/`); this.categoriasOptions=await res.json() }
+      catch(e){ console.error('Error cargando categorías', e) }
     }
   }
-};
+}
 </script>
 
 <style scoped>
-.logo {
-  width: 100px;
-  height: auto;
-  cursor: pointer;
-}
-
-.inventory-container {
-  padding: 80px 40px 40px; /* margen superior por la top-bar fija */
+/* Sin header fijo: ya usamos NavBar. Reducimos padding superior. */
+.inventory-container{
+  padding: 40px;
   background-color: var(--color-octonary);
   min-height: 100vh;
 }
 
-h1 {
-  flex-grow: 1;
-  text-align: center;
-  color: #ffffff;
-  font-size: 1.8rem;
-  font-weight: bold;
-  margin: 0;
-}
-
-h2 {
+h2{
   color: var(--colo-texto-blanco);
   margin-top: 40px;
   margin-bottom: 10px;
 }
 
-.top-bar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background-color: #1e293b; /* Azul oscuro */
-  padding: 0.75rem 2rem;
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 60px;
-  z-index: 1000;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-}
-
-.back-button {
-  background-color: var(--color-senary);
-  color: white;
-  padding: 10px 20px;
-  border-radius: 10px;
-  font-weight: bold;
-  text-decoration: none;
-  float: right;
-  margin-top: -60px;
-}
-
-.back-button:hover {
-  background-color: var(--color-tertiary);
-}
-
-table {
+/* ===== Tabla y estados ===== */
+table{
   width: 100%;
   border-collapse: collapse;
   background-color: white;
   border-radius: 12px;
   overflow: hidden;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 0 10px rgba(0,0,0,0.05);
   margin-bottom: 10px;
 }
-
-th {
+th{
   background-color: var(--color-senary);
   color: white;
   font-weight: bold;
   padding: 16px;
   font-size: 18px;
 }
-
-td {
+td{
   text-align: center;
   padding: 12px;
   font-size: 16px;
   color: var(--color-senary);
 }
+tr:nth-child(even){ background-color: #f9f9f9; }
 
-tr:nth-child(even) {
-  background-color: #f9f9f9;
-}
-
-.en-escasez {
+.en-escasez{
   background-color: #fff2f2;
   color: #b00020;
   font-weight: bold;
 }
 
-.button-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-bottom: 20px;
+/* ===== Botonera ===== */
+.button-row{
+  display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px;
 }
-
-.button-row button {
+.button-row button{
   background-color: var(--color-senary);
-  color: white;
-  padding: 10px 14px;
-  border: none;
-  border-radius: 8px;
-  font-weight: bold;
-  cursor: pointer;
-  transition: background-color 0.3s;
+  color: white; padding: 10px 14px; border: none; border-radius: 8px;
+  font-weight: bold; cursor: pointer; transition: background-color 0.3s;
 }
+.button-row button:hover{ background-color: var(--color-tertiary); }
 
-.button-row button:hover {
-  background-color: var(--color-tertiary);
+/* ===== Modales ===== */
+.modal-overlay{
+  position: fixed; inset:0; background-color: rgba(0,0,0,0.5);
+  display:flex; align-items:center; justify-content:center; z-index: 9999;
 }
-
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background-color: rgba(0,0,0,0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 9999;
-}
-
-.modal-content {
-  background: white;
-  padding: 25px 30px;
-  border-radius: 12px;
+.modal-content{
+  background: white; padding: 25px 30px; border-radius: 12px;
   box-shadow: 0 8px 20px rgba(0,0,0,0.3);
-  max-width: 450px;
-  width: 90%;
-  max-height: 90vh;
-  overflow-y: auto;
+  max-width: 450px; width: 90%; max-height: 90vh; overflow-y:auto;
 }
 
-.form-vertical label {
-  font-weight: 600;
-  margin-top: 12px;
-  margin-bottom: 5px;
-  display: block;
-}
-
+.form-vertical label{ font-weight: 600; margin: 12px 0 5px; display:block; }
 .form-vertical input,
 .form-vertical textarea,
-.form-vertical select {
-  width: 100%;
-  padding: 8px 10px;
-  border-radius: 6px;
-  border: 1px solid #ccc;
-  font-size: 15px;
-  resize: vertical;
+.form-vertical select{
+  width: 100%; padding: 8px 10px; border-radius: 6px; border: 1px solid #ccc; font-size: 15px;
 }
+.buttons-row{ margin-top: 20px; display:flex; gap: 15px; justify-content: flex-end; }
+.btn-primary{
+  background-color: var(--color-senary); color: var(--colo-texto-blanco);
+  padding: 10px 22px; border-radius: 8px; border:none; font-weight:600; cursor:pointer;
+  transition: background-color .3s ease;
+}
+.btn-primary:hover{ background-color: var(--color-tertiary); }
+.btn-cancel{
+  background: transparent; color:#555; padding:10px 22px; border-radius: 8px;
+  border: 1px solid #aaa; cursor:pointer; font-weight:600; transition: background-color .3s ease;
+}
+.btn-cancel:hover{ background-color:#eee; }
 
-.buttons-row {
-  margin-top: 20px;
-  display: flex;
-  gap: 15px;
-  justify-content: flex-end;
+/* Modal de “ver todos” */
+.full-table-modal{
+  background:white; padding:25px 30px; border-radius:12px;
+  box-shadow:0 8px 20px rgba(0,0,0,0.3);
+  max-width:90vw; width:90vw; max-height:90vh; overflow-y:auto; position:relative;
 }
-
-.btn-primary {
-  background-color: var(--color-senary);
-  color: var(--colo-texto-blanco);
-  padding: 10px 22px;
-  border-radius: 8px;
-  border: none;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
+.close-btn-top{
+  position:absolute; top:10px; right:15px; background:transparent; border:none; font-size:22px; cursor:pointer; font-weight:bold; color:#333;
 }
-
-.btn-primary:hover {
-  background-color: var(--color-tertiary);
-}
-
-.btn-cancel {
-  background: transparent;
-  color: #555;
-  padding: 10px 22px;
-  border-radius: 8px;
-  border: 1px solid #aaa;
-  cursor: pointer;
-  font-weight: 600;
-  transition: background-color 0.3s ease;
-}
-
-.btn-cancel:hover {
-  background-color: #eee;
-}
-
-.full-table-modal {
-  background: white;
-  padding: 25px 30px;
-  border-radius: 12px;
-  box-shadow: 0 8px 20px rgba(0,0,0,0.3);
-  max-width: 90vw;
-  width: 90vw;
-  max-height: 90vh;
-  overflow-y: auto;
-  position: relative;
-}
-
-.close-btn-top {
-  position: absolute;
-  top: 10px;
-  right: 15px;
-  background: transparent;
-  border: none;
-  font-size: 22px;
-  cursor: pointer;
-  font-weight: bold;
-  color: #333;
-}
-
-.close-btn-top:hover {
-  color: #b00020;
-}
+.close-btn-top:hover{ color:#b00020; }
 </style>

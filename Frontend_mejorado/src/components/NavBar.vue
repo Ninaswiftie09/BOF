@@ -1,7 +1,7 @@
 <!-- src/components/NavBar.vue -->
 <template>
-  <header class="top-bar nav-gap">
-    <!-- Logo clicable a /home -->
+  <header class="top-bar" role="banner">
+    <!-- Logo (click a /home) -->
     <img
       src="@/assets/logo_bof_blanco.png"
       alt="Logo BOF"
@@ -9,8 +9,10 @@
       @click="$router.push('/home')"
     />
 
-    <!-- Título -->
-    <h1 class="title">{{ title }}</h1>
+    <!-- Título centrado absoluto -->
+    <div class="title-wrap">
+      <h1 class="title">{{ title }}</h1>
+    </div>
 
     <!-- Acciones a la derecha: SOLO en Home -->
     <div class="actions" v-if="isHome">
@@ -32,31 +34,47 @@ const props = defineProps({
 })
 
 const route = useRoute()
-/* */
 const isHome = computed(() => route.name === 'home' || route.path === '/home')
 const finalProfileImg = computed(() => props.profileImg || profileImage)
 </script>
 
 <style scoped>
+/* Barra NO fija: sin position sticky/fixed */
 .top-bar{
-  display:flex; align-items:center; gap:1.5rem;
-  padding:.75rem 2rem; background:#1e293b;
+  position: relative;
+  display:flex; align-items:center;
+  gap:1rem;
+  padding: .75rem 2rem;
+  background: var(--color-primary);
+  border-bottom: 1px solid rgba(255,255,255,.06);
+  min-height: clamp(64px, 9vw, 100px); /* altura cómoda para logo grande */
 }
 
-/* Logo */
-.logo{ height:80px; width:auto; cursor:pointer; }
+/* Logo más grande y responsive */
+.logo{
+  height: clamp(56px, 8vw, 96px);
+  width:auto; cursor:pointer;
+}
 
-/* Título */
+/* Título centrado “real”  */
+.title-wrap{
+  position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+  pointer-events:none; /* deja clicables logo/acciones debajo si se solapa */
+}
 .title{
+  margin:0;
   font-family:'Segoe UI',sans-serif;
-  font-size:2rem; font-weight:700; color:#ffffff; letter-spacing:.5px;
-  margin-right:auto;
+  font-weight:800;
+  letter-spacing:.3px;
+  font-size: clamp(22px, 2.4vw, 34px);
+  color: var(--color-novenary);
+  text-align:center;
 }
 
-
+/* Acciones a la derecha */
 .actions{ margin-left:auto; display:flex; align-items:center; gap:.75rem; }
 
-/* Avatar/círculo blanco (solo en Home por v-if) */
+/* Avatar/círculo (solo en Home por v-if) */
 .avatar-btn{
   width:36px; height:36px; border-radius:50%;
   background: var(--color-novenary);
