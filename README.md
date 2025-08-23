@@ -72,4 +72,3 @@ Se creo una pagina web usando Domain, AWS y Cloudflare
 el nombre del dominio es "abriluniformes.shop"
 
 Hecho por el equipo de BOF 💻.
-esto es un reto1!!
