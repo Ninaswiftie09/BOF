@@ -58,16 +58,21 @@ const router = createRouter({
   scrollBehavior: () => ({ top: 0 })
 })
 
-// 🔐 Guard global: bloquea todo si no hay "login" en localStorage
+if (localStorage.getItem('isLoggedIn') === 'true' && !sessionStorage.getItem('isLoggedIn')) {
+  sessionStorage.setItem('isLoggedIn', 'true')
+  localStorage.removeItem('isLoggedIn')
+}
+
+
+// 🔐 Guard global: bloquea todo si no hay "login" en sessionStorage
 router.beforeEach((to, from, next) => {
-  const logged = localStorage.getItem('isLoggedIn') === 'true'
+  const logged = sessionStorage.getItem('isLoggedIn') === 'true'
 
   // si la ruta requiere auth y no estás loggeado -> a /login
   if (to.meta?.requiresAuth && !logged) {
     return next({ path: '/login', query: { next: to.fullPath } })
   }
 
-  // si ya estás loggeado e intentas ir a /login -> manda a lo que pedía o /home
   if (logged && to.name === 'login') {
     const nextRoute = to.query?.next || '/home'
     return next(nextRoute)
