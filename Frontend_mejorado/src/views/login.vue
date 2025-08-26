@@ -78,7 +78,7 @@ export default {
           console.log("Respuesta del servidor:", data);
 
           // 🔐 marca la "sesión" en el navegador
-          localStorage.setItem('isLoggedIn', 'true');
+          sessionStorage.setItem('isLoggedIn', 'true');
 
           this.message = "¡Bienvenido! Inicio de sesión exitoso.";
           this.messageType = "success";
