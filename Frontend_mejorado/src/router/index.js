@@ -31,7 +31,7 @@ const routes = [
   { path: '/clientes', name: 'clientes', component: Clientes, meta: { requiresAuth: true } },
   { path: '/clientesregistro', name: 'clientesregistro', component: ClientesRegistro, meta: { requiresAuth: true } },
   { path: '/proveedores', name: 'proveedores', component: Proveedores, meta: { requiresAuth: true } },
-  { path: '/LandingPage', name: 'inicio', component: LandingPage, meta: { requiresAuth: true } },
+  { path: '/LandingPage', name: 'inicio', component: LandingPage, meta: { requiresAuth: false } },
   { path: '/envios', name: 'Envios', component: Envios, meta: { requiresAuth: true } },
 
   // 🟢 PÚBLICA: solo login
