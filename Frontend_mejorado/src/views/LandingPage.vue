@@ -1,5 +1,5 @@
 <template>
-  <!-- Versión completa con mejoras: carrusel con movimiento y controles, hero usa ep2.jpg, subtítulo actualizado, íconos de contacto un poco más grandes -->
+  <!-- Landing con carrusel y scrollspy -->
   <div class="landing-container" :class="{ 'menu-open': menuOpen }">
     <!-- Menú lateral (scrollspy) -->
     <nav class="menu-lateral">
@@ -53,9 +53,9 @@
         <div class="texto">
           <h2>Visión</h2>
           <p>
-            Ser una empresa reconocida en bordados profesionales y confección de uniformes en nuestra región y a nivel nacional,
-            reconocida por la calidad, el diseño y la confiabilidad de nuestros productos. Aspiramos a vestir e inspirar a profesionales
-            e instituciones con prendas que transmitan identidad, profesionalismo y estilo.
+            Ser una empresa reconocida en bordados profesionales y confección de uniformes en nuestra región y a nivel
+            nacional, reconocida por la calidad, el diseño y la confiabilidad de nuestros productos. Aspiramos a vestir
+            e inspirar a profesionales e instituciones con prendas que transmitan identidad, profesionalismo y estilo.
           </p>
         </div>
         <img src="@/assets/images/vision.jpg" alt="Imagen de visión" />
@@ -83,7 +83,7 @@
       <button class="car-arrow left" @click="scrollPrev" aria-label="Anterior">‹</button>
       <button class="car-arrow right" @click="scrollNext" aria-label="Siguiente">›</button>
 
-      <!-- Grid en desktop / carrusel en móvil (con auto-scroll) -->
+      <!-- Grid desktop / carrusel móvil -->
       <div ref="track" class="productos-track" :class="{ carousel: isMobile }">
         <div
           v-for="producto in productosFiltrados"
@@ -93,9 +93,7 @@
         >
           <div class="img-wrap">
             <img :src="producto.imagen" :alt="producto.nombre" />
-            <div class="overlay">
-              <span>Ver</span>
-            </div>
+            <div class="overlay"><span>Ver</span></div>
           </div>
           <p class="nombre">{{ producto.nombre }}</p>
           <span class="tag">{{ producto.categoria }}</span>
@@ -103,7 +101,7 @@
       </div>
     </section>
 
-    <!-- Modal para ampliar imagen -->
+    <!-- Modal imagen -->
     <div v-if="imagenAmpliada" class="modal" @click.self="cerrarImagen">
       <img :src="imagenAmpliada" alt="Imagen ampliada" class="imagen-ampliada" />
       <button class="close" @click="cerrarImagen">×</button>
@@ -130,20 +128,19 @@
             <a href="https://wa.me/message/HDT3ABF7BPCHB1" target="_blank" aria-label="WhatsApp"><IconWs /></a>
           </div>
           <div class="mapa">
-            <!-- Reemplaza el src por el embed real de tu ubicación -->
             <iframe
               title="Ubicación"
               loading="lazy"
               allowfullscreen
               referrerpolicy="no-referrer-when-downgrade"
-              src="l.facebook.com/l.php?u=https%3A%2F%2Fmaps.app.goo.gl%2FnMYVWQRB6ZcUo1fTA%3Ffbclid%3DIwZXh0bgNhZW0CMTAAYnJpZBExalk1cXJ5VG8wUHl1clZuZAEers4lx0oWQjxgJTuEQGfGU012Cs4LdIRnel2IUMxG7Ddch19ea6Poe2LgmAs_aem_Z6SRC-Se5FeoMGB5O2lRIQ&h=AT18l6y7iD-zSWH0BrC6JjHWqg3KQcqXKjRv5_68otIVHbJE_tZmWZTLL6101HTemEBF_OQUG6fETQw9f7KAR8N8a1CvsbaHocGv1-DsrwLwqP5hTGVerRAXOIh7X_39-GGHwCMTyv_VlkcdcolBdQ"
+              src="https://www.google.com/maps?q=Abril%20Uniformes%20Huehuetenango&output=embed"
             ></iframe>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- Botón login fijo en esquina -->
+    <!-- Botón login flotante -->
     <router-link to="/login" class="btn-login floating">
       <IconUser class="icono-login" />
       <span>Login</span>
@@ -158,10 +155,10 @@ import IconIg from '@/components/icons/ig.vue'
 import IconWs from '@/components/icons/ws.vue'
 import IconUser from '@/components/icons/IconUser.vue'
 
-// Hero: usar ep2.jpg
+// Hero
 const heroImage = new URL('@/assets/images/ep2.jpg', import.meta.url).href
 
-// Productos (usando imágenes existentes)
+// Productos
 const productos = [
   { nombre: 'Uniformes Médicos', categoria: 'Médico', imagen: new URL('@/assets/images/model2.jpg', import.meta.url).href },
   { nombre: 'Gorros Quirúrgicos', categoria: 'Accesorios', imagen: new URL('@/assets/images/gorro.jpg', import.meta.url).href },
@@ -227,7 +224,7 @@ onBeforeUnmount(() => {
   stopAutoScroll()
 })
 
-// Carrusel: auto-scroll suave en móvil, y flechas en desktop
+// Carrusel auto-scroll
 function startAutoScroll() {
   stopAutoScroll()
   autoTimer = setInterval(() => {
@@ -259,14 +256,14 @@ function scrollPrev() {
   track.value.scrollBy({ left: -step, behavior: 'smooth' })
 }
 
-// Formulario de contacto (placeholder a WhatsApp)
+// Formulario de contacto → WhatsApp
 const form = ref({ nombre: '', email: '', mensaje: '' })
 const enviarFormulario = () => {
   const msg = `Hola, soy ${form.value.nombre}. ${form.value.mensaje} (Email: ${form.value.email})`
   window.open(`${whatsappCta}?text=${encodeURIComponent(msg)}`, '_blank')
 }
 
-// Menú responsive (si implementas hamburguesa)
+// Menú responsive (si lo usas después)
 const menuOpen = ref(false)
 </script>
 
@@ -315,7 +312,6 @@ html { scroll-behavior: smooth; }
 .brand { display: inline-flex; align-items: center; gap: .8rem; flex-wrap: wrap; justify-content: center; }
 .logo-header { height: 64px; width: auto; filter: drop-shadow(0 0 4px rgba(0,0,0,.4)); }
 .brand h1 { font-size: clamp(2.2rem, 5vw, 3.4rem); margin: 0; letter-spacing: .5px; color: #fff; }
-/* Subtítulo más grande según pedido */
 .subtitle { color: var(--ink); margin: .5rem 0 1.2rem; font-size: clamp(1.1rem, 2.8vw, 1.35rem); font-weight: 500; opacity: .95; }
 .cta { display: flex; gap: .75rem; justify-content: center; flex-wrap: wrap; }
 
@@ -325,7 +321,7 @@ html { scroll-behavior: smooth; }
 .btn-ghost { background: transparent; color: #fff; border-color: rgba(255,255,255,.45); }
 .btn-ghost:hover { background: rgba(255,255,255,.1); }
 
-/* SECCIONES BASE */
+/* SECCIONES */
 .landing-section { padding: 3rem 1rem; max-width: 1100px; margin: 0 auto; position: relative; }
 .landing-section h2 { font-size: 1.9rem; color: var(--brand); border-bottom: 2px solid var(--brand); padding-bottom: .35rem; margin-bottom: .8rem; }
 .landing-section p { font-size: 1.08rem; line-height: 1.65; color: var(--ink); }
@@ -347,7 +343,7 @@ html { scroll-behavior: smooth; }
 .productos-track.carousel { display: grid; grid-auto-flow: column; grid-auto-columns: 70%; gap: 0.8rem; overflow-x: auto; scroll-snap-type: x mandatory; padding-bottom: .4rem; }
 .productos-track.carousel .producto-card { scroll-snap-align: start; }
 
-/* Flechas del carrusel (solo visibles cuando hay overflow en desktop) */
+/* Flechas carrusel (desktop) */
 .car-arrow { position: absolute; top: 50%; transform: translateY(-50%); border: none; background: rgba(0,0,0,.3); color: #fff; font-size: 2rem; width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; cursor: pointer; z-index: 5; backdrop-filter: blur(4px); }
 .car-arrow:hover { background: rgba(0,0,0,.45); }
 .car-arrow.left { left: -6px; }
@@ -378,23 +374,23 @@ html { scroll-behavior: smooth; }
 .contact-form button { margin-top: .8rem; }
 .panel-redes { display: grid; gap: 1rem; align-content: start; }
 
-/* Íconos de contacto: blancos y un poquito más grandes */
+/* Íconos redes */
 .redes-iconos a { display: inline-flex; align-items: center; justify-content: center; background: #334155; padding: 0.5rem; border-radius: 50%; width: 40px; height: 40px; transition: background 0.3s ease; }
 .redes-iconos a:hover { background: var(--brand); }
 .redes-iconos svg { fill: white; width: 20px; height: 20px; }
 
 .mapa iframe { width: 100%; height: 240px; border: 0; border-radius: 12px; box-shadow: 0 6px 16px rgba(0,0,0,.25); }
 
-/* BOTÓN LOGIN FLOTANTE */
+/* LOGIN FLOTANTE */
 .btn-login.floating { position: fixed; bottom: 1rem; right: 1rem; background: var(--brand); color: #fff; padding: .7rem 1rem; border-radius: 999px; font-weight: 800; display: inline-flex; align-items: center; gap: .5rem; z-index: 40; text-decoration: none; box-shadow: 0 10px 16px rgba(42,166,143,.35); }
 .btn-login.floating:hover { background: var(--brand-2); }
 .icono-login { width: 20px; height: 20px; fill: white; }
 
-/* UTILIDADES */
+/* Utilidades */
 .fade-in { animation: fadeIn .9s ease both; }
 @keyframes fadeIn { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
 
-/* RESPONSIVE */
+/* Responsive */
 @media (max-width: 980px) { .contact-grid { grid-template-columns: 1fr; } }
 @media (max-width: 760px) {
   .menu-lateral { right: .4rem; }

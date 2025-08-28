@@ -19,26 +19,25 @@
     <h2 class="title">LISTADO DE FACTURAS</h2>
     <ul class="invoice-list">
       <li v-for="invoice in invoices" :key="invoice.id" class="invoice-card">
-  <div class="invoice-info">
-    <span class="invoice-description">
-      Factura #{{ invoice.no_recibo }} — Cliente: {{ invoice.cliente_id }} — Total: Q{{ invoice.total }}
-    </span>
-    <button class="btn-download" @click="onDownloadPDF(invoice)">
-      DESCARGAR PDF
-    </button>
-  </div>
-</li>
-
+        <div class="invoice-info">
+          <span class="invoice-description">
+            Factura #{{ invoice.no_recibo }} — Cliente: {{ invoice.cliente_id }} — Total: Q{{ invoice.total }}
+          </span>
+          <button class="btn-download" @click="onDownloadPDF(invoice)">
+            DESCARGAR PDF
+          </button>
+        </div>
+      </li>
     </ul>
   </div>
 </template>
 
 <script>
 import { useRouter } from 'vue-router'
+import { apiFetch } from '@/utils/api'      // usa el helper centralizado
 import NavBar from '@/components/NavBar.vue'
-import jsPDF from "jspdf"
-import autoTable from "jspdf-autotable"
-
+import jsPDF from 'jspdf'
+import autoTable from 'jspdf-autotable'
 
 export default {
   name: 'BillPage',
@@ -50,7 +49,7 @@ export default {
   },
   data() {
     return {
-      invoices: [] // empezamos vacío
+      invoices: []
     }
   },
   mounted() {
@@ -59,26 +58,25 @@ export default {
   methods: {
     async fetchInvoices() {
       try {
-        const resp = await fetch("/api/ventas/detalles/")
-        if (!resp.ok) throw new Error("Error al obtener ventas")
-        this.invoices = await resp.json()
+        const data = await apiFetch('/api/ventas/detalles/')
+        this.invoices = Array.isArray(data) ? data : []
       } catch (error) {
-        console.error("Error cargando facturas:", error)
+        console.error('Error cargando facturas:', error)
+        this.invoices = []
       }
     },
+
     async onDownloadPDF(invoice) {
       try {
-        const resp = await fetch(`/api/ventas/${invoice.id}/recibo/`)
-        if (!resp.ok) throw new Error("Error al obtener la venta")
-        const venta = await resp.json()
+        const venta = await apiFetch(`/api/ventas/${invoice.id}/recibo/`)
 
         const doc = new jsPDF()
 
         // Encabezado
         doc.setFontSize(16)
-        doc.text("Abril Uniformes y Bordados", 20, 20)
+        doc.text('Abril Uniformes y Bordados', 20, 20)
         doc.setFontSize(10)
-        doc.text("Ciudad, Huehuetenango 13001", 20, 26)
+        doc.text('Ciudad, Huehuetenango 13001', 20, 26)
 
         doc.setFontSize(11)
         doc.text(`Recibo No: ${venta.no_recibo}`, 150, 20)
@@ -88,33 +86,36 @@ export default {
         doc.setFontSize(12)
         if (venta.cliente) {
           doc.text(`Cliente: ${venta.cliente.nombre}`, 20, 40)
-          doc.text(`NIT: ${venta.cliente.nit || "C/F"}`, 20, 46)
-          doc.text(`Dirección: ${venta.cliente.direccion || ""}`, 20, 52)
+          doc.text(`NIT: ${venta.cliente.nit || 'C/F'}`, 20, 46)
+          doc.text(`Dirección: ${venta.cliente.direccion || ''}`, 20, 52)
         }
 
         // Tabla de productos
-        const rows = venta.detalles.map(d => [
-          d.producto.nombre,
-           d.cantidad,
-           `Q${d.precio_unitario}`,
-           `Q${d.subtotal}`,
-          ])
+        const rows = (venta.detalles || []).map(d => [
+          d.producto?.nombre ?? '',
+          d.cantidad,
+          `Q${d.precio_unitario}`,
+          `Q${d.subtotal}`,
+        ])
 
-autoTable(doc, {
-  head: [["Producto", "Cantidad", "Precio U.", "Subtotal"]],
-  body: rows,
-  startY: 65,
-})
+        autoTable(doc, {
+          head: [['Producto', 'Cantidad', 'Precio U.', 'Subtotal']],
+          body: rows,
+          startY: 65,
+        })
 
         // Total
+        const y = (doc.lastAutoTable?.finalY ?? 65) + 10
         doc.setFontSize(12)
-        doc.text(`Total: Q${venta.total}`, 150, doc.lastAutoTable.finalY + 10)
+        doc.text(`Total: Q${venta.total}`, 150, y)
 
         doc.save(`recibo_${venta.no_recibo}.pdf`)
       } catch (error) {
-        console.error("Error generando recibo:", error)
+        console.error('Error generando recibo:', error)
+        alert('No se pudo generar el recibo')
       }
     },
+
     uploadInvoice() {
       console.log('SUBIR FACTURA (pendiente de implementar)')
     },

@@ -30,7 +30,7 @@
 </template>
 
 <script>
-import { BASE_URL } from '@/config';
+import { apiFetch } from '@/utils/api'
 
 export default {
   name: "ForgotPasswordView",  
@@ -42,40 +42,26 @@ export default {
     };
   },
   methods: {
-    handleSubmit() {
+    async handleSubmit() {
       if (!this.email) {
         this.success = false;
         this.message = "Por favor ingresa tu correo.";
         return;
       }
 
-      fetch(`${BASE_URL}/api/forgot-password/`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email: this.email }),
-      })
-      .then(response => response.json())
-      .then(data => {
-        if (data.message.includes("Correo enviado")) {
-          this.success = true;
-          this.message = "Revisa tu correo para obtener la nueva contraseña.";
-        } else {
-          this.success = false;
-          this.message = data.message || "Hubo un problema al enviar el correo.";
-        }
-      })
-      .catch(error => {
-        console.error("Error:", error);
-        this.success = false;
-        this.message = "Error al conectar con el servidor.";
-      });
+      try {
+        const data = await apiFetch('/api/forgot-password/', 'POST', { email: this.email })
+        this.success = true
+        this.message = data?.message || "Revisa tu correo para obtener la nueva contraseña."
+      } catch (error) {
+        console.error("Error:", error)
+        this.success = false
+        this.message = error?.message || "Error al conectar con el servidor."
+      }
     }
   }
 };
 </script>
-
 
 <style scoped>
 .background {
@@ -106,9 +92,7 @@ h1 {
   margin-bottom: 20px;
 }
 
-.input-group {
-  margin-bottom: 15px;
-}
+.input-group { margin-bottom: 15px; }
 
 .input-group label {
   font-family: 'Kollektif', sans-serif;
@@ -139,14 +123,9 @@ button {
   width: 100%;
 }
 
-button:hover {
-  background-color: var(--color-quaternary);
-}
+button:hover { background-color: var(--color-quaternary); }
 
-.back-to-login {
-  text-align: center;
-  margin-top: 10px;
-}
+.back-to-login { text-align: center; margin-top: 10px; }
 
 .back-to-login a {
   font-family: 'Kollektif', sans-serif;
@@ -154,7 +133,5 @@ button:hover {
   text-decoration: none;
 }
 
-.back-to-login a:hover {
-  color: var(--colo-texto-negro);
-}
+.back-to-login a:hover { color: var(--colo-texto-negro); }
 </style>

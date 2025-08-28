@@ -78,7 +78,7 @@
 
 <script>
 import { useRouter } from 'vue-router'
-import { apiFetch } from '../utils/api'
+import { apiFetch } from '../utils/api'   // o '@/utils/api' si prefieres alias
 import NavBar from '@/components/NavBar.vue'
 
 export default {

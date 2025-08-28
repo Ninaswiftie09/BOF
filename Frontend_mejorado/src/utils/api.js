@@ -1,3 +1,5 @@
+import { BASE_URL } from '@/config'
+
 export function getCookie(name) {
   let cookieValue = null;
   if (document.cookie && document.cookie !== '') {
@@ -13,7 +15,15 @@ export function getCookie(name) {
   return cookieValue;
 }
 
+function resolveUrl(url) {
+  const isAbsolute = /^https?:\/\//i.test(url);
+  if (isAbsolute) return url;
+  return url.startsWith('/') ? `${BASE_URL}${url}` : `${BASE_URL}/${url}`;
+}
+
 export async function apiFetch(url, method = 'GET', data = null) {
+  const finalUrl = resolveUrl(url);
+
   const options = {
     method,
     credentials: 'include',
@@ -25,11 +35,10 @@ export async function apiFetch(url, method = 'GET', data = null) {
   };
 
   try {
-    const response = await fetch(url, options);
+    const response = await fetch(finalUrl, options);
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
-    // Para métodos DELETE o respuestas sin contenido (204)
     if (method === 'DELETE' || response.status === 204) {
       return null;
     }
@@ -39,4 +48,3 @@ export async function apiFetch(url, method = 'GET', data = null) {
     throw error;
   }
 }
-

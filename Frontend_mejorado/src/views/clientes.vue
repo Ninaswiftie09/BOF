@@ -1,20 +1,53 @@
 <script setup>
 import { useRouter } from 'vue-router'
+import { ref, computed, onMounted } from 'vue'
 import NavBar from '@/components/NavBar.vue'
+import { apiFetch } from '@/utils/api'
 
 const router = useRouter()
 const go = (path) => router.push(path)
 
-const clientesRecientes = [
-  { name:'Comercial Rivera S.A.', meta:'Última compra: 12/06 · Condición 30 días', badge:'Activo' },
-  { name:'Boutique La Estación',  meta:'Saldo pendiente: $3,250',               badge:'Seguimiento' },
-  { name:'Distribuciones Norte',  meta:'Pedidos últimos 30 días: 5',            badge:'VIP' }
-]
-const proveedoresRecientes = [
-  { name:'Textiles Andinos',   meta:'Entrega 48h · Calidad A',               badge:'Preferente' },
-  { name:'Hilaturas del Sur',  meta:'Condición: 30/60 · Respuesta rápida',   badge:'Verificado' },
-  { name:'Botones y Más',      meta:'Calificación ★★★★☆',                    badge:'Nuevo' }
-]
+// Datos reales
+const clientes = ref([])
+const proveedores = ref([])
+
+// Conteos para los encabezados
+const clientesCount = computed(() => clientes.value.length)
+const proveedoresCount = computed(() => proveedores.value.length)
+
+// “Recientes” (top 3) mapeados al mismo shape que usabas
+const clientesRecientes = computed(() =>
+  clientes.value.slice(0, 3).map(c => ({
+    name: c.nombre || c.name || `Cliente ${c.id ?? ''}`,
+    meta: c.nit ? `NIT: ${c.nit}` : (c.telefono ? `Tel: ${c.telefono}` : ''),
+    badge: 'Activo',
+  }))
+)
+
+const proveedoresRecientes = computed(() =>
+  proveedores.value.slice(0, 3).map(p => ({
+    name: p.nombre || p.name || `Proveedor ${p.id ?? ''}`,
+    meta: p.telefono ? `Tel: ${p.telefono}` : (p.correo ? `Email: ${p.correo}` : ''),
+    badge: 'Preferente',
+  }))
+)
+
+async function fetchData() {
+  try {
+    clientes.value = await apiFetch('/api/clientes/')
+  } catch (e) {
+    console.error('Error cargando clientes:', e)
+    clientes.value = []
+  }
+  try {
+    proveedores.value = await apiFetch('/api/proveedores/')
+  } catch (e) {
+    console.error('Error cargando proveedores:', e)
+    proveedores.value = []
+  }
+}
+
+onMounted(fetchData)
 </script>
 
 <template>
@@ -32,7 +65,7 @@ const proveedoresRecientes = [
               </svg>
               Clientes
             </div>
-            <span class="count">24 registrados</span>
+            <span class="count">{{ clientesCount }} registrados</span>
           </header>
 
           <ul class="list">
@@ -59,7 +92,7 @@ const proveedoresRecientes = [
               </svg>
               Proveedores
             </div>
-            <span class="count">18 activos</span>
+            <span class="count">{{ proveedoresCount }} activos</span>
           </header>
 
           <ul class="list">

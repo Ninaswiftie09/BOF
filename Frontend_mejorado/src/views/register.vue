@@ -7,13 +7,14 @@
     <div class="background">
       <div class="register-container">
         <h1>Registro de Usuario</h1>
-        <form @submit.prevent="handleSubmit">
+
+        <form @submit.prevent="handleSubmit" novalidate>
           <div class="input-group">
             <label for="first-name">Nombre</label>
-            <input 
-              type="text" 
-              id="first-name" 
-              v-model="firstName" 
+            <input
+              type="text"
+              id="first-name"
+              v-model.trim="firstName"
               placeholder="Ingresa tu nombre"
               required
             />
@@ -21,10 +22,10 @@
 
           <div class="input-group">
             <label for="last-name">Apellido</label>
-            <input 
-              type="text" 
-              id="last-name" 
-              v-model="lastName" 
+            <input
+              type="text"
+              id="last-name"
+              v-model.trim="lastName"
               placeholder="Ingresa tu apellido"
               required
             />
@@ -32,10 +33,10 @@
 
           <div class="input-group">
             <label for="email">Correo electrónico</label>
-            <input 
-              type="email" 
-              id="email" 
-              v-model="email" 
+            <input
+              type="email"
+              id="email"
+              v-model.trim="email"
               placeholder="Ingresa tu correo electrónico"
               required
             />
@@ -49,7 +50,11 @@
             </select>
           </div>
 
-          <button type="submit">Registrarse</button>
+          <button type="submit" :disabled="loading">
+            {{ loading ? 'Registrando…' : 'Registrarse' }}
+          </button>
+
+          <p v-if="message" class="feedback" :class="messageType">{{ message }}</p>
         </form>
       </div>
     </div>
@@ -58,53 +63,62 @@
 
 <script>
 import NavBar from '@/components/NavBar.vue'
+import { apiFetch } from '@/utils/api'
 
 export default {
-  name: "RegisterUserView",
+  name: 'RegisterUserView',
   components: { NavBar },
   data() {
     return {
-      firstName: "",
-      lastName: "",
-      email: "", 
-      position: "admin"
-    };
+      firstName: '',
+      lastName: '',
+      email: '',
+      position: 'admin',
+      loading: false,
+      message: '',
+      messageType: '' // 'success' | 'error'
+    }
   },
   methods: {
     async handleSubmit() {
-      const registerData = {
-        first_name: this.firstName,
-        last_name: this.lastName,
-        email: this.email,
-        role: this.position === "admin" ? "Administrador" : "Empleado"
-      };
-      
-      const BASE_URL = process.env.NODE_ENV === 'development'
-        ? 'http://localhost:8000'
-        : 'https://abriluniformes.shop';
-      
+      this.message = ''
+      this.messageType = ''
+      if (!this.firstName || !this.lastName || !this.email) {
+        this.message = 'Completa todos los campos.'
+        this.messageType = 'error'
+        return
+      }
+      this.loading = true
       try {
-        const response = await fetch(`${BASE_URL}/api/register/`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(registerData)
-        });
-
-        const result = await response.json();
-
-        if (response.ok) {
-          alert('Usuario creado exitosamente');
-          this.$router.push('/login');
-        } else {
-          alert(result.message || 'Error al crear usuario');
+        const payload = {
+          first_name: this.firstName,
+          last_name: this.lastName,
+          email: this.email,
+          // Backend actual usa estos textos:
+          role: this.position === 'admin' ? 'Administrador' : 'Empleado'
         }
-      } catch (error) {
-        console.error("Error al registrar usuario:", error);
-        alert('Hubo un problema al enviar la solicitud');
+
+        const res = await apiFetch('/api/register/', 'POST', payload)
+
+        this.message = res?.message || 'Usuario creado exitosamente'
+        this.messageType = 'success'
+        // Limpia el formulario
+        this.firstName = ''
+        this.lastName = ''
+        this.email = ''
+        this.position = 'admin'
+        // Redirige al login
+        this.$router.push('/login')
+      } catch (err) {
+        console.error('Error al registrar usuario:', err)
+        this.message = err?.message || 'Error al crear usuario'
+        this.messageType = 'error'
+      } finally {
+        this.loading = false
       }
     }
   }
-};
+}
 </script>
 
 <style scoped>
@@ -113,17 +127,16 @@ export default {
   min-height: 100vh;
 }
 
-
 .background {
   background-image: url('@/assets/images/re.jpg');
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-  min-height: calc(100vh - 120px); 
+  min-height: calc(100vh - 120px);
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 24px 16px; 
+  padding: 24px 16px;
 }
 
 .register-container {
@@ -174,7 +187,18 @@ button {
   font-family: 'Kollektif', sans-serif;
   width: 100%;
   border-radius: 8px;
+  transition: opacity .2s ease;
 }
 
-button:hover { background-color: var(--color-quaternary); }
+button[disabled] { opacity: .7; cursor: not-allowed; }
+button:hover:not([disabled]) { background-color: var(--color-quaternary); }
+
+.feedback {
+  margin-top: 12px;
+  text-align: center;
+  font-family: 'Kollektif', sans-serif;
+  font-weight: bold;
+}
+.feedback.success { color: #0b8f4d; }
+.feedback.error { color: #b00020; }
 </style>

@@ -2,7 +2,7 @@
 import { reactive, ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import NavBar from '@/components/NavBar.vue'
-import { apiFetch } from '../utils/api'
+import { apiFetch } from '../utils/api' // puedes usar '@/utils/api' si quieres
 
 const router = useRouter()
 const go = path => router.push(path)
@@ -124,7 +124,7 @@ const filteredClientes = computed(() =>
 function searchClientsInModal () {
   if (!modal.searchTerm) { modal.searchResults = []; return }
   modal.searchResults = clientes.value.filter(c =>
-    c.nombre.toLowerCase().includes(modal.searchTerm.toLowerCase())
+    (c.nombre || '').toLowerCase().includes(modal.searchTerm.toLowerCase())
   )
 }
 </script>
@@ -157,7 +157,8 @@ function searchClientsInModal () {
             </tr>
           </thead>
           <tbody>
-            <tr v-for="c in filteredClientes" :key="c.codigo_cliente">
+            <!-- Cambio indispensable: key por c.id -->
+            <tr v-for="c in filteredClientes" :key="c.id">
               <td>{{ c.codigo_cliente }}</td>
               <td>{{ c.nombre }}</td>
               <td>{{ c.contacto }}</td>
@@ -235,20 +236,17 @@ function searchClientsInModal () {
 </template>
 
 <style scoped>
+/* (sin cambios de estilos) */
 .crm-home{
   min-height:100vh;
   background:#0a0f2c;
   display:flex; flex-direction:column;
   font-family:'Segoe UI',sans-serif; color:#fff;
 }
-
-/* Separación estándar (NavBar no es fijo) */
 .body-wrapper{
   padding: 2rem;
   display:flex; flex-direction:column; gap:2rem;
 }
-
-/* input de búsqueda en el NavBar (slot actions) */
 .nav-search{
   width: 280px; max-width: 40vw;
   padding: .5rem .75rem;
@@ -258,15 +256,12 @@ function searchClientsInModal () {
   font-size: .9rem;
 }
 .nav-search:focus{ outline: none; box-shadow: 0 0 0 3px rgba(99,102,241,.25); border-color:#6366f1; }
-
 .module{
   background:#0d1130;
   border:2px solid #1e2236;
   border-radius:16px;
   padding:1.5rem;
 }
-
-/* TABLA CLIENTES */
 table{ width:100%; border-collapse:separate; border-spacing:0 4px; min-width:800px; }
 th{
   background:transparent; padding:12px 16px; color:#fff;
@@ -279,12 +274,9 @@ td{
 tr[v-if="filteredClientes.length===0"] td{
   background:transparent; text-align:center; padding:2rem; font-style:italic; color:#94a3b8;
 }
-
 .edit-btn,.remove-btn{ background:transparent; border:none; cursor:pointer; font-size:1.1rem; }
 .edit-btn{ color:#60a5fa; } .remove-btn{ color:#e74c3c; }
 .edit-btn:hover{ color:#93c5fd; } .remove-btn:hover{ color:#f87171; }
-
-/* Modales */
 .modal-overlay{ position:fixed; inset:0; background:rgba(0,0,0,.6); display:flex; justify-content:center; align-items:center; z-index:2000; }
 .modal-window{ background:#1e293b; padding:2rem; border-radius:14px; min-width:600px; max-width:90%; max-height:90vh; overflow:auto; display:flex; flex-direction:column; gap:1rem; }
 .modal-form{ display:flex; flex-direction:column; gap:.8rem; }
@@ -294,8 +286,6 @@ tr[v-if="filteredClientes.length===0"] td{
 .actions{ display:flex; gap:.6rem; justify-content:center; grid-column:1 / -1; }
 .cancel-btn{ padding:.6rem 1.4rem; border:none; border-radius:8px; background:#9ca3af; color:#1e293b; font-weight:600; cursor:pointer; }
 .save-big{ padding:.6rem 1.4rem; border:none; border-radius:8px; background:#2563eb; font-weight:600; cursor:pointer; color:#fff; }
-
-/* Búsqueda en modal */
 .search-in-modal{
   width:100%; padding:.6rem .8rem; border-radius:6px; border:1px solid #334155;
   background:#111827; color:#fff; font-size:1rem; margin-bottom:1rem;
@@ -307,15 +297,11 @@ tr[v-if="filteredClientes.length===0"] td{
 .results-table td{ padding:.75rem; }
 .results-table td:last-child{ text-align:right; }
 .search-results-container p{ color:#94a3b8; text-align:center; margin-top:2rem; }
-
-/* Buscador en la sección (puedes dejar solo el del NavBar si prefieres) */
 .search-wrapper{ margin-bottom:1rem; }
 .search-clientes{
   max-width:300px; width:100%;
   padding:.4rem .8rem; border-radius:6px; background:#fff; color:#000; font-size:.8rem;
 }
-
-/* Botón agregar */
 .add-button-wrapper{ display:flex; justify-content:flex-end; padding:0 1.5rem; }
 .add-button{
   background:#374666; color:#fff; border:none; padding:.7rem 1.5rem; font-size:1rem;

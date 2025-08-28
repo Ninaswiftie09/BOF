@@ -138,12 +138,14 @@
 </template>
 
 <script>
-import { BASE_URL } from '@/config'
 import { useRouter } from 'vue-router'
 import NavBar from '@/components/NavBar.vue'
+import { apiFetch } from '@/utils/api'
 
-// 👉 Cambia esto si tu lookup de producto NO es /api/productos/:id/
-const PRODUCTS_ENDPOINT = `${BASE_URL}/api/productos/` // termina en '/'
+// 👉 Lookup de producto usando ruta tal cual la tenías (con slash final).
+//    Si tu backend NO expone /api/productos/, cambia SOLO esta constante
+//    por el endpoint correcto (p.ej. '/api/uniformes/').
+const PRODUCTS_ENDPOINT = `/api/productos/`
 
 export default {
   components: { NavBar },
@@ -213,20 +215,6 @@ export default {
       const d = new Date(iso)
       return d.toLocaleDateString('es-MX', { year:'numeric', month:'short', day:'2-digit' })
     },
-    getCookie(name){
-      let cookieValue = null
-      if (document.cookie && document.cookie !== '') {
-        const cookies = document.cookie.split(';')
-        for (let i = 0; i < cookies.length; i++) {
-          const cookie = cookies[i].trim()
-          if (cookie.startsWith(name + '=')) {
-            cookieValue = decodeURIComponent(cookie.substring(name.length + 1))
-            break
-          }
-        }
-      }
-      return cookieValue
-    },
 
     toggleVerTodos(){ this.verTodos = !this.verTodos },
     abrirFormulario(accion, pedido=null){
@@ -277,9 +265,7 @@ export default {
           this.recalcularTotales()
           return
         }
-        const r = await fetch(`${PRODUCTS_ENDPOINT}${d.producto}/`)
-        if(!r.ok) throw new Error('Producto no encontrado')
-        const prod = await r.json()
+        const prod = await apiFetch(`${PRODUCTS_ENDPOINT}${d.producto}/`)
         const precio = Number(
           prod.precio_unitario ?? prod.precio ?? prod.costo ?? prod.price ?? 0
         )
@@ -293,24 +279,22 @@ export default {
 
     async cargarClientes(){
       try{
-        const r = await fetch(`${BASE_URL}/api/clientes/`)
-        this.clientes = await r.json()
+        this.clientes = await apiFetch(`/api/clientes/`)
       }catch(e){ console.error('Error clientes', e) }
     },
+
     async cargarPedidos(){
       this.cargando = true
       this.pedidos = []
       const fuentes = [
-        `${BASE_URL}/api/ventas/`,
-        `${BASE_URL}/api/ordenes/historial/`,
-        `${BASE_URL}/api/ventas/detalles/`,
+        `/api/ventas/`,
+        `/api/ordenes/historial/`,
+        `/api/ventas/detalles/`,
       ]
       for (const url of fuentes){
         try{
-          const r = await fetch(url)
-          if(!r.ok) continue
-          const data = await r.json()
-          const arr = Array.isArray(data) ? data : (Array.isArray(data.results) ? data.results : [])
+          const data = await apiFetch(url)
+          const arr = Array.isArray(data) ? data : (Array.isArray(data?.results) ? data.results : [])
           if(!arr.length) continue
           this.pedidos = arr.map(p => ({
             id: p.id ?? p.pedido_id ?? p.venta_id ?? p.pk,
@@ -322,24 +306,26 @@ export default {
             cliente_id: p.cliente_id ?? p.cliente?.id
           })).filter(p => p.id != null)
           if(this.pedidos.length) break
-        }catch(e){ /* probar siguiente fuente */ }
+        }catch(e){
+          // probar siguiente fuente si falla
+          continue
+        }
       }
       this.cargando = false
     },
 
     async submitFormulario(){
       try{
-        const csrftoken = this.getCookie('csrftoken')
-        const createUrl = `${BASE_URL}/api/ventas/crear/`
-        const updateUrl = (id) => `${BASE_URL}/api/ventas/editar/${id}/`
-        const deleteUrl = (id) => `${BASE_URL}/api/ventas/eliminar/${id}/`
+        const createUrl = `/api/ventas/crear/`
+        const updateUrl = (id) => `/api/ventas/editar/${id}/`
+        const deleteUrl = (id) => `/api/ventas/eliminar/${id}/`
 
         let url = createUrl
         let method = 'POST'
-        let body = null
+        let payload = null
 
         if (this.accion === 'agregar' || this.accion === 'editar') {
-          body = JSON.stringify({
+          payload = {
             fecha: this.formData.fecha,
             cliente_id: this.formData.cliente,
             metodo_pago: this.formData.metodo_pago,
@@ -347,9 +333,10 @@ export default {
             detalles: (this.formData.detalles || []).map(d => ({
               producto: d.producto,
               cantidad: d.cantidad,
+              // mantenemos toFixed como lo tenías para backend que espera string/decimal
               precio_unitario: Number(d.precio_unitario).toFixed(2)
             }))
-          })
+          }
         }
         if (this.accion === 'editar') {
           url = updateUrl(this.formData.id)
@@ -359,19 +346,7 @@ export default {
           method = 'DELETE'
         }
 
-        const res = await fetch(url, {
-          method,
-          credentials: 'include',
-          headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrftoken },
-          body: method === 'DELETE' ? null : body
-        })
-
-        if(!res.ok){
-          const err = await res.json().catch(()=>({error:'Error desconocido'}))
-          alert('Error: ' + (err.error || res.statusText))
-          return
-        }
-
+        await apiFetch(url, method, payload)
         this.formVisible = false
         await this.cargarPedidos()
       } catch (e) {
@@ -384,7 +359,6 @@ export default {
 </script>
 
 <style scoped>
-/* Contenedor base (sin header fijo) */
 .inventory-container{
   padding: 40px;
   background-color: var(--color-octonary);

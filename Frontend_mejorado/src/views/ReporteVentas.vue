@@ -1,10 +1,10 @@
 <template>
   <div class="reporte-ventas">
-    <!-- NavBar unificado (solo barra) -->
+    <!-- NavBar unificado -->
     <NavBar title="REPORTE DE VENTAS" />
 
     <main class="main-content">
-      <!-- FILTROS (debajo del NavBar) -->
+      <!-- FILTROS -->
       <div class="filtros-container">
         <div class="filtro">
           <label for="fecha-inicio">Desde</label>
@@ -15,8 +15,8 @@
           <input type="date" id="fecha-fin" v-model="filtroFechaFin" />
         </div>
         <div class="filtro-actions">
-          <button class="btn btn--primary" @click="filtrarDatos">Filtrar</button>
-          <button class="btn btn--muted" @click="resetFiltros">Limpiar</button>
+          <button class="btn btn--primary" @click="filtrarDatos" :disabled="cargando">Filtrar</button>
+          <button class="btn btn--muted" @click="resetFiltros" :disabled="cargando">Limpiar</button>
         </div>
       </div>
 
@@ -59,6 +59,9 @@
       <!-- Tabla -->
       <div class="table-container">
         <h2>Tabla de Ventas Detalladas</h2>
+
+        <div v-if="errorMsg" class="no-data" style="color:#fca5a5">{{ errorMsg }}</div>
+
         <table v-if="ventas.length" class="dark-table">
           <thead>
             <tr>
@@ -109,50 +112,52 @@
 </template>
 
 <script>
-import axios from 'axios'
 import Chart from 'chart.js/auto'
 import NavBar from '@/components/NavBar.vue'
+import { apiFetch } from '@/utils/api'
 
 export default {
   components: { NavBar },
   data() {
     return {
+      // filtros/fechas
       fechaInicio: '',
       fechaFin: '',
       filtroFechaInicio: '',
       filtroFechaFin: '',
+      // KPI/tabla
       totalVentas: 0,
       numeroFacturas: 0,
       ventas: [],
+      // ui
       cargando: false,
+      errorMsg: '',
       paginaActual: 1,
       totalPaginas: 1,
+      // charts
       evolucionChartInstance: null,
       productosChartInstance: null,
       metodosPagoChartInstance: null,
     }
   },
 
-// Filtro predeterminado de la fecha
-mounted() {
-  // calcula la fecha de hoy, el primer y último día del mes
-  const hoy = new Date();
-  const primerDia = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
-  const ultimoDia = new Date(hoy.getFullYear(), hoy.getMonth() + 1, 0);
+  mounted() {
+    // Rango: mes actual por defecto
+    const hoy = new Date()
+    const primerDia = new Date(hoy.getFullYear(), hoy.getMonth(), 1)
+    const ultimoDia = new Date(hoy.getFullYear(), hoy.getMonth() + 1, 0)
+    const fmt = (f) =>
+      `${f.getFullYear()}-${String(f.getMonth() + 1).padStart(2, '0')}-${String(f.getDate()).padStart(2, '0')}`
+    this.filtroFechaInicio = fmt(primerDia)
+    this.filtroFechaFin = fmt(ultimoDia)
+    this.filtrarDatos()
+  },
 
-  // Formatea las fechas a 'YYYY-MM-DD' para inputs y el API
-  const formatear = (fecha) => {
-    const anio = fecha.getFullYear();
-    const mes = String(fecha.getMonth() + 1).padStart(2, '0');
-    const dia = String(fecha.getDate()).padStart(2, '0');
-    return `${anio}-${mes}-${dia}`;
-  };
-
-  this.filtroFechaInicio = formatear(primerDia);
-  this.filtroFechaFin = formatear(ultimoDia);
-
-  this.filtrarDatos();
-},
+  beforeUnmount() {
+    this.evolucionChartInstance?.destroy?.()
+    this.productosChartInstance?.destroy?.()
+    this.metodosPagoChartInstance?.destroy?.()
+  },
 
   methods: {
     formatearFecha(fecha) {
@@ -160,31 +165,36 @@ mounted() {
       return new Date(fecha).toLocaleDateString('es-GT')
     },
 
-    filtrarDatos() {
+    async filtrarDatos() {
+      this.errorMsg = ''
       this.fechaInicio = this.filtroFechaInicio
       this.fechaFin = this.filtroFechaFin
-      if (this.fechaInicio && this.fechaFin) {
-        this.cargarVentas()
-        this.cargarEvolucionVentas()
-        this.cargarProductosMasVendidos()
-        this.cargarMetodosPago()
-      } else {
-        alert('Por favor, seleccioná ambas fechas.')
+      if (!this.fechaInicio || !this.fechaFin) {
+        this.errorMsg = 'Por favor, seleccioná ambas fechas.'
+        return
       }
+      await Promise.all([
+        this.cargarVentas(),
+        this.cargarEvolucionVentas(),
+        this.cargarProductosMasVendidos(),
+        this.cargarMetodosPago()
+      ])
     },
 
     async cargarVentas() {
       this.cargando = true
+      this.errorMsg = ''
       try {
-        const response = await axios.get('http://localhost:8000/api/ventas/por-fecha/', {
-          params: { fecha_inicio: this.fechaInicio, fecha_fin: this.fechaFin },
-        })
-        this.totalVentas = response.data.total_ventas
-        this.numeroFacturas = response.data.numero_facturas
-        this.ventas = response.data.ventas
-        // si tu API devuelve paginación, actualiza aquí paginaActual/totalPaginas
-      } catch (error) {
-        console.error('Error al obtener las ventas:', error)
+        const data = await apiFetch(
+          `/api/ventas/por-fecha/?fecha_inicio=${this.fechaInicio}&fecha_fin=${this.fechaFin}`
+        )
+        this.totalVentas = data.total_ventas ?? 0
+        this.numeroFacturas = data.numero_facturas ?? 0
+        this.ventas = data.ventas ?? []
+        // si luego hay paginación real, aquí se calculan paginaActual/totalPaginas
+      } catch (err) {
+        console.error('Error al obtener las ventas:', err)
+        this.errorMsg = 'No se pudieron cargar las ventas.'
       } finally {
         this.cargando = false
       }
@@ -192,10 +202,10 @@ mounted() {
 
     async cargarEvolucionVentas() {
       try {
-        const res = await axios.get('/api/ventas/evolucion/', {
-          params: { fecha_inicio: this.fechaInicio, fecha_fin: this.fechaFin },
-        })
-        this.renderEvolucionChart(res.data)
+        const data = await apiFetch(
+          `/api/ventas/evolucion/?fecha_inicio=${this.fechaInicio}&fecha_fin=${this.fechaFin}`
+        )
+        this.renderEvolucionChart(data || [])
       } catch (error) {
         console.error('Error al cargar evolución de ventas:', error)
       }
@@ -203,8 +213,8 @@ mounted() {
 
     async cargarProductosMasVendidos() {
       try {
-        const res = await axios.get('/api/ventas/productos-mas-vendidos/')
-        this.renderProductosChart(res.data)
+        const data = await apiFetch('/api/ventas/productos-mas-vendidos/')
+        this.renderProductosChart(data || [])
       } catch (error) {
         console.error('Error al cargar productos más vendidos:', error)
       }
@@ -212,29 +222,31 @@ mounted() {
 
     async cargarMetodosPago() {
       try {
-        const res = await axios.get('/api/ventas/metodos-pago/')
-        this.renderMetodosPagoChart(res.data)
+        const data = await apiFetch('/api/ventas/metodos-pago/')
+        this.renderMetodosPagoChart(data || [])
       } catch (error) {
         console.error('Error al cargar métodos de pago:', error)
       }
     },
 
     renderEvolucionChart(data) {
-      if (this.evolucionChartInstance) this.evolucionChartInstance.destroy()
+      this.evolucionChartInstance?.destroy?.()
       const ctx = document.getElementById('evolucionVentasChart')?.getContext('2d')
       if (!ctx) return
       this.evolucionChartInstance = new Chart(ctx, {
         type: 'line',
         data: {
-          labels: data.map(item => this.formatearFecha(item.dia)),
-          datasets: [{
-            label: 'Total de Ventas por Día',
-            data: data.map(item => item.total),
-            borderColor: '#2AA68F',
-            backgroundColor: 'rgba(42, 166, 143, 0.2)',
-            tension: 0.1,
-            fill: true,
-          }]
+          labels: data.map((item) => this.formatearFecha(item.dia)),
+          datasets: [
+            {
+              label: 'Total de Ventas por Día',
+              data: data.map((item) => item.total),
+              borderColor: '#2AA68F',
+              backgroundColor: 'rgba(42, 166, 143, 0.2)',
+              tension: 0.1,
+              fill: true
+            }
+          ]
         },
         options: {
           responsive: true,
@@ -249,18 +261,20 @@ mounted() {
     },
 
     renderProductosChart(data) {
-      if (this.productosChartInstance) this.productosChartInstance.destroy()
+      this.productosChartInstance?.destroy?.()
       const ctx = document.getElementById('productosMasVendidosChart')?.getContext('2d')
       if (!ctx) return
       this.productosChartInstance = new Chart(ctx, {
         type: 'bar',
         data: {
-          labels: data.map(item => item.producto__nombre),
-          datasets: [{
-            label: 'Cantidad Vendida',
-            data: data.map(item => item.total_vendido),
-            backgroundColor: ['#2B5CA8', '#374666', '#83A4CC', '#C9E8F5', '#84C8C0'],
-          }]
+          labels: data.map((item) => item.producto__nombre),
+          datasets: [
+            {
+              label: 'Cantidad Vendida',
+              data: data.map((item) => item.total_vendido),
+              backgroundColor: ['#2B5CA8', '#374666', '#83A4CC', '#C9E8F5', '#84C8C0']
+            }
+          ]
         },
         options: {
           responsive: true,
@@ -276,17 +290,19 @@ mounted() {
     },
 
     renderMetodosPagoChart(data) {
-      if (this.metodosPagoChartInstance) this.metodosPagoChartInstance.destroy()
+      this.metodosPagoChartInstance?.destroy?.()
       const ctx = document.getElementById('metodosPagoChart')?.getContext('2d')
       if (!ctx) return
       this.metodosPagoChartInstance = new Chart(ctx, {
         type: 'doughnut',
         data: {
-          labels: data.map(item => item.metodo_pago),
-          datasets: [{
-            data: data.map(item => item.cantidad),
-            backgroundColor: ['#839A2D', '#2AA68F', '#2B5CA8', '#C9E8F5'],
-          }]
+          labels: data.map((item) => item.metodo_pago),
+          datasets: [
+            {
+              data: data.map((item) => item.cantidad),
+              backgroundColor: ['#839A2D', '#2AA68F', '#2B5CA8', '#C9E8F5']
+            }
+          ]
         },
         options: {
           responsive: true,
@@ -296,9 +312,19 @@ mounted() {
       })
     },
 
-    // si luego activas paginación real:
-    cambiarPagina(nueva) { this.paginaActual = nueva }
-    // y calcula totalPaginas según tu backend
+    // paginación futura (placeholder)
+    cambiarPagina(nueva) { this.paginaActual = nueva },
+
+    resetFiltros() {
+      const hoy = new Date()
+      const primerDia = new Date(hoy.getFullYear(), hoy.getMonth(), 1)
+      const ultimoDia = new Date(hoy.getFullYear(), hoy.getMonth() + 1, 0)
+      const fmt = (f) =>
+        `${f.getFullYear()}-${String(f.getMonth() + 1).padStart(2, '0')}-${String(f.getDate()).padStart(2, '0')}`
+      this.filtroFechaInicio = fmt(primerDia)
+      this.filtroFechaFin = fmt(ultimoDia)
+      this.filtrarDatos()
+    }
   }
 }
 </script>
@@ -311,7 +337,6 @@ mounted() {
   font-family: 'Kollektif', sans-serif;
 }
 
-/* Contenido general (NavBar no es fijo, así que no hace falta padding-top) */
 .main-content{
   padding: 20px;
   display: grid;

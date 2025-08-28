@@ -46,7 +46,11 @@
     </div>
 
     <!-- Modal -->
-    <div v-if="modal.visible && modal.type === 'proveedor'" class="modal-overlay" @click.self="close">
+    <div
+      v-if="modal.visible && modal.type === 'proveedor'"
+      class="modal-overlay"
+      @click.self="close"
+    >
       <div class="modal-window">
         <h3>{{ currentProveedor ? 'Editar Proveedor' : 'Nuevo Proveedor' }}</h3>
         <form class="grid-two" @submit.prevent="saveProveedor">
@@ -67,17 +71,15 @@
 
 <script setup>
 import { reactive, ref, computed, onMounted } from 'vue'
-import axios from 'axios'
 import NavBar from '@/components/NavBar.vue'
-
-const API = '/api'
+import { apiFetch } from '@/utils/api'
 
 const modal = reactive({ visible: false, type: '' })
 const currentProveedor = ref(null)
 const proveedores = ref([])
 const searchQuery = ref('')
 
-const proveedorForm = reactive({ nombre: '', correo: '', telefono: '', direccion: '' })
+const proveedorForm = reactive({ id: null, nombre: '', correo: '', telefono: '', direccion: '' })
 
 const filteredProveedores = computed(() =>
   proveedores.value.filter(p =>
@@ -90,10 +92,16 @@ function open(type, prov = null) {
   modal.visible = true
   if (type === 'proveedor') {
     if (prov) {
-      Object.assign(proveedorForm, prov)
-      currentProveedor.value = prov
+      Object.assign(proveedorForm, {
+        id: prov.id ?? null,
+        nombre: prov.nombre ?? '',
+        correo: prov.correo ?? '',
+        telefono: prov.telefono ?? '',
+        direccion: prov.direccion ?? ''
+      })
+      currentProveedor.value = { id: prov.id }
     } else {
-      Object.assign(proveedorForm, { nombre: '', correo: '', telefono: '', direccion: '', nit: '' })
+      Object.assign(proveedorForm, { id: null, nombre: '', correo: '', telefono: '', direccion: '' })
       currentProveedor.value = null
     }
   }
@@ -102,14 +110,17 @@ function close() { modal.visible = false }
 
 async function fetchProveedores() {
   try {
-    proveedores.value = (await axios.get(`${API}/proveedores/`)).data
-  } catch (e) { console.error('Error cargando proveedores', e) }
+    proveedores.value = await apiFetch('/api/proveedores/')
+  } catch (e) {
+    console.error('Error cargando proveedores', e)
+    proveedores.value = []
+  }
 }
 
 async function eliminarProveedor(id) {
   if (!confirm('¿Estás segura de que quieres eliminar este proveedor?')) return
   try {
-    await axios.delete(`${API}/proveedores/${id}/`)
+    await apiFetch(`/api/proveedores/${id}/`, 'DELETE')
     await fetchProveedores()
   } catch (e) {
     console.error('Error al eliminar proveedor:', e)
@@ -119,21 +130,75 @@ async function eliminarProveedor(id) {
 
 async function saveProveedor() {
   if (!proveedorForm.nombre) return alert('El nombre es obligatorio')
-  const data = { ...proveedorForm }
+  const data = {
+    nombre: proveedorForm.nombre,
+    correo: proveedorForm.correo,
+    telefono: proveedorForm.telefono,
+    direccion: proveedorForm.direccion
+  }
   try {
-    if (currentProveedor.value) {
-      await axios.put(`${API}/proveedores/${currentProveedor.value.id}/`, data)
+    if (currentProveedor.value?.id) {
+      await apiFetch(`/api/proveedores/${currentProveedor.value.id}/`, 'PUT', data)
     } else {
-      await axios.post(`${API}/proveedores/`, data)
+      await apiFetch('/api/proveedores/', 'POST', data)
     }
     close()
-    Object.assign(proveedorForm, { nombre: '', correo: '', telefono: '', direccion: '', nit: '' })
+    Object.assign(proveedorForm, { id: null, nombre: '', correo: '', telefono: '', direccion: '' })
     await fetchProveedores()
   } catch (e) {
-    console.error('🔴 Error guardando proveedor:', e.response?.data || e)
-    alert(e.response?.data?.nombre || 'No se pudo guardar proveedor')
+    console.error('🔴 Error guardando proveedor:', e)
+    alert('No se pudo guardar el proveedor')
   }
 }
 
 onMounted(fetchProveedores)
 </script>
+
+<style scoped>
+.page{ min-height:100vh; background:var(--color-octonary); color:#fff; }
+.container{ max-width:1100px; margin:0 auto; padding:20px; }
+.module{
+  background:#0d1130; border:2px solid #1e2236; border-radius:16px; padding:16px;
+}
+.input{ width:100%; max-width:360px; padding:10px 12px; border-radius:10px; border:1px solid #cbd5e1; }
+.input--white{ background:#fff; color:#000; }
+
+.table-wrapper{ overflow:auto; margin-top:12px; }
+.table{ width:100%; border-collapse:collapse; min-width:720px; background:#111827; }
+.table thead th{
+  text-align:left; background:var(--color-senary); color:#fff; padding:12px; position:sticky; top:0;
+}
+.table td{ padding:12px; border-top:1px solid #263043; color:#e5e7eb; }
+.table-actions{ display:flex; gap:8px; }
+
+.icon-btn{
+  background:#334155; color:#fff; border:none; padding:6px 10px; border-radius:6px; cursor:pointer;
+}
+.icon-btn:hover{ background:#3b4b63 }
+.icon-btn.danger{ background:#e11d48 }
+.icon-btn.danger:hover{ background:#be123c }
+
+.footer-actions{ display:flex; justify-content:flex-end; margin-top:14px; }
+.btn{
+  background: var(--color-senary); color:#fff; border:none; border-radius:10px; padding:10px 16px; cursor:pointer; font-weight:700;
+}
+.btn.secondary{ background:#6b7280 }
+.btn:hover{ background: var(--color-tertiary); }
+
+/* Modal */
+.modal-overlay{ position:fixed; inset:0; background:rgba(0,0,0,.6); display:flex; align-items:center; justify-content:center; z-index:50; }
+.modal-window{
+  background:#1e293b; padding:20px; border-radius:14px; min-width:560px; max-width:90%; color:#fff;
+}
+.grid-two{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.grid-two label{ display:flex; flex-direction:column; gap:6px; font-size:.9rem; }
+.grid-two input{
+  padding:10px; border-radius:8px; border:1px solid #334155; background:#111827; color:#fff;
+}
+.modal-actions{ grid-column:1 / -1; display:flex; gap:10px; justify-content:flex-end; margin-top:6px; }
+
+@media (max-width:700px){
+  .modal-window{ min-width:unset; }
+  .grid-two{ grid-template-columns:1fr; }
+}
+</style>
