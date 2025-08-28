@@ -19,13 +19,16 @@
     <h2 class="title">LISTADO DE FACTURAS</h2>
     <ul class="invoice-list">
       <li v-for="invoice in invoices" :key="invoice.id" class="invoice-card">
-        <div class="invoice-info">
-          <span class="invoice-description">{{ invoice.description }}</span>
-          <button class="btn-download" @click="onDownloadPDF(invoice)">
-            DESCARGAR PDF
-          </button>
-        </div>
-      </li>
+  <div class="invoice-info">
+    <span class="invoice-description">
+      Factura #{{ invoice.no_recibo }} — Cliente: {{ invoice.cliente_id }} — Total: Q{{ invoice.total }}
+    </span>
+    <button class="btn-download" @click="onDownloadPDF(invoice)">
+      DESCARGAR PDF
+    </button>
+  </div>
+</li>
+
     </ul>
   </div>
 </template>
@@ -33,6 +36,9 @@
 <script>
 import { useRouter } from 'vue-router'
 import NavBar from '@/components/NavBar.vue'
+import jsPDF from "jspdf"
+import autoTable from "jspdf-autotable"
+
 
 export default {
   name: 'BillPage',
@@ -44,22 +50,76 @@ export default {
   },
   data() {
     return {
-      invoices: [
-        { id: 1, description: 'Factura #001', pdfUrl: '/pdfs/factura001.pdf' },
-        { id: 2, description: 'Factura #002', pdfUrl: '/pdfs/factura002.pdf' },
-        { id: 3, description: 'Factura #003', pdfUrl: '/pdfs/factura003.pdf' }
-      ]
+      invoices: [] // empezamos vacío
     }
   },
+  mounted() {
+    this.fetchInvoices()
+  },
   methods: {
-    onDownloadPDF(invoice) {
-      console.log('DESCARGAR PDF (PENDIENTE DE IMPLEMENTACIÓN EN EL BACKEND)', invoice)
+    async fetchInvoices() {
+      try {
+        const resp = await fetch("/api/ventas/detalles/")
+        if (!resp.ok) throw new Error("Error al obtener ventas")
+        this.invoices = await resp.json()
+      } catch (error) {
+        console.error("Error cargando facturas:", error)
+      }
+    },
+    async onDownloadPDF(invoice) {
+      try {
+        const resp = await fetch(`/api/ventas/${invoice.id}/recibo/`)
+        if (!resp.ok) throw new Error("Error al obtener la venta")
+        const venta = await resp.json()
+
+        const doc = new jsPDF()
+
+        // Encabezado
+        doc.setFontSize(16)
+        doc.text("Abril Uniformes y Bordados", 20, 20)
+        doc.setFontSize(10)
+        doc.text("Ciudad, Huehuetenango 13001", 20, 26)
+
+        doc.setFontSize(11)
+        doc.text(`Recibo No: ${venta.no_recibo}`, 150, 20)
+        doc.text(`Fecha: ${venta.fecha}`, 150, 26)
+
+        // Cliente
+        doc.setFontSize(12)
+        if (venta.cliente) {
+          doc.text(`Cliente: ${venta.cliente.nombre}`, 20, 40)
+          doc.text(`NIT: ${venta.cliente.nit || "C/F"}`, 20, 46)
+          doc.text(`Dirección: ${venta.cliente.direccion || ""}`, 20, 52)
+        }
+
+        // Tabla de productos
+        const rows = venta.detalles.map(d => [
+          d.producto.nombre,
+           d.cantidad,
+           `Q${d.precio_unitario}`,
+           `Q${d.subtotal}`,
+          ])
+
+autoTable(doc, {
+  head: [["Producto", "Cantidad", "Precio U.", "Subtotal"]],
+  body: rows,
+  startY: 65,
+})
+
+        // Total
+        doc.setFontSize(12)
+        doc.text(`Total: Q${venta.total}`, 150, doc.lastAutoTable.finalY + 10)
+
+        doc.save(`recibo_${venta.no_recibo}.pdf`)
+      } catch (error) {
+        console.error("Error generando recibo:", error)
+      }
     },
     uploadInvoice() {
-      console.log('SUBIR FACTURA (PENDIENTE DE IMPLEMENTACIÓN)')
+      console.log('SUBIR FACTURA (pendiente de implementar)')
     },
     viewSavedInvoices() {
-      console.log('VER FACTURAS GUARDADAS (PENDIENTE DE IMPLEMENTACIÓN)')
+      console.log('VER FACTURAS GUARDADAS (pendiente de implementar)')
     }
   }
 }

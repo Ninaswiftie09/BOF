@@ -42,6 +42,7 @@ from .views import (
     AgregarNuevaCategoria,
     EditarCategoria,
     EliminarCategoria,
+    VentaReciboAPIView,
 )
 
 
@@ -67,6 +68,7 @@ urlpatterns = [
     path('ventas/productos-mas-vendidos/', ProductosMasVendidosAPIView.as_view(), name='productos_mas_vendidos'),
     path('ventas/metodos-pago/', MetodosPagoUsadosAPIView.as_view(), name='metodos_pago_usados'),
     path('ventas/detalles/', DetalleVentasAPIView.as_view(), name='detalle_ventas'),
+    path("ventas/<int:pk>/recibo/", VentaReciboAPIView.as_view(), name="venta-recibo"),
 
     # Inventario
     path('inventario/agregar-stock/hilo/<int:pk>/', AgregarStockHilo.as_view(), name='agregar-stock-hilo'),

@@ -1,61 +1,59 @@
 # Estándar de Python
 import json
-
-# Django
-from django.core.mail import send_mail  # Enviar correos electrónicos
-from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
-from django.contrib.auth.models import User, Group
-from django.contrib.auth.hashers import make_password
-from django.contrib.auth import authenticate, login
-from django.shortcuts import get_object_or_404
-from django.db.models import Sum, Count
-from django.db.models.functions import TruncDate
-from django.db import transaction
 from decimal import Decimal
 
+# Django
+from django.contrib.auth import authenticate, login
+from django.contrib.auth.hashers import make_password
+from django.contrib.auth.models import User, Group
+from django.core.mail import send_mail  # Enviar correos electrónicos
+from django.db import transaction
+from django.db.models import Sum, Count
+from django.db.models.functions import TruncDate
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404
+from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import csrf_exempt
+
 # DRF
-from rest_framework import viewsets
+from rest_framework import status, viewsets
 from rest_framework.filters import SearchFilter
-
-from rest_framework.views import APIView
+from rest_framework.generics import ListAPIView, RetrieveAPIView
 from rest_framework.response import Response
-from rest_framework import status
+from rest_framework.views import APIView
 
+# App local - modelos
+from .models import (
+    Categoria,
+    Compra,
+    DetalleVenta,
+    Hilo,
+    Operacion,
+    Orden,
+    Producto,
+    Proveedor,
+    Tela,
+    Uniforme,
+    Venta,
+)
 
-# App local
-from .models import Proveedor, Compra
-from .serializers import ProveedorSerializer, CompraSerializer
-
-from .models import Categoria, Venta, DetalleVenta, Hilo, Tela, Uniforme, Operacion, Producto, Orden
+# App local - serializers
 from .serializers import (
     CategoriaSerializer,
-    VentaSerializer,
+    CompraSerializer,
     HiloSerializer,
-    TelaSerializer,
-    UniformeSerializer,
     OperacionSerializer,
     OrdenSerializer,
     ProductoSerializer,
+    ProveedorSerializer,
+    TelaSerializer,
+    UniformeSerializer,
+    VentaSerializer,
+    VentaDetalleSerializer,
 )
 
-
-from django.utils.decorators import method_decorator
-
-
-from rest_framework.generics import ListAPIView
-from .models import Tela
-from .serializers import TelaSerializer
-from clientes.models import Compra
-
-#categorias
-from .models import Categoria
-from .serializers import CategoriaSerializer
-
-# Nueva Orden
-from .models import Orden
-from .serializers import OrdenSerializer
-from rest_framework.generics import ListAPIView
+# Otras apps locales
+from clientes.models import Compra as CompraCliente
 from clientes.views import ClienteViewSet
 
 
@@ -178,7 +176,7 @@ class EliminarUniforme(APIView):
 class EditarTela(APIView):
     def put(self, request, pk):
         tela = get_object_or_404(Tela, pk=pk)
-        serializer = TelaSerializer(tela, data=request.data, partial=True)  # 👈
+        serializer = TelaSerializer(tela, data=request.data, partial=True)  
         if serializer.is_valid():
             serializer.save()
             return Response({'mensaje': 'Tela actualizada correctamente', 'tela': serializer.data})
@@ -190,7 +188,7 @@ class EditarTela(APIView):
 class EditarHilo(APIView):
     def put(self, request, pk):
         hilo = get_object_or_404(Hilo, pk=pk)
-        serializer = HiloSerializer(hilo, data=request.data, partial=True)  # 👈
+        serializer = HiloSerializer(hilo, data=request.data, partial=True) 
         if serializer.is_valid():
             serializer.save()
             return Response({'mensaje': 'Hilo actualizado correctamente', 'hilo': serializer.data})
@@ -202,7 +200,7 @@ class EditarHilo(APIView):
 class EditarUniforme(APIView):
     def put(self, request, pk):
         uniforme = get_object_or_404(Uniforme, pk=pk)
-        serializer = UniformeSerializer(uniforme, data=request.data, partial=True)  # 👈 partial=True
+        serializer = UniformeSerializer(uniforme, data=request.data, partial=True)  
         if serializer.is_valid():
             serializer.save()
             return Response({'mensaje': 'Uniforme actualizado correctamente', 'uniforme': serializer.data})
@@ -247,7 +245,7 @@ class AgregarNuevaCategoria(APIView):
 class EditarCategoria(APIView):
     def put(self, request, pk):
         categoria = get_object_or_404(Categoria, pk=pk)
-        serializer = CategoriaSerializer(categoria, data=request.data, partial=True)  # 👈
+        serializer = CategoriaSerializer(categoria, data=request.data, partial=True) 
         if serializer.is_valid():
             serializer.save()
             return Response({"message": "Categoría actualizada", "categoria": serializer.data})
@@ -602,3 +600,8 @@ class EliminarVentaAPIView(APIView):
             {"mensaje": "Venta eliminada correctamente"},
             status=status.HTTP_204_NO_CONTENT,
         )
+    
+# Recibo de una venta específica
+class VentaReciboAPIView(RetrieveAPIView):
+    queryset = Venta.objects.all()
+    serializer_class = VentaDetalleSerializer

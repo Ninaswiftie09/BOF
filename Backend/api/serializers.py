@@ -4,8 +4,8 @@ from .models import Categoria, Hilo, Tela, Uniforme
 from .models import Proveedor, Compra, Operacion
 from clientes.models import Compra as CompraCliente
 from .models import Orden, DetalleOrden
-
-
+from clientes.models import Cliente
+from clientes.serializers import ClienteSerializer 
 
 
 class CategoriaSerializer(serializers.ModelSerializer):
@@ -34,6 +34,22 @@ class VentaSerializer(serializers.ModelSerializer):
         model = Venta
         fields = '__all__'
         read_only_fields = ['total']
+
+class VentaDetalleSerializer(serializers.ModelSerializer):
+    cliente = serializers.SerializerMethodField()
+    detalles = DetalleVentaSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Venta
+        fields = ['id', 'fecha', 'cliente', 'metodo_pago', 'total', 'estado', 'detalles', 'no_recibo']
+
+    def get_cliente(self, obj):
+        try:
+            cliente = Cliente.objects.get(id=obj.cliente_id)
+            return ClienteSerializer(cliente).data
+        except Cliente.DoesNotExist:
+            return None
+
         
 #para proveedores
         

@@ -35,8 +35,19 @@ class Venta(models.Model):
     total = models.DecimalField(max_digits=10, decimal_places=2)
     estado = models.CharField(max_length=20, choices=ESTADOS_VENTA)
 
+    no_recibo = models.PositiveIntegerField(unique=True, editable=False, null=True, blank=True)
+
+    def save(self, *args, **kwargs):
+        if not self.no_recibo:
+            # Buscar la última venta con no_recibo válido
+            last = Venta.objects.exclude(no_recibo__isnull=True).order_by('-no_recibo').first()
+            self.no_recibo = 1 if not last else last.no_recibo + 1
+        super().save(*args, **kwargs)
+
+
     def __str__(self):
         return f"Venta {self.id} - {self.fecha}"
+
 
 class DetalleVenta(models.Model):
     venta = models.ForeignKey(Venta, on_delete=models.CASCADE, related_name='detalles')
@@ -81,7 +92,7 @@ class Uniforme(models.Model):
 
     categoria = models.ForeignKey(
         'Categoria',                 
-        on_delete=models.SET_NULL,   # si se borra la categoría, el uniforme no se borra
+        on_delete=models.SET_NULL,   
         null=True,
         blank=True,
         related_name='uniformes'
