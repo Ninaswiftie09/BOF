@@ -61,7 +61,7 @@ urlpatterns = [
     path("ping/", ping, name='ping'),
     path('register/', register_user, name='register'),
     path('login/', login_user, name='login'),
-    path('api/forgot-password/', forgot_password, name='forgot-password'),
+    path('forgot-password/', forgot_password, name='forgot-password'),
 
     # Ventas
     path('ventas/por-fecha/', VentasPorFechaAPIView.as_view(), name='ventas_por_fecha'),
