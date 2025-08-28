@@ -4,6 +4,7 @@ from .views import (
     ping,
     register_user,
     login_user,
+    forgot_password,
     VentasPorFechaAPIView,
     EvolucionVentasAPIView,
     ProductosMasVendidosAPIView,
@@ -60,6 +61,7 @@ urlpatterns = [
     path("ping/", ping, name='ping'),
     path('register/', register_user, name='register'),
     path('login/', login_user, name='login'),
+    path('api/forgot-password/', forgot_password, name='forgot-password'),
 
     # Ventas
     path('ventas/por-fecha/', VentasPorFechaAPIView.as_view(), name='ventas_por_fecha'),

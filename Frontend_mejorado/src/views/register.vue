@@ -42,17 +42,6 @@
           </div>
 
           <div class="input-group">
-            <label for="password">Contraseña</label>
-            <input 
-              type="password" 
-              id="password" 
-              v-model="password" 
-              placeholder="Ingresa tu contraseña"
-              required
-            />
-          </div>
-
-          <div class="input-group">
             <label for="position">Cargo</label>
             <select id="position" v-model="position" required>
               <option value="admin">Administrador</option>
@@ -77,8 +66,7 @@ export default {
     return {
       firstName: "",
       lastName: "",
-      email: "",
-      password: "", 
+      email: "", 
       position: "admin"
     };
   },
@@ -88,7 +76,6 @@ export default {
         first_name: this.firstName,
         last_name: this.lastName,
         email: this.email,
-        password: this.password,
         role: this.position === "admin" ? "Administrador" : "Empleado"
       };
       
