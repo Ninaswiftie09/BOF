@@ -14,44 +14,68 @@
           />
         </div>
 
-        <div class="input-group">
-          <label for="code">Código de recuperación</label>
-          <input 
-            type="text" 
-            id="code" 
-            v-model="code" 
-            placeholder="Ingresa el código recibido"
-            required
-          />
-        </div>
-
         <button type="submit">Recuperar Contraseña</button>
 
         <div class="back-to-login">
           <a href="#">Volver al inicio de sesión</a>
         </div>
+
+        <div v-if="message" :style="{ color: success ? 'green' : 'red', marginTop: '10px' }">
+          {{ message }}
+        </div>
+
       </form>
     </div>
   </div>
 </template>
 
 <script>
+import { BASE_URL } from '@/config';
+
 export default {
   name: "ForgotPasswordView",  
   data() {
     return {
       email: "",
-      code: ""
+      message: "",
+      success: false
     };
   },
   methods: {
     handleSubmit() {
-      console.log("Correo para recuperar contraseña:", this.email);
-      console.log("Código recibido:", this.code);
+      if (!this.email) {
+        this.success = false;
+        this.message = "Por favor ingresa tu correo.";
+        return;
+      }
+
+      fetch(`${BASE_URL}/api/forgot-password/`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email: this.email }),
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.message.includes("Correo enviado")) {
+          this.success = true;
+          this.message = "Revisa tu correo para obtener la nueva contraseña.";
+        } else {
+          this.success = false;
+          this.message = data.message || "Hubo un problema al enviar el correo.";
+        }
+      })
+      .catch(error => {
+        console.error("Error:", error);
+        this.success = false;
+        this.message = "Error al conectar con el servidor.";
+      });
     }
   }
 };
 </script>
+
 
 <style scoped>
 .background {

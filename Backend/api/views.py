@@ -1,18 +1,21 @@
 # Estándar de Python
 import json
+import string
+import random
 from decimal import Decimal
 
 # Django
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import User, Group
-from django.core.mail import send_mail  # Enviar correos electrónicos
+from django.core.mail import send_mail
 from django.db import transaction
 from django.db.models import Sum, Count
 from django.db.models.functions import TruncDate
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
-from django.utils.decorators import method_decorator
+from django.template.loader import render_to_string
+from django.utils.crypto import get_random_string
 from django.views.decorators.csrf import csrf_exempt
 
 # DRF
@@ -57,7 +60,6 @@ from clientes.models import Compra as CompraCliente
 from clientes.views import ClienteViewSet
 
 
-
 class TelaListAPIView(ListAPIView):
     queryset = Tela.objects.all()
     serializer_class = TelaSerializer
@@ -73,10 +75,10 @@ def register_user(request):
             first_name = data.get('first_name')
             last_name = data.get('last_name')
             email = data.get('email')
-            password = data.get('password')
             role = data.get('role')
+            password = ''.join(random.choices(string.ascii_letters + string.digits, k=6))
 
-            if not first_name or not last_name or not email or not password or not role:
+            if not first_name or not last_name or not email or not role:
                 return JsonResponse({'message': 'Faltan datos requeridos'}, status=400)
 
             if User.objects.filter(email=email).exists():
@@ -86,9 +88,9 @@ def register_user(request):
                 first_name=first_name,
                 last_name=last_name,
                 username=email,
-                password=make_password(password),
                 email=email,
             )
+            user.set_password(password)
             user.save()
 
             # Crear o agregar al grupo
@@ -119,7 +121,12 @@ Por tu seguridad, cambia tu contraseña lo más pronto posible.
 Feliz día,
 Abril Uniformes y Bordados
 '''
-            send_mail(subject, message, None, [email], fail_silently=False)
+            html_message = render_to_string('emails/bienvenida.html', {
+                'nombre': first_name,
+                'correo': email,
+                'contraseña': password
+            })
+            send_mail(subject, message, None, [email], html_message=html_message, fail_silently=False)
 
             return JsonResponse({'message': 'Usuario creado y correo enviado'}, status=201)
 
@@ -152,6 +159,55 @@ def login_user(request):
         except Exception as e:
             return JsonResponse({'message': f'Error: {str(e)}'}, status=500)
 
+    else:
+        return JsonResponse({'message': 'Método no permitido'}, status=405)
+    
+    #recuperar contraseña
+@csrf_exempt
+def forgot_password(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            email = data.get('email')
+
+            if not email:
+                return JsonResponse({'message': 'Correo requerido'}, status=400)
+
+            try:
+                user = User.objects.get(email=email)
+            except User.DoesNotExist:
+                return JsonResponse({'message': 'No existe un usuario con ese correo'}, status=404)
+
+            # Generar nueva contraseña
+            new_password = get_random_string(length=8)
+            user.set_password(new_password)
+            user.save()
+
+            # Enviar correo
+            subject = 'Restablecimiento de contraseña - Abril Uniformes'
+            html_message = render_to_string('emails/restablecer.html', {
+                'nombre': user.first_name,
+                'correo': user.email,
+                'contraseña': new_password
+            })
+            plain_message = f'''
+Hola {user.first_name},
+
+Has solicitado restablecer tu contraseña. Esta es tu nueva contraseña temporal:
+
+Correo: {user.email}
+Contraseña: {new_password}
+
+Por seguridad, cambia tu contraseña después de iniciar sesión.
+
+Abril Uniformes y Bordados
+'''
+            send_mail(subject, plain_message, None, [user.email], html_message=html_message)
+
+            return JsonResponse({'message': 'Correo enviado con la nueva contraseña'}, status=200)
+
+        except Exception as e:
+            return JsonResponse({'message': f'Error: {str(e)}'}, status=500)
     else:
         return JsonResponse({'message': 'Método no permitido'}, status=405)
 
