@@ -132,6 +132,28 @@ export default {
       metodosPagoChartInstance: null,
     }
   },
+
+// Filtro predeterminado de la fecha
+mounted() {
+  // calcula la fecha de hoy, el primer y último día del mes
+  const hoy = new Date();
+  const primerDia = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
+  const ultimoDia = new Date(hoy.getFullYear(), hoy.getMonth() + 1, 0);
+
+  // Formatea las fechas a 'YYYY-MM-DD' para inputs y el API
+  const formatear = (fecha) => {
+    const anio = fecha.getFullYear();
+    const mes = String(fecha.getMonth() + 1).padStart(2, '0');
+    const dia = String(fecha.getDate()).padStart(2, '0');
+    return `${anio}-${mes}-${dia}`;
+  };
+
+  this.filtroFechaInicio = formatear(primerDia);
+  this.filtroFechaFin = formatear(ultimoDia);
+
+  this.filtrarDatos();
+},
+
   methods: {
     formatearFecha(fecha) {
       if (!fecha) return ''
