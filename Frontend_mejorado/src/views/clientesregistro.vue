@@ -2,7 +2,8 @@
 import { reactive, ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import NavBar from '@/components/NavBar.vue'
-import { apiFetch } from '../utils/api' // puedes usar '@/utils/api' si quieres
+import { apiFetch } from '@/utils/api'
+import { bus } from '@/event-bus' // <-- para emitir el KPI al Home
 
 const router = useRouter()
 const go = path => router.push(path)
@@ -35,11 +36,53 @@ const clienteForm = reactive({
 })
 const clientes = ref([])
 
-/* FETCH */
+/* ===== Helpers para fecha + KPI ===== */
+function pickDateField(sample) {
+  if (!sample) return null
+  const preferred = [
+    'created_at','fecha_registro','creado','fecha_creacion',
+    'fecha','fecha_alta','f_creacion','created','createdAt'
+  ]
+  for (const k of preferred) {
+    if (sample[k] && !isNaN(Date.parse(sample[k]))) return k
+  }
+  // Heurística por si el backend se llama “Juan”
+  for (const [k,v] of Object.entries(sample)) {
+    if (typeof v === 'string' && !isNaN(Date.parse(v)) && /fecha|date|crea|alta|reg/i.test(k)) return k
+  }
+  return null
+}
+
+function emitirKpiClientesNuevos() {
+  const list = clientes.value || []
+  const field = pickDateField(list[0])
+
+  // Rango del mes actual (local)
+  const start = new Date(); start.setDate(1); start.setHours(0,0,0,0)
+  const end = new Date(start); end.setMonth(start.getMonth()+1)
+
+  let nuevosMes
+  if (!field) {
+    nuevosMes = list.length // fallback: total
+    console.warn('[KPI] No se encontró campo de fecha; usando total de clientes:', nuevosMes)
+  } else {
+    nuevosMes = list.filter(c => {
+      const t = Date.parse(c[field])
+      return !isNaN(t) && t >= +start && t < +end
+    }).length
+    console.debug('[KPI] Campo de fecha usado:', field, '-> nuevosMes:', nuevosMes)
+  }
+
+  bus.emit('clientes-actualizados', { nuevosMes })
+}
+
+/* ===== FETCH ===== */
 async function fetchClientes () {
   try {
     const data = await apiFetch('/api/clientes/')
-    clientes.value = data
+    // Soporta lista directa o DRF paginado
+    clientes.value = Array.isArray(data) ? data : (Array.isArray(data?.results) ? data.results : [])
+    emitirKpiClientesNuevos() // emite KPI tras cargar
   } catch (e) {
     console.error('Error al obtener clientes:', e)
   }
@@ -63,7 +106,7 @@ function resetForm () {
   })
 }
 
-/* GUARDAR */
+/* ===== GUARDAR ===== */
 async function saveCliente () {
   if (!clienteForm.nombre) return alert('El nombre es requerido')
 
@@ -86,6 +129,7 @@ async function saveCliente () {
   try {
     await apiFetch(url, method, payload)
     await fetchClientes()
+    emitirKpiClientesNuevos()
     close()
   } catch (err) {
     console.error('Error al guardar cliente:', err)
@@ -93,19 +137,20 @@ async function saveCliente () {
   }
 }
 
-/* EDITAR */
+/* ===== EDITAR ===== */
 function editCliente (cliente) {
   Object.assign(clienteForm, { ...cliente, id: cliente.id })
   modal.type = 'clientes'
   modal.visible = true
 }
 
-/* ELIMINAR */
+/* ===== ELIMINAR ===== */
 async function deleteCliente (id) {
   if (!confirm(`¿Seguro que deseas eliminar al cliente con ID ${id}?`)) return
   try {
     await apiFetch(`/api/clientes/${id}/`, 'DELETE')
     await fetchClientes()
+    emitirKpiClientesNuevos()
     close()
   } catch (err) {
     console.error('Error al eliminar cliente:', err)
@@ -113,7 +158,7 @@ async function deleteCliente (id) {
   }
 }
 
-/* FILTROS */
+/* ===== FILTROS ===== */
 const filteredClientes = computed(() =>
   clientes.value.filter(c =>
     [c.codigo_cliente, c.nombre, c.contacto]
@@ -131,7 +176,6 @@ function searchClientsInModal () {
 
 <template>
   <div class="crm-home">
-    <!-- NavBar unificado -->
     <NavBar title="CLIENTES">
       <template #actions>
         <input v-model="search" class="nav-search" placeholder="Buscar clientes…" />
@@ -139,7 +183,6 @@ function searchClientsInModal () {
     </NavBar>
 
     <div class="body-wrapper">
-      <!-- Tabla de clientes -->
       <section class="module">
         <div class="search-wrapper">
           <input v-model="search" class="search-clientes" placeholder="Buscar clientes…" />
@@ -157,7 +200,6 @@ function searchClientsInModal () {
             </tr>
           </thead>
           <tbody>
-            <!-- Cambio indispensable: key por c.id -->
             <tr v-for="c in filteredClientes" :key="c.id">
               <td>{{ c.codigo_cliente }}</td>
               <td>{{ c.nombre }}</td>
@@ -176,7 +218,6 @@ function searchClientsInModal () {
         </table>
       </section>
 
-      <!-- Botón agregar -->
       <div class="add-button-wrapper">
         <button class="add-button" @click="open('clientes')">Agregar Cliente</button>
       </div>
@@ -202,7 +243,7 @@ function searchClientsInModal () {
       </div>
     </div>
 
-    <!-- Modal búsqueda por nombre -->
+    <!-- Modal búsqueda -->
     <div v-if="modal.visible && modal.type === 'buscar'" class="modal-overlay" @click.self="close">
       <div class="modal-window">
         <h3>Buscar Cliente para Modificar o Eliminar</h3>
@@ -236,7 +277,7 @@ function searchClientsInModal () {
 </template>
 
 <style scoped>
-/* (sin cambios de estilos) */
+/* (tus estilos originales) */
 .crm-home{
   min-height:100vh;
   background:#0a0f2c;

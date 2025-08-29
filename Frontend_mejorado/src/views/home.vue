@@ -46,13 +46,9 @@
           </div>
 
           <div class="panel">
-            <canvas id="bestMonthChart"></canvas>
-          </div>
-
-          <div class="panel">
             <div class="kpi">
               <h3>Clientes nuevos</h3>
-              <p class="value">45</p>
+              <p class="value">{{ clientesNuevos }}</p>
               <small>en el mes</small>
             </div>
           </div>
@@ -126,21 +122,71 @@ const navItems = [
 ]
 
 const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim()
-const MONTHS = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic']
 const inventarioData = ref({ Telas:0, Hilos:0, Uniformes:0 })
-const ventasPorMes = ref(Object.fromEntries(MONTHS.map(m => [m,0])))
 const calendarAttrs = ref([{ key: 'hoy', highlight: true, dates: new Date() }])
 
-let pieChart=null, barChart=null
+let pieChart=null
 const showHelp = ref(false)
 const helpPanelEl = ref(null), helpBtnEl = ref(null)
 
+/* ===== KPI Clientes nuevos (robusto) ===== */
+const clientesNuevos = ref(0)
+
+function pickDateField(sample) {
+  if (!sample) return null
+  const preferred = [
+    'created_at','fecha_registro','creado','fecha_creacion',
+    'fecha','fecha_alta','f_creacion','created','createdAt'
+  ]
+  for (const k of preferred) {
+    if (sample[k] && !isNaN(Date.parse(sample[k]))) return k
+  }
+  for (const [k,v] of Object.entries(sample)) {
+    if (typeof v === 'string' && !isNaN(Date.parse(v)) && /fecha|date|crea|alta|reg/i.test(k)) return k
+  }
+  return null
+}
+
+async function fetchClientesCount() {
+  try {
+    const data = await apiFetch('/api/clientes/')
+    const list = Array.isArray(data) ? data : (Array.isArray(data?.results) ? data.results : [])
+
+    if (!list.length) {
+      clientesNuevos.value = Number.isFinite(data?.count) ? data.count : 0
+      return
+    }
+
+    const field = pickDateField(list[0])
+    const start = new Date(); start.setDate(1); start.setHours(0,0,0,0)
+    const end = new Date(start); end.setMonth(start.getMonth()+1)
+
+    if (!field) {
+      clientesNuevos.value = list.length // fallback: total
+      console.warn('[Home KPI] sin campo fecha; usando total:', clientesNuevos.value)
+      return
+    }
+
+    clientesNuevos.value = list.filter(c => {
+      const t = Date.parse(c[field])
+      return !isNaN(t) && t >= +start && t < +end
+    }).length
+
+    console.debug('[Home KPI] campo:', field, 'nuevosMes:', clientesNuevos.value, 'total:', list.length)
+  } catch (e) {
+    console.error('KPI clientes nuevos:', e)
+    clientesNuevos.value = 0
+  }
+}
+
+/* ===== Popover handler ===== */
 const onGlobalClick = e => {
   if (!showHelp.value) return
   const p = helpPanelEl.value, b = helpBtnEl.value
   if (p && !p.contains(e.target) && b && !b.contains(e.target)) showHelp.value = false
 }
 
+/* ===== Inventario ===== */
 async function fetchInventarioData(){
   const endpoints=[['Telas','/api/telas/'],['Hilos','/api/hilos/'],['Uniformes','/api/uniformes/']]
   try{
@@ -152,18 +198,7 @@ async function fetchInventarioData(){
   }catch(e){ console.error('Inventario:',e) }
 }
 
-async function fetchVentasMensuales(){
-  try{
-    const data = await apiFetch('/api/ventas/evolucion/')
-    MONTHS.forEach(m=>ventasPorMes.value[m]=0)
-    data.forEach(v=>{
-      const m=new Date(v.dia).toLocaleString('es-ES',{month:'short'})
-      const k=(m[0]?.toUpperCase()||'')+m.slice(1)
-      if(k in ventasPorMes.value) ventasPorMes.value[k]+= +v.total||0
-    })
-  }catch(e){ console.error('Ventas:',e) }
-}
-
+/* ===== Chart ===== */
 function renderPie(){
   const ctx=document.getElementById('myPieChart')?.getContext('2d'); if(!ctx) return
   pieChart?.destroy()
@@ -176,39 +211,30 @@ function renderPie(){
   })
 }
 
-function renderBar(){
-  const ctx=document.getElementById('bestMonthChart')?.getContext('2d'); if(!ctx) return
-  barChart?.destroy()
-  const labels=MONTHS, values=labels.map(m=>ventasPorMes.value[m]), now=new Date().getMonth()
-  barChart=new Chart(ctx,{type:'bar',data:{labels,datasets:[{label:'Ventas',data:values,
-    backgroundColor:(c)=>c.dataIndex===now?(css('--color-quinary')||'#2B5CA8'):(css('--color-tertiary')||'#84C8C0'),
-    borderColor:css('--color-novenary')||'#fff',borderWidth:1}]},
-    options:{maintainAspectRatio:false,plugins:{title:{display:true,text:'Ventas por mes'}}}
-  })
-}
-
+/* ===== Mount ===== */
 onMounted(async ()=>{
   document.addEventListener('click', onGlobalClick, true)
   document.addEventListener('keydown', e=>e.key==='Escape'&&(showHelp.value=false))
-  await Promise.all([fetchInventarioData(), fetchVentasMensuales()])
-  renderPie(); renderBar()
+  await Promise.all([fetchInventarioData(), fetchClientesCount()])
+  renderPie()
 })
-setTimeout(() => { pieChart?.resize(); barChart?.resize(); }, 0);
+setTimeout(() => { pieChart?.resize() }, 0);
 
 onBeforeUnmount(()=>{
   document.removeEventListener('click', onGlobalClick, true)
 })
 
-bus.on('inventario-actualizado', async ()=>{
-  await fetchInventarioData()
-  if(pieChart){ pieChart.data.datasets[0].data=[inventarioData.value.Telas,inventarioData.value.Hilos,inventarioData.value.Uniformes]; pieChart.update() }
-  else renderPie()
+/* ===== Live updates desde Clientes.vue ===== */
+bus.on('clientes-actualizados', ({ nuevosMes }) => {
+  if (typeof nuevosMes === 'number') clientesNuevos.value = nuevosMes
 })
 
-bus.on('ventas-actualizadas', async ()=>{
-  await fetchVentasMensuales()
-  if(barChart){ barChart.data.datasets[0].data=MONTHS.map(m=>ventasPorMes.value[m]); barChart.update() }
-  else renderBar()
+bus.on('inventario-actualizado', async ()=>{
+  await fetchInventarioData()
+  if(pieChart){
+    pieChart.data.datasets[0].data=[inventarioData.value.Telas,inventarioData.value.Hilos,inventarioData.value.Uniformes]
+    pieChart.update()
+  } else renderPie()
 })
 </script>
 
@@ -280,7 +306,7 @@ bus.on('ventas-actualizadas', async ()=>{
   border-radius: 14px;
   padding: 16px;
 }
-.chart-area{ height: 340px; }
+.chart-area{ height: 420px; } /* más alto, ya no hay widget extra */
 .chart-area canvas, .panel canvas{ width:100% !important; height:100% !important; }
 
 .side-panels{ display:grid; gap: 20px; grid-auto-rows: minmax(140px, auto); }
