@@ -464,7 +464,7 @@ tr:nth-child(even){ background:#f9f9f9; }
 
 .detalle-grid{ display:grid; grid-template-columns: 3fr 1fr 1fr 1fr auto; align-items:center; gap:10px; margin-top:10px; }
 .detalle-header{ font-weight:700; color:#334155; }
-.cell-total{ text-align:right; padding-right:8px; }
+.cell-total{ text-align:right; padding-right:10px; background: rgb(15, 23, 42); }
 
 .totales{ margin-top: 16px; display:flex; flex-direction:column; gap:8px; align-items:flex-end; }
 .total-row{ display:flex; gap:16px; align-items:center; }
