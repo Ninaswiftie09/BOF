@@ -9,8 +9,8 @@
   --color-novenary: #ffffff;
 
   /* Extras que ya tenías */
-  --color-tertiary:   #84C8C0;
-  --color-quaternary: #C9E8F5;
+  --color-tertiary:   #28467e;
+  --color-quaternary: #09284d;
 
   /* Mantener compatibilidad: el “secondary” apunta al azul de acción */
   --color-secondary: var(--color-quinary);
