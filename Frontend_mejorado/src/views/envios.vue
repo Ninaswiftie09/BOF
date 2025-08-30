@@ -1,17 +1,18 @@
 <template>
   <div class="inventory-container">
-    <NavBar title="PEDIDOS" />
-
-    <section class="inventory-section">
-      <h2>Historial de pedidos</h2>
-
-      <div class="table-toolbar">
+    <!-- Header unificado (como en Clientes) -->
+    <NavBar title="PEDIDOS">
+      <template #actions>
         <input
           v-model="tablaQuery"
-          class="top-search"
-          placeholder="Buscar por cliente, fecha, método, uniforme o montos…"
+          class="nav-search"
+          placeholder="Buscar pedidos…"
         />
-      </div>
+      </template>
+    </NavBar>
+
+    <section class="module">
+      <h2 class="module-title">Historial de pedidos</h2>
 
       <table>
         <thead>
@@ -35,6 +36,7 @@
               </div>
             </td>
           </tr>
+
           <tr v-if="!cargando && !filas.length">
             <td colspan="8" style="text-align:center; padding:16px; color:#6b7280">
               Sin pedidos aún
@@ -79,7 +81,9 @@
             <option value="otro">Otro</option>
           </select>
 
-          <h4 style="margin-top:18px">Detalles de la orden</h4>
+          <h4 class="detalle-titulo">Detalles de la orden</h4>
+
+          <!-- Encabezados de la “tabla” de detalles -->
           <div class="detalle-grid detalle-header">
             <span>Uniforme (ID)</span>
             <span>Cantidad</span>
@@ -88,6 +92,7 @@
             <span></span>
           </div>
 
+          <!-- Filas editables -->
           <div v-for="(d, i) in formData.detalles" :key="i" class="detalle-grid">
             <div>
               <input
@@ -97,7 +102,7 @@
                 placeholder="ID de uniforme"
                 @change="onUniformeChange(i)"
               />
-              <small v-if="d.nombre" style="color:#64748b">→ {{ d.nombre }}</small>
+              <small v-if="d.nombre" class="detalle-nombre">→ {{ d.nombre }}</small>
             </div>
             <input type="number" min="1" v-model.number="d.cantidad" @input="recalcularTotales" />
             <input type="number" step="0.01" min="0" v-model.number="d.precio_unitario" @input="recalcularTotales" />
@@ -134,7 +139,7 @@
 import { useRouter } from 'vue-router'
 import NavBar from '@/components/NavBar.vue'
 
-// --- Endpoints que SÍ existen en tu backend ---
+// --- Endpoints existentes ---
 const CLIENTES_A   = `/api/cliente/clientes/`
 const CLIENTES_B   = `/api/clientes/`
 const ORDENES_HIST = `/api/ordenes/historial/`
@@ -165,14 +170,14 @@ export default {
         id: null,
         cliente: '',
         fecha: '',
-        metodo_pago: 'efectivo', // persistimos en localStorage por orden
+        metodo_pago: 'efectivo',
         detalles: [],
         precio_total: 0
       },
 
       clientes: [],
       clientesMap: {},
-      uniformesCache: {}, // { [id]: { nombre: string (solo tipo) } }
+      uniformesCache: {}, // { [id]: { nombre: string } }
     }
   },
   computed: {
@@ -209,7 +214,7 @@ export default {
     formatFecha(iso){ if(!iso) return ''; const d = new Date(iso); return d.toLocaleDateString('es-MX',{year:'numeric',month:'short',day:'2-digit'}) },
     toggleVerTodos(){ this.verTodos = !this.verTodos },
 
-    // fetch con CSRF (necesario para DELETE/PUT/POST en DRF)
+    // fetch con CSRF
     getCSRF(){
       const name='csrftoken'; const cookies=document.cookie?.split(';')||[]
       for(const c of cookies){ const t=c.trim(); if(t.startsWith(name+'=')) return decodeURIComponent(t.slice(name.length+1)) }
@@ -232,7 +237,7 @@ export default {
     },
     async safeGet(url){ try{ return await this.req(url,'GET') }catch(_){ return null } },
 
-    // Método de pago “sidecar” (porque Orden no lo guarda)
+    // Método de pago “sidecar”
     mpKey(id){ return `mp_orden_${id}` },
     leerMetodoPago(id){ return localStorage.getItem(this.mpKey(id)) || 'efectivo' },
     guardarMetodoPago(id, metodo){ localStorage.setItem(this.mpKey(id), metodo || 'efectivo') },
@@ -253,7 +258,7 @@ export default {
       const hist = await this.safeGet(ORDENES_HIST)
       const list = Array.isArray(hist) ? hist : (hist?.results || [])
       for(const o of list){
-        const mp = this.leerMetodoPago(o.id) // <- método de pago persistido
+        const mp = this.leerMetodoPago(o.id)
         const detalles = Array.isArray(o.detalles) ? o.detalles : []
         for(const d of detalles){
           const pu = Number(d.precio || 0)
@@ -264,7 +269,7 @@ export default {
             cliente_nombre: o.cliente || '—',
             fecha: o.fecha,
             metodo_pago: mp,
-            producto: d.producto,          // texto (solo 'tipo' del uniforme)
+            producto: d.producto,
             precio_unitario: pu,
             subtotal: sub,
             total: Number(o.total || 0)
@@ -297,7 +302,7 @@ export default {
       if(accion==='editar'){
         this.formData = {
           id: row.id,
-          cliente: 0, // si el cliente venía como texto, dejas elegir uno nuevo si quieres
+          cliente: 0,
           fecha: (row.fecha||'').slice(0,10),
           metodo_pago: this.leerMetodoPago(row.id),
           detalles: [],
@@ -317,7 +322,7 @@ export default {
         const data = await this.req(ORDEN_ITEM(id),'GET')
         const dets = Array.isArray(data.detalles) ? data.detalles : []
         this.formData.detalles = dets.map(d => ({
-          producto: null,            // en Orden es texto; no necesitamos ID
+          producto: null,
           nombre: d.producto || null,
           cantidad: Number(d.cantidad || 1),
           precio_unitario: Number(d.precio || 0),
@@ -359,7 +364,7 @@ export default {
     async fetchUniforme(id){
       try{
         const u = await this.req(UNIFORME_SHOW(id),'GET')
-        return { nombre: u?.tipo || `Uniforme #${id}` } // SOLO tipo
+        return { nombre: u?.tipo || `Uniforme #${id}` }
       }catch(_){ return null }
     },
     async fetchUniformeDesdeLista(id){
@@ -413,7 +418,6 @@ export default {
           this.guardarMetodoPago(this.formData.id, this.formData.metodo_pago)
         }else{
           const created = await this.req(ORDENES_LIST,'POST', payload)
-          // guarda método de pago para ese id recién creado
           if(created?.id) this.guardarMetodoPago(created.id, this.formData.metodo_pago)
         }
 
@@ -430,40 +434,100 @@ export default {
 
 <style scoped>
 .inventory-container{
-  padding: 40px;
-  background-color: var(--color-octonary);
   min-height: 100vh;
+  background-color: var(--color-octonary);
+  display:flex; flex-direction:column;
+  font-family: 'Segoe UI', sans-serif;
+  color: var(--color-novenary);
 }
-.inventory-section{ margin-top: 10px; }
-h2{ color: var(--colo-texto-blanco); margin-top: 10px; margin-bottom: 10px; }
 
-.table-toolbar{ display:flex; justify-content:flex-end; margin:10px 0 14px; }
-.top-search{ width:320px; max-width:100%; padding:10px 12px; border-radius:10px; border:1px solid #cbd5e1; font-size:15px; }
-.top-search:focus{ outline:none; box-shadow:0 0 0 3px rgba(99,102,241,.25); border-color:#6366f1; }
+/* === Módulo (igual que en BillPage/Clientes) === */
+.module{
+  background:#0d1130;
+  border:2px solid #1e2236;
+  border-radius:16px;
+  padding:1.5rem;
+  margin: 20px;
+}
+.module-title{
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  color:#fff;
+  text-transform: uppercase;
+}
 
+/* Search en el header (slot de acciones) */
+.nav-search{
+  width: 320px; max-width: 40vw;
+  padding: .5rem .75rem;
+  border-radius: 10px;
+  border: 1px solid #cbd5e1;
+  background: #fff; color:#000;
+  font-size: .95rem;
+}
+.nav-search:focus{ outline:none; box-shadow:0 0 0 3px rgba(99,102,241,.25); border-color:#6366f1; }
+
+/* Tabla */
 table{ width:100%; border-collapse:collapse; background:#fff; border-radius:12px; overflow:hidden; box-shadow:0 0 10px rgba(0,0,0,.05); margin-bottom:10px; }
-th{ background: var(--color-senary); color:#fff; font-weight:bold; padding:16px; font-size:18px; }
-td{ text-align:center; padding:12px; font-size:16px; color: var(--color-senary); }
+th{ background: var(--color-senary); color:#fff; font-weight:bold; padding:16px; font-size:16px; }
+td{ text-align:center; padding:12px; font-size:15px; color: var(--color-senary); }
 tr:nth-child(even){ background:#f9f9f9; }
 
-.button-row{ display:flex; flex-wrap:wrap; gap:10px; margin:10px 0 20px; }
+/* Botonera inferior */
+.button-row{ display:flex; flex-wrap:wrap; gap:10px; margin:10px 0 0; }
 .button-row button{ background: var(--color-senary); color:#fff; padding:10px 14px; border:none; border-radius:8px; font-weight:bold; cursor:pointer; transition: background-color .3s; }
 .button-row button:hover{ background: var(--color-tertiary); }
 
+/* Botones pequeños */
 .mini-btn{ background:#334155; color:#fff; padding:6px 10px; border:none; border-radius:6px; font-size:12px; cursor:pointer; }
 .mini-btn.sky{ background:#0284c7; }
 .mini-btn.danger{ background:#e11d48; }
 .flex-gap{ display:flex; gap:8px; justify-content:center; }
 
+/* Modal */
 .modal-overlay{ position:fixed; inset:0; background:rgba(0,0,0,.5); display:flex; align-items:center; justify-content:center; z-index:9999; }
 .modal-content{ background:#fff; padding:25px 30px; border-radius:12px; box-shadow:0 8px 20px rgba(0,0,0,.3); width:90%; max-width: 520px; max-height:90vh; overflow-y:auto; position:relative; }
 .large-modal{ max-width: 980px; }
 
-.form-vertical label{ font-weight:600; margin-top:12px; margin-bottom:5px; display:block; }
-.form-vertical input, .form-vertical textarea, .form-vertical select{ width:100%; padding:8px 10px; border-radius:6px; border:1px solid #ccc; font-size:15px; resize:vertical; }
+/* ===== Formularios dentro del modal (MEJOR CONTRASTE) ===== */
+.form-vertical label{
+  font-weight: 600;
+  margin-top: 12px;
+  margin-bottom: 5px;
+  display: block;
+  color: #1e293b;           /* contraste alto sobre fondo blanco */
+  font-size: 0.9rem;
+}
+.form-vertical input,
+.form-vertical textarea,
+.form-vertical select{
+  width:100%;
+  padding:8px 10px;
+  border-radius:6px;
+  border:1px solid #cbd5e1;
+  font-size:15px;
+  background:#fff;
+  color:#0f172a;
+}
 
+/* Título y cabecera de la “tabla” de detalles (visibles siempre) */
+.detalle-titulo{
+  margin-top:18px;
+  color:#1e293b;
+  font-weight:700;
+}
 .detalle-grid{ display:grid; grid-template-columns: 3fr 1fr 1fr 1fr auto; align-items:center; gap:10px; margin-top:10px; }
-.detalle-header{ font-weight:700; color:#334155; }
+.detalle-header{
+  font-weight:700;
+  background-color: var(--color-senary); /* mismo tono que los <th> */
+  color:#fff;                             /* contraste */
+  padding:8px 6px;
+  border-radius:6px;
+}
+.detalle-header span{ text-align:center; }
+.detalle-nombre{ color:#64748b; display:block; margin-top:2px; }
+
 .cell-total{ text-align:right; padding-right:8px; }
 
 .totales{ margin-top: 16px; display:flex; flex-direction:column; gap:8px; align-items:flex-end; }
@@ -471,7 +535,7 @@ tr:nth-child(even){ background:#f9f9f9; }
 .total-final{ font-size: 18px; }
 
 .buttons-row{ margin-top: 20px; display:flex; gap:15px; justify-content:flex-end; }
-.btn-primary{ background: var(--color-senary); color: var(--colo-texto-blanco); padding:10px 22px; border-radius:8px; border:none; font-weight:600; cursor:pointer; transition: background-color .3s; }
+.btn-primary{ background: var(--color-senary); color:#fff; padding:10px 22px; border-radius:8px; border:none; font-weight:600; cursor:pointer; transition: background-color .3s; }
 .btn-primary:hover{ background: var(--color-tertiary); }
 .btn-cancel{ background:transparent; color:#555; padding:10px 22px; border-radius:8px; border:1px solid #aaa; cursor:pointer; font-weight:600; transition: background-color .3s; }
 .btn-cancel:hover{ background:#eee; }

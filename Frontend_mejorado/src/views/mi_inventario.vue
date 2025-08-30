@@ -1,63 +1,70 @@
 <template>
   <div class="inventory-container">
-    <!-- Header unificado -->
-    <NavBar title="INVENTARIO" />
+    <!-- Header unificado (sin modificar el componente) -->
+    <NavBar title="INVENTARIO">
+      <template #actions>
+        <input v-model="search" class="nav-search" placeholder="Buscar en inventario…" />
+      </template>
+    </NavBar>
 
-    <div
-      v-for="(items, tipo) in inventarios"
-      :key="tipo"
-      class="inventory-section"
-    >
-      <h2>{{ titulosVisibles[tipo] || tipo }}</h2>
+    <!-- 👇 todo el contenido va aquí, con padding -->
+    <div class="page-body">
+      <div
+        v-for="(items, tipo) in inventarios"
+        :key="tipo"
+        class="inventory-section"
+      >
+        <h2>{{ titulosVisibles[tipo] || tipo }}</h2>
 
-      <table>
-        <thead>
-          <tr>
-            <th v-for="col in columnasPorTipo[tipo]" :key="col">{{ col }}</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr
-            v-for="(item, index) in (mostrarLimitado(tipo) ? items.slice(0, 6) : items)"
-            :key="index"
-            :class="{ 'en-escasez': item.stock < 6 }"
-          >
-            <!-- Telas -->
-            <template v-if="tipo === 'Telas'">
-              <td>{{ item.id }}</td><td>{{ item.nombre }}</td><td>{{ item.tipo }}</td>
-              <td>{{ item.composicion }}</td><td>{{ item.color }}</td>
-              <td>{{ item.codigo }}</td><td>{{ item.stock }}</td><td>{{ item.descripcion }}</td>
-            </template>
+        <table>
+          <thead>
+            <tr>
+              <th v-for="col in columnasPorTipo[tipo]" :key="col">{{ col }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              v-for="(item, index) in itemsToRender(tipo)"
+              :key="index"
+              :class="{ 'en-escasez': item.stock < 6 }"
+            >
+              <!-- Telas -->
+              <template v-if="tipo === 'Telas'">
+                <td>{{ item.id }}</td><td>{{ item.nombre }}</td><td>{{ item.tipo }}</td>
+                <td>{{ item.composicion }}</td><td>{{ item.color }}</td>
+                <td>{{ item.codigo }}</td><td>{{ item.stock }}</td><td>{{ item.descripcion }}</td>
+              </template>
 
-            <!-- Hilos -->
-            <template v-else-if="tipo === 'Hilos'">
-              <td>{{ item.id }}</td><td>{{ item.nombre }}</td><td>{{ item.material }}</td>
-              <td>{{ item.codigo_color }}</td><td>{{ item.color }}</td>
-              <td>{{ item.codigo }}</td><td>{{ item.stock }}</td><td>{{ item.descripcion }}</td>
-            </template>
+              <!-- Hilos -->
+              <template v-else-if="tipo === 'Hilos'">
+                <td>{{ item.id }}</td><td>{{ item.nombre }}</td><td>{{ item.material }}</td>
+                <td>{{ item.codigo_color }}</td><td>{{ item.color }}</td>
+                <td>{{ item.codigo }}</td><td>{{ item.stock }}</td><td>{{ item.descripcion }}</td>
+              </template>
 
-            <!-- Uniformes (Productos) -->
-            <template v-else-if="tipo === 'Uniformes'">
-              <td>{{ item.id }}</td><td>{{ item.tipo }}</td><td>{{ item.talla }}</td>
-              <td>{{ item.color }}</td><td>{{ item.stock }}</td>
-              <td>{{ item.categoria_nombre || 'N/A' }}</td>
-              <td>{{ item.material_nombre || 'N/A' }}</td>
-            </template>
+              <!-- Uniformes (Productos) -->
+              <template v-else-if="tipo === 'Uniformes'">
+                <td>{{ item.id }}</td><td>{{ item.tipo }}</td><td>{{ item.talla }}</td>
+                <td>{{ item.color }}</td><td>{{ item.stock }}</td>
+                <td>{{ item.categoria_nombre || 'N/A' }}</td>
+                <td>{{ item.material_nombre || 'N/A' }}</td>
+              </template>
 
-            <!-- Categorías -->
-            <template v-else-if="tipo === 'Categorias'">
-              <td>{{ item.id }}</td>
-              <td>{{ item.nombre }}</td>
-            </template>
-          </tr>
-        </tbody>
-      </table>
+              <!-- Categorías -->
+              <template v-else-if="tipo === 'Categorias'">
+                <td>{{ item.id }}</td>
+                <td>{{ item.nombre }}</td>
+              </template>
+            </tr>
+          </tbody>
+        </table>
 
-      <div class="button-row">
-        <button @click="abrirFormulario('agregar', tipo)">Agregar producto</button>
-        <button @click="abrirFormulario('eliminar', tipo)">Eliminar Producto</button>
-        <button @click="abrirFormulario('editar', tipo)">Editar Producto</button>
-        <button @click="abrirVerTodos(tipo)">{{ vistaExtendida[tipo] ? 'Ocultar' : 'Ver Todos' }}</button>
+        <div class="button-row">
+          <button @click="abrirFormulario('agregar', tipo)">Agregar producto</button>
+          <button @click="abrirFormulario('eliminar', tipo)">Eliminar Producto</button>
+          <button @click="abrirFormulario('editar', tipo)">Editar Producto</button>
+          <button @click="abrirVerTodos(tipo)">{{ vistaExtendida[tipo] ? 'Ocultar' : 'Ver Todos' }}</button>
+        </div>
       </div>
     </div>
 
@@ -199,7 +206,8 @@ export default {
   },
   data() {
     return {
-      vistaExtendida: {}, // para "ver todos" por tipo (toggle simple)
+      search: '', // <-- buscador del header
+      vistaExtendida: {},
       inventarios: { Telas: [], Hilos: [], Uniformes: [], Categorias: [] },
       titulosVisibles: { Telas:'Telas', Hilos:'Hilos', Uniformes:'Productos', Categorias:'Categorías' },
       columnasPorTipo: {
@@ -228,9 +236,24 @@ export default {
     })
   },
   methods: {
+    /* --- Header search helpers --- */
+    filteredByType(tipo){
+      const q = this.search.trim().toLowerCase()
+      const arr = this.inventarios[tipo] || []
+      if (!q) return arr
+      return arr.filter(obj =>
+        Object.values(obj).some(v =>
+          (v ?? '').toString().toLowerCase().includes(q)
+        )
+      )
+    },
+    itemsToRender(tipo){
+      const arr = this.filteredByType(tipo)
+      return this.mostrarLimitado(tipo) ? arr.slice(0, 6) : arr
+    },
+
     mostrarLimitado(tipo){ return !this.vistaExtendida[tipo] },
     toggleVistaCompleta(tipo){
-      // sin this.$set (Vue3): asignación inmutable
       this.vistaExtendida = { ...this.vistaExtendida, [tipo]: !this.vistaExtendida[tipo] }
     },
     abrirFormulario(accion, tipo){
@@ -278,9 +301,7 @@ export default {
 
     async submitFormulario(){
       try{
-        // singular: Telas->tela, Hilos->hilo, Uniformes->uniforme, Categorias->categoria
         const tipo = this.tipoFormulario.slice(0,-1).toLowerCase()
-
         const agregar = {
           tela:'inventario/agregar-nueva-tela',
           hilo:'inventario/agregar-nuevo-hilo',
@@ -288,9 +309,7 @@ export default {
           categoria:'inventario/agregar-nueva-categoria'
         }
 
-        let url = ''
-        let method = ''
-        let payload = null
+        let url = '', method = '', payload = null
 
         if (this.accion === 'agregar') {
           url = `/api/${agregar[tipo]}/`
@@ -343,15 +362,38 @@ export default {
 </script>
 
 <style scoped>
-/* Sin header fijo: ya usamos NavBar. Reducimos padding superior. */
+/* === Fondo y layout general unificado (sin padding arriba para que el NavBar quede full-bleed) === */
 .inventory-container{
+  min-height:100vh;
+  background:#0a0f2c; /* mismo fondo oscuro que las otras pantallas */
+  color:#fff;
+  display:flex;
+  flex-direction:column;
+  font-family:'Segoe UI',sans-serif;
+}
+
+/* Padding del contenido, NO del header */
+.page-body{
   padding: 40px;
-  background-color: var(--color-octonary);
-  min-height: 100vh;
+}
+
+/* === Input del header: MISMO estilo que en las otras vistas === */
+.nav-search{
+  width: 280px; max-width: 40vw;
+  padding: .5rem .75rem;
+  border-radius: 10px;
+  border: 1px solid #cbd5e1;
+  background: #fff; color:#000;
+  font-size: .9rem;
+}
+.nav-search:focus{
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(99,102,241,.25);
+  border-color:#6366f1;
 }
 
 h2{
-  color: var(--colo-texto-blanco);
+  color: #fff;
   margin-top: 40px;
   margin-bottom: 10px;
 }

@@ -16,25 +16,27 @@
     </div>
 
     <!-- LISTADO DE FACTURAS -->
-    <h2 class="title">LISTADO DE FACTURAS</h2>
-    <ul class="invoice-list">
-      <li v-for="invoice in invoices" :key="invoice.id" class="invoice-card">
-        <div class="invoice-info">
-          <span class="invoice-description">
-            Factura #{{ invoice.no_recibo }} — Cliente: {{ invoice.cliente_id }} — Total: Q{{ invoice.total }}
-          </span>
-          <button class="btn-download" @click="onDownloadPDF(invoice)">
-            DESCARGAR PDF
-          </button>
-        </div>
-      </li>
-    </ul>
+    <section class="module">
+      <h2 class="module-title">LISTADO DE FACTURAS</h2>
+      <ul class="invoice-list">
+        <li v-for="invoice in invoices" :key="invoice.id" class="invoice-card">
+          <div class="invoice-info">
+            <span class="invoice-description">
+              Factura #{{ invoice.no_recibo }} — Cliente: {{ invoice.cliente_id }} — Total: Q{{ invoice.total }}
+            </span>
+            <button class="btn-download" @click="onDownloadPDF(invoice)">
+              DESCARGAR PDF
+            </button>
+          </div>
+        </li>
+      </ul>
+    </section>
   </div>
 </template>
 
 <script>
 import { useRouter } from 'vue-router'
-import { apiFetch } from '@/utils/api'      // usa el helper centralizado
+import { apiFetch } from '@/utils/api'
 import NavBar from '@/components/NavBar.vue'
 import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
@@ -128,23 +130,25 @@ export default {
 
 <style scoped>
 .billpage-container {
-  /* sin padding-top porque NavBar NO es fijo */
   min-height: 100vh;
   background: var(--color-octonary);
-  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  font-family: 'Segoe UI', sans-serif;
+  color: var(--color-novenary);
 }
 
-/* === CUERPO DE LA VISTA === */
+/* === CUERPO === */
 .actions-row {
   display: flex;
   flex-wrap: wrap;
   gap: 20px;
-  margin-bottom: 20px;
+  margin: 20px;
 }
 .action-box {
   flex: 1 1 200px;
   background-color: var(--color-quaternary);
-  border-radius: 8px;
+  border-radius: 12px;
   padding: 20px;
   text-align: center;
   cursor: pointer;
@@ -152,18 +156,28 @@ export default {
 }
 .action-box:hover { background-color: var(--color-tertiary); }
 
-.title {
-  font-size: 1.5rem;
-  margin: 16px 0 12px;
-  color: var(--color-novenary);
+/* === MODULO LISTADO === */
+.module {
+  background:#0d1130;
+  border:2px solid #1e2236;
+  border-radius:16px;
+  padding:1.5rem;
+  margin: 20px;
+}
+.module-title {
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  color: #fff;
   text-transform: uppercase;
 }
 
+/* === FACTURAS === */
 .invoice-list { list-style: none; padding: 0; margin: 0; }
 .invoice-card {
   background-color: var(--color-quaternary);
   margin-bottom: 15px;
-  border-radius: 5px;
+  border-radius: 8px;
   padding: 15px;
   transition: background-color 0.3s;
 }
@@ -179,7 +193,7 @@ export default {
   border: none;
   font-family: 'Kollektif', sans-serif;
   cursor: pointer;
-  border-radius: 4px;
+  border-radius: 6px;
   transition: background-color 0.3s;
   text-transform: uppercase;
 }

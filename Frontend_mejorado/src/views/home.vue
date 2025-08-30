@@ -30,7 +30,8 @@
       </header>
 
       <section class="content">
-        <div class="chart-area">
+        <!-- le agregamos ref para observar tamaño -->
+        <div class="chart-area" ref="chartAreaEl">
           <canvas id="myPieChart"></canvas>
         </div>
 
@@ -129,64 +130,42 @@ let pieChart=null
 const showHelp = ref(false)
 const helpPanelEl = ref(null), helpBtnEl = ref(null)
 
-/* ===== KPI Clientes nuevos (robusto) ===== */
+/* KPI Clientes nuevos */
 const clientesNuevos = ref(0)
-
 function pickDateField(sample) {
   if (!sample) return null
   const preferred = [
     'created_at','fecha_registro','creado','fecha_creacion',
     'fecha','fecha_alta','f_creacion','created','createdAt'
   ]
-  for (const k of preferred) {
-    if (sample[k] && !isNaN(Date.parse(sample[k]))) return k
-  }
+  for (const k of preferred) if (sample[k] && !isNaN(Date.parse(sample[k]))) return k
   for (const [k,v] of Object.entries(sample)) {
     if (typeof v === 'string' && !isNaN(Date.parse(v)) && /fecha|date|crea|alta|reg/i.test(k)) return k
   }
   return null
 }
-
 async function fetchClientesCount() {
   try {
     const data = await apiFetch('/api/clientes/')
     const list = Array.isArray(data) ? data : (Array.isArray(data?.results) ? data.results : [])
-
-    if (!list.length) {
-      clientesNuevos.value = Number.isFinite(data?.count) ? data.count : 0
-      return
-    }
-
+    if (!list.length) { clientesNuevos.value = Number.isFinite(data?.count) ? data.count : 0; return }
     const field = pickDateField(list[0])
     const start = new Date(); start.setDate(1); start.setHours(0,0,0,0)
     const end = new Date(start); end.setMonth(start.getMonth()+1)
-
-    if (!field) {
-      clientesNuevos.value = list.length // fallback: total
-      console.warn('[Home KPI] sin campo fecha; usando total:', clientesNuevos.value)
-      return
-    }
-
-    clientesNuevos.value = list.filter(c => {
-      const t = Date.parse(c[field])
-      return !isNaN(t) && t >= +start && t < +end
-    }).length
-
-    console.debug('[Home KPI] campo:', field, 'nuevosMes:', clientesNuevos.value, 'total:', list.length)
-  } catch (e) {
-    console.error('KPI clientes nuevos:', e)
-    clientesNuevos.value = 0
-  }
+    clientesNuevos.value = field
+      ? list.filter(c => { const t=Date.parse(c[field]); return !isNaN(t) && t>=+start && t<+end }).length
+      : list.length
+  } catch (e) { console.error('KPI clientes nuevos:', e); clientesNuevos.value = 0 }
 }
 
-/* ===== Popover handler ===== */
+/* Popover handler */
 const onGlobalClick = e => {
   if (!showHelp.value) return
   const p = helpPanelEl.value, b = helpBtnEl.value
   if (p && !p.contains(e.target) && b && !b.contains(e.target)) showHelp.value = false
 }
 
-/* ===== Inventario ===== */
+/* Inventario */
 async function fetchInventarioData(){
   const endpoints=[['Telas','/api/telas/'],['Hilos','/api/hilos/'],['Uniformes','/api/uniformes/']]
   try{
@@ -198,37 +177,51 @@ async function fetchInventarioData(){
   }catch(e){ console.error('Inventario:',e) }
 }
 
-/* ===== Chart ===== */
+/* Chart */
 function renderPie(){
   const ctx=document.getElementById('myPieChart')?.getContext('2d'); if(!ctx) return
   pieChart?.destroy()
-  pieChart=new Chart(ctx,{type:'pie',data:{
-    labels:['Telas','Hilos','Uniformes'],
-    datasets:[{data:[inventarioData.value.Telas,inventarioData.value.Hilos,inventarioData.value.Uniformes],
-      backgroundColor:[css('--color-tertiary')||'#84C8C0',css('--color-septenary')||'#cbd5e1',css('--color-quinary')||'#2B5CA8'],
-      borderColor:css('--color-novenary')||'#fff',borderWidth:1}]},
-    options:{maintainAspectRatio:false,plugins:{legend:{position:'top'},title:{display:true,text:'Inventario'}}}
+  pieChart=new Chart(ctx,{
+    type:'pie',
+    data:{
+      labels:['Telas','Hilos','Uniformes'],
+      datasets:[{
+        data:[inventarioData.value.Telas,inventarioData.value.Hilos,inventarioData.value.Uniformes],
+        backgroundColor:[css('--color-tertiary')||'#84C8C0',css('--color-septenary')||'#cbd5e1',css('--color-quinary')||'#2B5CA8'],
+        borderColor:css('--color-novenary')||'#fff',borderWidth:1
+      }]
+    },
+    options:{
+      maintainAspectRatio:false,
+      plugins:{ legend:{ position:'top' }, title:{ display:true, text:'Inventario' } }
+    }
   })
 }
 
-/* ===== Mount ===== */
+/* === NUEVO: ResizeObserver para redimensionar el chart si cambia el contenedor === */
+const chartAreaEl = ref(null)
+let ro
+function initResizeObserver(){
+  if (!chartAreaEl.value) return
+  ro = new ResizeObserver(() => { pieChart?.resize() })
+  ro.observe(chartAreaEl.value)
+}
+
 onMounted(async ()=>{
   document.addEventListener('click', onGlobalClick, true)
   document.addEventListener('keydown', e=>e.key==='Escape'&&(showHelp.value=false))
   await Promise.all([fetchInventarioData(), fetchClientesCount()])
   renderPie()
+  initResizeObserver()
 })
-setTimeout(() => { pieChart?.resize() }, 0);
-
 onBeforeUnmount(()=>{
   document.removeEventListener('click', onGlobalClick, true)
+  ro?.disconnect()
 })
-
-/* ===== Live updates desde Clientes.vue ===== */
+/* Live updates */
 bus.on('clientes-actualizados', ({ nuevosMes }) => {
   if (typeof nuevosMes === 'number') clientesNuevos.value = nuevosMes
 })
-
 bus.on('inventario-actualizado', async ()=>{
   await fetchInventarioData()
   if(pieChart){
@@ -288,10 +281,10 @@ bus.on('inventario-actualizado', async ()=>{
   background: var(--color-quinary, #2B5CA8);
 }
 
-/* Content grid */
+/* Content grid — MÁS espacio para el chart */
 .content{
   display:grid;
-  grid-template-columns: 2fr 1fr;
+  grid-template-columns: minmax(0, 3fr) minmax(260px, 1fr); /* antes 2fr 1fr */
   gap: 20px;
   padding: 20px;
 }
@@ -299,24 +292,34 @@ bus.on('inventario-actualizado', async ()=>{
   .content{ grid-template-columns: 1fr; }
 }
 
-/* Cards/panels */
+/* Paneles */
 .chart-area, .panel{
   background: rgba(255,255,255,.06);
   border: 1px solid rgba(255,255,255,.12);
   border-radius: 14px;
   padding: 16px;
 }
-.chart-area{ height: 420px; } /* más alto, ya no hay widget extra */
-.chart-area canvas, .panel canvas{ width:100% !important; height:100% !important; }
 
-.side-panels{ display:grid; gap: 20px; grid-auto-rows: minmax(140px, auto); }
-
-/* Calendar panel */
-.panel--calendar :deep(.vc-container){
-  width:100%;
+/* ALTURA GRANDE Y FLUIDA DEL CHART */
+.chart-area{
+  /* más alto, y además responde a viewport */
+  height: clamp(520px, 70vh, 900px);
+}
+.chart-area canvas, .panel canvas{
+  width:100% !important;
+  height:100% !important;
 }
 
-/* Simple KPI */
+/* Side panels */
+.side-panels{
+  display:grid; gap: 20px; grid-auto-rows: minmax(140px, auto);
+  align-self: start; /* evita estirar los paneles y roba menos altura al chart */
+}
+
+/* Calendar panel */
+.panel--calendar :deep(.vc-container){ width:100%; }
+
+/* KPI */
 .kpi{ display:grid; gap:6px; align-items:center; justify-items:center; text-align:center; }
 .kpi h3{ margin:0; color:#e2e8f0; }
 .kpi .value{ font-size:2rem; font-weight:900; color:#fff; }
@@ -346,10 +349,6 @@ bus.on('inventario-actualizado', async ()=>{
 .help-ft{ padding-top:8px; border-top:1px dashed rgba(255,255,255,.15); color:#93a3b8; }
 
 /* Popover transition */
-.fade-scale-enter-active, .fade-scale-leave-active{
-  transition: all .16s ease;
-}
-.fade-scale-enter-from, .fade-scale-leave-to{
-  opacity:0; transform: scale(.98);
-}
+.fade-scale-enter-active, .fade-scale-leave-active{ transition: all .16s ease; }
+.fade-scale-enter-from, .fade-scale-leave-to{ opacity:0; transform: scale(.98); }
 </style>
