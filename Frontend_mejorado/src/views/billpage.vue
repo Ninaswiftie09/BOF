@@ -184,7 +184,7 @@ export default {
 .invoice-card:hover { background-color: #8cafdc; }
 
 .invoice-info { display: flex; justify-content: space-between; align-items: center; }
-.invoice-description { font-weight: 500; color: var(--color-primary); text-transform: uppercase; }
+.invoice-description { font-weight: 500; color: var(--color-novenary); text-transform: uppercase; }
 
 .btn-download {
   background-color: var(--color-secondary);
