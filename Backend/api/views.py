@@ -448,3 +448,42 @@ class DetalleVentasAPIView(APIView):
         ventas = Venta.objects.all()
         serializer = VentaSerializer(ventas, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+    
+# =======================
+# CATEGORÍAS
+# =======================
+
+class CategoriaListAPIView(APIView):
+    def get(self, request):
+        categorias = Categoria.objects.all().order_by('nombre')
+        serializer = CategoriaSerializer(categorias, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class AgregarNuevaCategoria(APIView):
+    def post(self, request):
+        serializer = CategoriaSerializer(data=request.data)
+        if serializer.is_valid():
+            categoria = serializer.save()
+            return Response(
+                {"message": "Categoría creada", "categoria": serializer.data},
+                status=status.HTTP_201_CREATED
+            )
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class EditarCategoria(APIView):
+    def put(self, request, pk):
+        categoria = get_object_or_404(Categoria, pk=pk)
+        serializer = CategoriaSerializer(categoria, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"message": "Categoría actualizada", "categoria": serializer.data})
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class EliminarCategoria(APIView):
+    def delete(self, request, pk):
+        categoria = get_object_or_404(Categoria, pk=pk)
+        categoria.delete()
+        return Response({"mensaje": "Categoría eliminada correctamente"}, status=status.HTTP_204_NO_CONTENT)
