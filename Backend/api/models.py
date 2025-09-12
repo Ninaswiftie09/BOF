@@ -1,11 +1,140 @@
 from django.db import models
-from clientes.models import Cliente # Diego ahí quitas todos estos imports cuando ya se hayan combinado api y clientes
+
+# =======================
+# MODELOS DE CLIENTES
+# =======================
+
+class Empresa(models.Model):
+    nombre = models.CharField(max_length=255)
+    nit = models.CharField(max_length=50, unique=True)
+
+    class Meta:
+        db_table = "clientes_empresa"
+
+    def __str__(self):
+        return self.nombre
+
+
+class Cliente(models.Model):
+    codigo_cliente = models.CharField(max_length=50, unique=True, editable=False, null=True, blank=True)
+    empresa = models.ForeignKey(Empresa, on_delete=models.SET_NULL, null=True, blank=True)
+    nombre = models.CharField(max_length=255)
+    contacto = models.CharField(max_length=255, null=True, blank=True)
+    nit = models.CharField(max_length=50, unique=True, blank=True)
+    direccion = models.TextField(blank=True)
+    direccion_entrega = models.TextField(blank=True)
+    telefono = models.CharField(max_length=50, blank=True)
+    email = models.EmailField(blank=True)
+    estado = models.BooleanField(default=True)
+
+    class Meta:
+        db_table = "clientes_cliente"
+
+    def save(self, *args, **kwargs):
+        if not self.codigo_cliente:
+            last_id = Cliente.objects.order_by('-id').first()
+            next_id = 1 if not last_id else last_id.id + 1
+            self.codigo_cliente = f'CLI{next_id:04d}'
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return self.nombre
+
+
+class Pedido(models.Model):
+    cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE)
+    fecha = models.DateTimeField(auto_now_add=True)
+    precio_total = models.DecimalField(max_digits=12, decimal_places=2)
+
+    class Meta:
+        db_table = "clientes_pedido"
+
+    def __str__(self):
+        return f"Pedido #{self.id} - {self.cliente.nombre}"
+
+
+class PedidoDetalle(models.Model):
+    pedido = models.ForeignKey(Pedido, on_delete=models.CASCADE, related_name='detalles')
+    descripcion_producto = models.TextField()
+    cantidad = models.PositiveIntegerField()
+    precio_unitario = models.DecimalField(max_digits=12, decimal_places=2)
+
+    class Meta:
+        db_table = "clientes_pedidodetalle"
+
+    def total(self):
+        return self.cantidad * self.precio_unitario
+
+
+class CuentaPagada(models.Model):
+    pedido = models.ForeignKey(Pedido, on_delete=models.CASCADE)
+    cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE)
+    fecha_pago = models.DateTimeField(auto_now_add=True)
+    monto_pagado = models.DecimalField(max_digits=12, decimal_places=2)
+
+    class Meta:
+        db_table = "clientes_cuentapagada"
+
+    def __str__(self):
+        return f"Pago {self.id} - {self.cliente.nombre}"
+
+
+# =======================
+# INVENTARIO Y PROVEEDORES
+# =======================
+
+class Proveedor(models.Model):
+    id = models.AutoField(primary_key=True)
+    nombre = models.CharField(max_length=200, unique=True)
+    correo = models.EmailField(max_length=254, blank=True, null=True)
+    telefono = models.CharField(max_length=20, blank=True, null=True)
+    direccion = models.TextField(blank=True, null=True)
+    nit = models.CharField(max_length=50, unique=True, null=True, blank=True)  # 👈 unificado de clientes
+
+    class Meta:
+        db_table = "clientes_proveedor"
+
+    def __str__(self):
+        return self.nombre
+
+
+class Compra(models.Model):
+    id = models.AutoField(primary_key=True)
+    proveedor = models.ForeignKey(Proveedor, related_name='compras', on_delete=models.CASCADE)
+    fecha = models.DateField(auto_now_add=True)
+    descripcion = models.TextField()
+    monto = models.DecimalField(max_digits=10, decimal_places=2)
+
+    class Meta:
+        db_table = "clientes_compra"
+
+    def __str__(self):
+        return f'Compra {self.id} a {self.proveedor.nombre}'
+
+
+class CompraDetalle(models.Model):
+    compra = models.ForeignKey(Compra, on_delete=models.CASCADE, related_name='detalles')
+    descripcion_producto = models.TextField()
+    cantidad = models.PositiveIntegerField()
+    precio_unitario = models.DecimalField(max_digits=12, decimal_places=2)
+
+    class Meta:
+        db_table = "clientes_compradetalle"
+
+    def total(self):
+        return self.cantidad * self.precio_unitario
+
+
+# =======================
+# VENTAS
+# =======================
 
 class Categoria(models.Model):
     nombre = models.CharField(max_length=100)
 
     def __str__(self):
         return self.nombre
+
 
 class Producto(models.Model):
     nombre = models.CharField(max_length=100)
@@ -15,6 +144,7 @@ class Producto(models.Model):
 
     def __str__(self):
         return self.nombre
+
 
 class Venta(models.Model):
     METODOS_PAGO = [
@@ -31,7 +161,7 @@ class Venta(models.Model):
     ]
 
     fecha = models.DateField()
-    cliente = models.ForeignKey('clientes.Cliente', on_delete=models.SET_NULL, null=True, blank=True, related_name='ventas') # esto hay que cambiarlo a api.clientes cuando ya este unificado
+    cliente = models.ForeignKey(Cliente, on_delete=models.SET_NULL, null=True, blank=True, related_name='ventas')
     metodo_pago = models.CharField(max_length=20, choices=METODOS_PAGO)
     total = models.DecimalField(max_digits=10, decimal_places=2)
     estado = models.CharField(max_length=20, choices=ESTADOS_VENTA)
@@ -40,11 +170,9 @@ class Venta(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.no_recibo:
-            # Buscar la última venta con no_recibo válido
             last = Venta.objects.exclude(no_recibo__isnull=True).order_by('-no_recibo').first()
             self.no_recibo = 1 if not last else last.no_recibo + 1
         super().save(*args, **kwargs)
-
 
     def __str__(self):
         return f"Venta {self.id} - {self.fecha}"
@@ -60,10 +188,13 @@ class DetalleVenta(models.Model):
     def __str__(self):
         return f"Detalle {self.id} de Venta {self.venta.id}"
 
-# tabals para el inventario
+
+# =======================
+# INVENTARIO
+# =======================
 
 class Material(models.Model):
-    id = models.AutoField(primary_key=True)  
+    id = models.AutoField(primary_key=True)
     nombre = models.CharField(max_length=100)
     color = models.CharField(max_length=50)
     codigo = models.CharField(max_length=50, unique=True)
@@ -72,10 +203,12 @@ class Material(models.Model):
     class Meta:
         abstract = True
 
+
 class Hilo(Material):
     material = models.CharField(max_length=50)
     codigo_color = models.CharField(max_length=20)
     stock = models.PositiveIntegerField(default=0)
+
 
 class Tela(Material):
     tipo = models.CharField(max_length=50)
@@ -92,37 +225,20 @@ class Uniforme(models.Model):
     stock = models.PositiveIntegerField(default=0)
 
     categoria = models.ForeignKey(
-        'Categoria',                 
-        on_delete=models.SET_NULL,   
+        'Categoria',
+        on_delete=models.SET_NULL,
         null=True,
         blank=True,
         related_name='uniformes'
     )
+
     def __str__(self):
         return f"{self.tipo} - {self.talla} - {self.color}"
-    
-class Proveedor(models.Model):
-    id = models.AutoField(primary_key=True)
-    nombre = models.CharField(max_length=200, unique=True)
-    correo = models.EmailField(max_length=254, blank=True, null=True)
-    telefono = models.CharField(max_length=20, blank=True, null=True)
-    direccion = models.TextField(blank=True, null=True)
-
-    def __str__(self):
-        return self.nombre
 
 
-class Compra(models.Model):
-    id = models.AutoField(primary_key=True)
-    proveedor = models.ForeignKey(Proveedor, related_name='compras', on_delete=models.CASCADE)
-    fecha = models.DateField(auto_now_add=True)
-    descripcion = models.TextField()
-    monto = models.DecimalField(max_digits=10, decimal_places=2)
-
-    def __str__(self):
-        return f'Compra {self.id} a {self.proveedor.nombre}'
-
-# Tabla para contabilidad
+# =======================
+# CONTABILIDAD
+# =======================
 
 class Operacion(models.Model):
     TIPO_OPERACION = [
@@ -130,20 +246,10 @@ class Operacion(models.Model):
         ('egreso', 'Egreso'),
     ]
 
-    tipo = models.CharField(
-        max_length=10,
-        choices=TIPO_OPERACION
-    )
-    monto = models.DecimalField(
-        max_digits=10,
-        decimal_places=2
-    )
-    concepto = models.TextField(
-        max_length=250
-    )
-    fecha = models.DateTimeField(
-        auto_now_add=True
-    )
+    tipo = models.CharField(max_length=10, choices=TIPO_OPERACION)
+    monto = models.DecimalField(max_digits=10, decimal_places=2)
+    concepto = models.TextField(max_length=250)
+    fecha = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return f"{self.get_tipo_display()} - Q{self.monto} - {self.fecha.strftime('%d/%m/%Y')}"
@@ -153,13 +259,18 @@ class Operacion(models.Model):
         return self.get_tipo_display()
 
     class Meta:
-        ordering = ['-fecha']  
+        ordering = ['-fecha']
 
-# Clases para Nueva Orden
+
+# =======================
+# ORDENES
+# =======================
+
 class Orden(models.Model):
     cliente = models.CharField(max_length=100)
     fecha = models.DateField()
     total = models.DecimalField(max_digits=10, decimal_places=2)
+
 
 class DetalleOrden(models.Model):
     orden = models.ForeignKey(Orden, related_name='detalles', on_delete=models.CASCADE)
@@ -171,4 +282,3 @@ class DetalleOrden(models.Model):
     cantidad = models.PositiveIntegerField()
     precio = models.DecimalField(max_digits=10, decimal_places=2)
     descuento = models.DecimalField(max_digits=10, decimal_places=2)
-
