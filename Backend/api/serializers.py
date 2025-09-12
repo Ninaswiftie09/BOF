@@ -1,19 +1,85 @@
 from rest_framework import serializers
-from .models import ( Categoria, Hilo, Tela, Uniforme, Producto, Venta, DetalleVenta, Proveedor, Compra, Operacion, Orden, DetalleOrden)
-# estos se van xq son de clientes:
-from clientes.models import Compra as CompraCliente
-from clientes.models import Cliente
-from clientes.serializers import ClienteSerializer 
+from .models import (
+    Empresa, Cliente, Pedido, PedidoDetalle, CuentaPagada,
+    Categoria, Hilo, Tela, Uniforme, Producto, Venta, DetalleVenta,
+    Proveedor, Compra, CompraDetalle, Operacion, Orden, DetalleOrden
+)
 
+# =======================
+# CLIENTES
+# =======================
+
+class EmpresaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Empresa
+        fields = '__all__'
+
+
+class ClienteSerializer(serializers.ModelSerializer):
+    empresa_id = serializers.PrimaryKeyRelatedField(
+        queryset=Empresa.objects.all(),
+        source='empresa',
+        required=False,
+        allow_null=True
+    )
+
+    class Meta:
+        model = Cliente
+        fields = [
+            'id',
+            'codigo_cliente',
+            'empresa_id',
+            'nombre',
+            'contacto',
+            'nit',
+            'direccion',
+            'direccion_entrega',
+            'telefono',
+            'email',
+            'estado'
+        ]
+        read_only_fields = ['codigo_cliente']
+
+
+class PedidoDetalleSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PedidoDetalle
+        fields = '__all__'
+
+
+class PedidoSerializer(serializers.ModelSerializer):
+    cliente_nombre = serializers.CharField(source='cliente.nombre', read_only=True)
+    cliente_id = serializers.PrimaryKeyRelatedField(
+        queryset=Cliente.objects.all(),
+        source='cliente'
+    )
+    detalles = PedidoDetalleSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Pedido
+        fields = ['id', 'cliente_id', 'cliente_nombre', 'fecha', 'precio_total', 'detalles']
+
+
+class CuentaPagadaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CuentaPagada
+        fields = '__all__'
+
+
+# =======================
+# VENTAS
+# =======================
 
 class CategoriaSerializer(serializers.ModelSerializer):
     class Meta:
         model = Categoria
         fields = '__all__'
 
+
 class ProductoSerializer(serializers.ModelSerializer):
     categoria = serializers.PrimaryKeyRelatedField(queryset=Categoria.objects.all())
     categoria_nombre = serializers.CharField(source='categoria.nombre', read_only=True)
+
     class Meta:
         model = Producto
         fields = ['id', 'nombre', 'categoria', 'categoria_nombre', 'precio', 'descripcion']
@@ -26,6 +92,7 @@ class DetalleVentaSerializer(serializers.ModelSerializer):
         model = DetalleVenta
         fields = '__all__'
 
+
 class VentaSerializer(serializers.ModelSerializer):
     detalles = DetalleVentaSerializer(many=True, read_only=True)
 
@@ -33,6 +100,7 @@ class VentaSerializer(serializers.ModelSerializer):
         model = Venta
         fields = '__all__'
         read_only_fields = ['total']
+
 
 class VentaDetalleSerializer(serializers.ModelSerializer):
     cliente = serializers.SerializerMethodField()
@@ -43,20 +111,32 @@ class VentaDetalleSerializer(serializers.ModelSerializer):
         fields = ['id', 'fecha', 'cliente', 'metodo_pago', 'total', 'estado', 'detalles', 'no_recibo']
 
     def get_cliente(self, obj):
-        try:
-            cliente = Cliente.objects.get(id=obj.cliente_id)
-            return ClienteSerializer(cliente).data
-        except Cliente.DoesNotExist:
-            return None
-        
-#para proveedores
-        
+        if obj.cliente:
+            return ClienteSerializer(obj.cliente).data
+        return None
+
+
+# =======================
+# PROVEEDORES Y COMPRAS
+# =======================
+
+class CompraDetalleSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CompraDetalle
+        fields = '__all__'
+
+
 class CompraSerializer(serializers.ModelSerializer):
+    proveedor_id = serializers.PrimaryKeyRelatedField(
+        queryset=Proveedor.objects.all(),
+        source='proveedor'
+    )
+    detalles = CompraDetalleSerializer(many=True, read_only=True)
+
     class Meta:
         model = Compra
-        fields = ['id', 'proveedor', 'fecha', 'descripcion', 'monto']
+        fields = ['id', 'proveedor_id', 'fecha', 'descripcion', 'monto', 'detalles']
         read_only_fields = ['id', 'fecha']
-
 
 
 class ProveedorSerializer(serializers.ModelSerializer):
@@ -64,25 +144,26 @@ class ProveedorSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Proveedor
-        fields = ['id', 'nombre', 'correo', 'telefono', 'direccion', 'compras']
+        fields = ['id', 'nombre', 'correo', 'telefono', 'direccion', 'nit', 'compras']
         read_only_fields = ['id']
 
-#inventario
 
-# Hilo
+# =======================
+# INVENTARIO
+# =======================
+
 class HiloSerializer(serializers.ModelSerializer):
     class Meta:
         model = Hilo
         fields = ['id', 'material', 'codigo_color', 'color', 'stock', 'nombre', 'codigo', 'descripcion']
 
     def update(self, instance, validated_data):
-       
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
         instance.save()
         return instance
 
-# Tela
+
 class TelaSerializer(serializers.ModelSerializer):
     class Meta:
         model = Tela
@@ -94,7 +175,7 @@ class TelaSerializer(serializers.ModelSerializer):
         instance.save()
         return instance
 
-# Uniforme
+
 class UniformeSerializer(serializers.ModelSerializer):
     material_nombre = serializers.SerializerMethodField(read_only=True)
     categoria_nombre = serializers.SerializerMethodField(read_only=True)
@@ -118,17 +199,15 @@ class UniformeSerializer(serializers.ModelSerializer):
             setattr(instance, attr, value)
         instance.save()
         return instance
-    
+
+
+# =======================
+# CONTABILIDAD
+# =======================
 
 class OperacionSerializer(serializers.ModelSerializer):
-    fecha = serializers.DateTimeField(
-        format="%d/%m/%Y %H:%M",  
-        read_only=True
-    )
-    tipo_display = serializers.CharField(
-        source='get_tipo_display',
-        read_only=True
-    )
+    fecha = serializers.DateTimeField(format="%d/%m/%Y %H:%M", read_only=True)
+    tipo_display = serializers.CharField(source='get_tipo_display', read_only=True)
 
     class Meta:
         model = Operacion
@@ -141,7 +220,9 @@ class OperacionSerializer(serializers.ModelSerializer):
         return value
 
 
-# Nueva Orden Clientes
+# =======================
+# ORDENES
+# =======================
 
 class DetalleOrdenSerializer(serializers.ModelSerializer):
     class Meta:
@@ -150,6 +231,7 @@ class DetalleOrdenSerializer(serializers.ModelSerializer):
         extra_kwargs = {
             'orden': {'required': False}
         }
+
 
 class OrdenSerializer(serializers.ModelSerializer):
     detalles = DetalleOrdenSerializer(many=True)
@@ -168,16 +250,13 @@ class OrdenSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         detalles_data = validated_data.pop('detalles', [])
 
-        # Actualiza campos simples
         instance.cliente = validated_data.get('cliente', instance.cliente)
         instance.fecha = validated_data.get('fecha', instance.fecha)
         instance.total = validated_data.get('total', instance.total)
         instance.save()
 
-        # Elimina detalles existentes
         instance.detalles.all().delete()
 
-        # Crea nuevos detalles
         for item in detalles_data:
             DetalleOrden.objects.create(orden=instance, **item)
 
