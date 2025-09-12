@@ -1,9 +1,7 @@
 from rest_framework import serializers
-from .models import Categoria, Producto, Venta, DetalleVenta
-from .models import Categoria, Hilo, Tela, Uniforme
-from .models import Proveedor, Compra, Operacion
+from .models import ( Categoria, Hilo, Tela, Uniforme, Producto, Venta, DetalleVenta, Proveedor, Compra, Operacion, Orden, DetalleOrden)
+# estos se van xq son de clientes:
 from clientes.models import Compra as CompraCliente
-from .models import Orden, DetalleOrden
 from clientes.models import Cliente
 from clientes.serializers import ClienteSerializer 
 
@@ -14,11 +12,12 @@ class CategoriaSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class ProductoSerializer(serializers.ModelSerializer):
-    categoria = CategoriaSerializer(read_only=True)
-
+    categoria = serializers.PrimaryKeyRelatedField(queryset=Categoria.objects.all())
+    categoria_nombre = serializers.CharField(source='categoria.nombre', read_only=True)
     class Meta:
         model = Producto
-        fields = '__all__'
+        fields = ['id', 'nombre', 'categoria', 'categoria_nombre', 'precio', 'descripcion']
+
 
 class DetalleVentaSerializer(serializers.ModelSerializer):
     producto = ProductoSerializer(read_only=True)
@@ -49,14 +48,13 @@ class VentaDetalleSerializer(serializers.ModelSerializer):
             return ClienteSerializer(cliente).data
         except Cliente.DoesNotExist:
             return None
-
         
 #para proveedores
         
 class CompraSerializer(serializers.ModelSerializer):
-    class Meta: 
+    class Meta:
         model = Compra
-        fields = ['id', 'proveedor', 'fecha', 'descripcion', 'monto_total']
+        fields = ['id', 'proveedor', 'fecha', 'descripcion', 'monto']
         read_only_fields = ['id', 'fecha']
 
 
@@ -121,15 +119,6 @@ class UniformeSerializer(serializers.ModelSerializer):
         instance.save()
         return instance
     
-class ProductoSerializer(serializers.ModelSerializer):
-    categoria = serializers.PrimaryKeyRelatedField(queryset=Categoria.objects.all())
-    
-    categoria_nombre = serializers.CharField(source='categoria.nombre', read_only=True)
-
-    class Meta:
-        model = Producto
-        fields = ['id', 'nombre', 'categoria', 'categoria_nombre', 'precio', 'descripcion']
-
 
 class OperacionSerializer(serializers.ModelSerializer):
     fecha = serializers.DateTimeField(

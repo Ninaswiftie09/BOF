@@ -1,4 +1,5 @@
 from django.db import models
+from clientes.models import Cliente # Diego ahí quitas todos estos imports cuando ya se hayan combinado api y clientes
 
 class Categoria(models.Model):
     nombre = models.CharField(max_length=100)
@@ -30,7 +31,7 @@ class Venta(models.Model):
     ]
 
     fecha = models.DateField()
-    cliente_id = models.IntegerField()  
+    cliente = models.ForeignKey('clientes.Cliente', on_delete=models.SET_NULL, null=True, blank=True, related_name='ventas') # esto hay que cambiarlo a api.clientes cuando ya este unificado
     metodo_pago = models.CharField(max_length=20, choices=METODOS_PAGO)
     total = models.DecimalField(max_digits=10, decimal_places=2)
     estado = models.CharField(max_length=20, choices=ESTADOS_VENTA)

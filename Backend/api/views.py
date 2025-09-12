@@ -262,23 +262,14 @@ class EditarUniforme(APIView):
             return Response({'mensaje': 'Uniforme actualizado correctamente', 'uniforme': serializer.data})
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-class TelaListAPIView(APIView):
-    def get(self, request):
-        telas = Tela.objects.all()
-        serializer = TelaSerializer(telas, many=True)
-        return Response(serializer.data)
 
-class HiloListAPIView(APIView):
-    def get(self, request):
-        hilos = Hilo.objects.all()
-        serializer = HiloSerializer(hilos, many=True)
-        return Response(serializer.data)
+class HiloListAPIView(ListAPIView):
+    queryset = Hilo.objects.all()
+    serializer_class = HiloSerializer
 
-class UniformeListAPIView(APIView):
-    def get(self, request):
-        uniformes = Uniforme.objects.all()
-        serializer = UniformeSerializer(uniformes, many=True)
-        return Response(serializer.data)
+class UniformeListAPIView(ListAPIView):
+    queryset = Uniforme.objects.all()
+    serializer_class = UniformeSerializer
 
 
 class CategoriaListAPIView(APIView):
@@ -563,23 +554,7 @@ class HistorialPedidosAPIView(ListAPIView):
     queryset = Orden.objects.all().order_by('-fecha')
     serializer_class = OrdenSerializer
 
-class VentasPorFechaAPIView(APIView):
-    def get(self, request):
-        fecha_inicio = request.query_params.get('fecha_inicio')
-        fecha_fin = request.query_params.get('fecha_fin')
-        
-        ventas = Venta.objects.filter(fecha__range=[fecha_inicio, fecha_fin])
 
-        total_ventas = ventas.aggregate(total=Sum('total'))['total'] or 0
-        numero_facturas = ventas.count()
-
-        serializer = VentaSerializer(ventas, many=True)
-
-        return Response({
-            'total_ventas': total_ventas,
-            'numero_facturas': numero_facturas,
-            'ventas': serializer.data
-        }, status=status.HTTP_200_OK)
 
 # VENTAS
 class CrearVentaAPIView(APIView):
