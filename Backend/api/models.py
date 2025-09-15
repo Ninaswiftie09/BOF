@@ -19,7 +19,6 @@ class Cliente(models.Model):
     codigo_cliente = models.CharField(max_length=50, unique=True, editable=False, null=True, blank=True)
     empresa = models.ForeignKey(Empresa, on_delete=models.SET_NULL, null=True, blank=True)
     nombre = models.CharField(max_length=255)
-    contacto = models.CharField(max_length=255, null=True, blank=True)
     nit = models.CharField(max_length=50, unique=True, blank=True)
     direccion = models.TextField(blank=True)
     direccion_entrega = models.TextField(blank=True)
@@ -262,3 +261,23 @@ class Operacion(models.Model):
         ordering = ['-fecha']
 
 
+# =======================
+# ORDENES
+# =======================
+
+class Orden(models.Model):
+    cliente = models.CharField(max_length=100)
+    fecha = models.DateField()
+    total = models.DecimalField(max_digits=10, decimal_places=2)
+
+
+class DetalleOrden(models.Model):
+    orden = models.ForeignKey(Orden, related_name='detalles', on_delete=models.CASCADE)
+    producto = models.CharField(max_length=100)
+    talla = models.CharField(max_length=20)
+    color = models.CharField(max_length=20)
+    tela = models.CharField(max_length=50)
+    bordado = models.CharField(max_length=50)
+    cantidad = models.PositiveIntegerField()
+    precio = models.DecimalField(max_digits=10, decimal_places=2)
+    descuento = models.DecimalField(max_digits=10, decimal_places=2)

@@ -30,7 +30,6 @@ class ClienteSerializer(serializers.ModelSerializer):
             'codigo_cliente',
             'empresa_id',
             'nombre',
-            'contacto',
             'nit',
             'direccion',
             'direccion_entrega',
