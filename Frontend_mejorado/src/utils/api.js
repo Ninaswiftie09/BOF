@@ -34,17 +34,23 @@ export async function apiFetch(url, method = 'GET', data = null) {
     body: method !== 'GET' && method !== 'DELETE' ? JSON.stringify(data) : undefined,
   };
 
-  try {
-    const response = await fetch(finalUrl, options);
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    if (method === 'DELETE' || response.status === 204) {
-      return null;
-    }
-    return await response.json();
-  } catch (error) {
-    console.error('API fetch error:', error);
-    throw error;
+  const res = await fetch(finalUrl, options);
+
+  
+  const parse = async () => {
+    const text = await res.text();
+    try { return JSON.parse(text); } catch { return { message: text || null }; }
+  };
+
+  if (!res.ok) {
+    const errBody = await parse();
+    console.error('[apiFetch]', res.status, errBody);
+   
+    const msg = errBody?.message || errBody?.detail || `HTTP error! status: ${res.status}`;
+    throw new Error(msg);
   }
+
+  if (method === 'DELETE' || res.status === 204) return null;
+  return await parse();
 }
+

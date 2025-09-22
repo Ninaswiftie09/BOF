@@ -45,7 +45,9 @@
 </template>
 
 <script>
-import { apiFetch } from '@/utils/api'
+import { apiFetch } from '@/utils/api' // si no tienes alias "@", usa: '../utils/api'
+
+const LOGIN_URL = '/api/login/' // 🔁 cambia solo esta ruta si tu backend usa otra
 
 export default {
   name: 'LoginView',
@@ -56,49 +58,58 @@ export default {
       showPass: false,
       loading: false,
       message: '',
-      messageType: '' // 'success' | 'error'
+      messageType: '', // 'error' | 'success'
     }
   },
   methods: {
     async handleSubmit() {
+      // Limpia estado UI
       this.message = ''
       this.messageType = ''
+
+      // Validación mínima de frontend (evita 400 innecesario)
+      const email = this.email?.trim()
+      const password = this.password?.trim()
+      if (!email || !password) {
+        this.messageType = 'error'
+        this.message = 'Ingresa tu correo y contraseña.'
+        return
+      }
+
       this.loading = true
       try {
-        const payload = { email: this.email, password: this.password }
-        // POST /api/login/ (usa apiFetch → incluye BASE_URL, credenciales y CSRF)
-        const data = await apiFetch('/api/login/', 'POST', payload)
+        // Payload EXACTO que espera el backend
+        const payload = { email, password }
 
-        // Marca sesión en el navegador (si usas guard en router)
-        sessionStorage.setItem('isLoggedIn', 'true')
-        // Puedes guardar info de usuario si el backend la devuelve:
+        // Llamada al backend (apiFetch ya muestra el cuerpo de error si falla)
+        const data = await apiFetch(LOGIN_URL, 'POST', payload)
+
+        // Manejo de éxito (ajusta según lo que te devuelva tu backend)
+        // Si tu backend setea cookie de sesión, con redirigir basta.
         if (data && data.user) {
           sessionStorage.setItem('user', JSON.stringify(data.user))
         }
+        sessionStorage.setItem('isLoggedIn', 'true')
 
-        this.message = '¡Bienvenido! Inicio de sesión exitoso.'
         this.messageType = 'success'
-        this.email = ''
-        this.password = ''
+        this.message = '¡Bienvenida! Inicio de sesión exitoso.'
 
-        const next = this.$route.query.next || '/home'
+        // Redirección (respeta `?next=/ruta` si viene en la URL)
+        const next = this.$route?.query?.next || '/home'
         this.$router.replace(next)
       } catch (err) {
-        // Intenta extraer mensaje legible si vino JSON
-        let msg = 'Credenciales incorrectas o error al iniciar sesión.'
-        try {
-          const parsed = JSON.parse(err.message)
-          msg = parsed.message || parsed.detail || msg
-        } catch (_) {
-          if (err?.message) msg = err.message
-        }
-        this.message = msg
+        // Gracias al Paso 1 en api.js, err.message ya viene “bonito”
         this.messageType = 'error'
+        this.message = err?.message || 'No se pudo iniciar sesión.'
+        // También queda log en consola con [apiFetch] status y body
       } finally {
         this.loading = false
       }
-    }
-  }
+    },
+    toggleShowPass() {
+      this.showPass = !this.showPass
+    },
+  },
 }
 </script>
 
