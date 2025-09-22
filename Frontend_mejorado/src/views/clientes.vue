@@ -1,55 +1,3 @@
-<script setup>
-import { useRouter } from 'vue-router'
-import { ref, computed, onMounted } from 'vue'
-import NavBar from '@/components/NavBar.vue'
-import { apiFetch } from '@/utils/api'
-
-const router = useRouter()
-const go = (path) => router.push(path)
-
-// Datos reales
-const clientes = ref([])
-const proveedores = ref([])
-
-// Conteos para los encabezados
-const clientesCount = computed(() => clientes.value.length)
-const proveedoresCount = computed(() => proveedores.value.length)
-
-// “Recientes” (top 3) mapeados al mismo shape que usabas
-const clientesRecientes = computed(() =>
-  clientes.value.slice(0, 3).map(c => ({
-    name: c.nombre || c.name || `Cliente ${c.id ?? ''}`,
-    meta: c.nit ? `NIT: ${c.nit}` : (c.telefono ? `Tel: ${c.telefono}` : ''),
-    badge: 'Activo',
-  }))
-)
-
-const proveedoresRecientes = computed(() =>
-  proveedores.value.slice(0, 3).map(p => ({
-    name: p.nombre || p.name || `Proveedor ${p.id ?? ''}`,
-    meta: p.telefono ? `Tel: ${p.telefono}` : (p.correo ? `Email: ${p.correo}` : ''),
-    badge: 'Preferente',
-  }))
-)
-
-async function fetchData() {
-  try {
-    clientes.value = await apiFetch('/api/clientes/')
-  } catch (e) {
-    console.error('Error cargando clientes:', e)
-    clientes.value = []
-  }
-  try {
-    proveedores.value = await apiFetch('/api/proveedores/')
-  } catch (e) {
-    console.error('Error cargando proveedores:', e)
-    proveedores.value = []
-  }
-}
-
-onMounted(fetchData)
-</script>
-
 <template>
   <div class="crm-home">
     <NavBar title="CLIENTES Y PROVEEDORES" />
@@ -60,6 +8,7 @@ onMounted(fetchData)
         <button class="card card--click" @click="go('/clientesregistro')">
           <header>
             <div class="chip">
+              <!-- currentColor -->
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M17 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
               </svg>
@@ -113,19 +62,72 @@ onMounted(fetchData)
   </div>
 </template>
 
+
+<script setup>
+import { useRouter } from 'vue-router'
+import { ref, computed, onMounted } from 'vue'
+import NavBar from '@/components/NavBar.vue'
+import { apiFetch } from '@/utils/api'
+
+const router = useRouter()
+const go = (path) => router.push(path)
+
+// Datos reales
+const clientes = ref([])
+const proveedores = ref([])
+
+// Conteos para los encabezados
+const clientesCount = computed(() => clientes.value.length)
+const proveedoresCount = computed(() => proveedores.value.length)
+
+// “Recientes” (top 3) mapeados al mismo shape que usabas
+const clientesRecientes = computed(() =>
+  clientes.value.slice(0, 3).map(c => ({
+    name: c.nombre || c.name || `Cliente ${c.id ?? ''}`,
+    meta: c.nit ? `NIT: ${c.nit}` : (c.telefono ? `Tel: ${c.telefono}` : ''),
+    badge: 'Activo',
+  }))
+)
+
+const proveedoresRecientes = computed(() =>
+  proveedores.value.slice(0, 3).map(p => ({
+    name: p.nombre || p.name || `Proveedor ${p.id ?? ''}`,
+    meta: p.telefono ? `Tel: ${p.telefono}` : (p.correo ? `Email: ${p.correo}` : ''),
+    badge: 'Preferente',
+  }))
+)
+
+async function fetchData() {
+  try {
+    clientes.value = await apiFetch('/api/clientes/')
+  } catch (e) {
+    console.error('Error cargando clientes:', e)
+    clientes.value = []
+  }
+  try {
+    proveedores.value = await apiFetch('/api/proveedores/')
+  } catch (e) {
+    console.error('Error cargando proveedores:', e)
+    proveedores.value = []
+  }
+}
+
+onMounted(fetchData)
+</script>
+
 <style scoped>
 /* === Paleta y tipografías === */
 :root {
-  --color-primary: #1e293b;
-  --color-tertiary: #84C8C0;
-  --color-quaternary: #C9E8F5;
-  --color-quinary: #2B5CA8;
-  --color-senary: #374666;
-  --color-septenary: #83A4CC;
-  --color-octonary: #0f172a;
-  --color-novenary: #ffffff;
-  --colo-texto-negro: #000000;
-  --colo-texto-blanco: #ffffff;
+  --color-primary: #1e293b; /*nada*/
+  --color-tertiary: #84C8C0; /*nada*/
+  --color-quaternary: #C9E8F5; /*nada*/
+  --color-quinary: #2B5CA8; /*nada*/
+  --color-senary: #374666; /*nada*/
+  --color-septenary: #83A4CC; /*nada*/
+  --color-octonary: #0f172a; /*nada*/
+  --color-novenary: #ffffff; /*nada*/
+  --colo-texto-negro: #000000; /*nada*/
+  --colo-texto-blanco: #ffffff; /*nada*/
 }
 
 @font-face {
@@ -156,9 +158,9 @@ onMounted(fetchData)
 /* === Fondo general === */
 .crm-home{
   min-height:100vh;
-  background:var(--color-octonary);
+  background:var(--color-octonary); /*fondo de página*/
   display:flex; flex-direction:column;
-  color:var(--color-novenary);
+  color:var(--color-novenary); /*nada*/
   font-family: 'Kollektif', sans-serif;
 }
 
@@ -175,9 +177,9 @@ onMounted(fetchData)
   .cards{ grid-template-columns:1fr; }
 }
 .card{
-  background:rgba(255,255,255,.06);
+  background:rgba(255,255,255,.06); /*fondo de tarjetas clientes/proveedores*/
   border-radius:18px;
-  border:1px solid rgba(255,255,255,.18);
+  border:1px solid rgba(255,255,255,.18); /*borde tarjetas clientes/proveedores*/
   padding:24px;
   transition:transform .2s ease;
 }
@@ -192,21 +194,33 @@ onMounted(fetchData)
 .chip{
   display:inline-flex; align-items:center; gap:10px;
   padding:12px 14px; border-radius:999px; font-weight:800;
-  background:rgba(255,255,255,.14); color:var(--color-novenary);
+  background:rgba(255,255,255,.14); /*fondo circulo categoria "clientes" */
+  color:var(--color-novenary); /*letra y logo circulo categoria "clientes" */
 }
-.chip--green{ background:rgba(255,255,255,.14); color:#f5f8f6; }
-.count{ color:var(--color-septenary); font-weight:800 }
+.chip--green{
+  background:rgba(255,255,255,.14); /*fondo circulo categoria "proveedores" */
+  color:#f5f8f6; /*letra y logo circulo categoria "proveedores" */
+}
+.count{
+  color:var(--color-septenary); /*nada*/
+  font-weight:800
+}
 
 .list{list-style:none; margin:0; padding:8px 0 4px}
 .row{
   display:grid; grid-template-columns:1fr auto; align-items:center;
-  padding:14px 8px; border-top:1px dashed rgba(255,255,255,.25);
+  padding:14px 8px;
+  border-top:1px dashed rgba(255,255,255,.25); /*color línea entrecortada separadora en ambas tarjetas*/
 }
 .row:first-child{ border-top:0 }
-.row small{ color:var(--color-septenary) }
+.row small{
+  color:var(--color-septenary); /*color texto "NIT:" y "Tel:" */
+}
 .badge{
-  font-size:.86rem; padding:6px 12px; border-radius:999px;
-  background:rgba(255,255,255,.18); color:var(--color-novenary);
+  font-size:.86rem; padding:6px 12px;
+  border-radius:999px;
+  background:rgba(255,255,255,.18); /*fondo boton "activo" y "preferente" */
+  color:var(--color-novenary); /*texto boton "activo" y "preferente" */
 }
 
 .footer{ margin-top:18px; display:flex; gap:12px; flex-wrap:wrap }
@@ -218,11 +232,16 @@ onMounted(fetchData)
   font-family:'Kollektif', sans-serif;
 }
 .btn--primary{
-  background:linear-gradient(180deg,#2B5CA8,#83A4CC);
-  color:var(--color-novenary);}
-.btn--green{
-  background:linear-gradient(180deg,#2B5CA8,#83A4CC);
-  color:var(--color-novenary);
+  background:linear-gradient(180deg,#2B5CA8,#83A4CC); /*fondo boton "ver mas" en tarjeta "clientes" (color de fondo, color gradiente de abajo a arriba)*/
+  color:var(--color-novenary); /*texto "ver mas" en tarjeta "clientes" */
 }
-.btn:hover{ background:var(--color-quaternary); color:var(--colo-texto-negro) }
+.btn--green{
+  background:linear-gradient(180deg,#2B5CA8,#83A4CC); /*fondo boton "ver mas" en tarjeta "proveedores" (color de fondo, color gradiente de abajo a arriba)*/
+  color:var(--color-novenary); /*texto "ver mas" en tarjeta "proveedores"*/
+}
+
+.btn:hover{
+  background:var(--color-quaternary); /*color fondo "ver mas" con cursor arriba*/
+  color:var(--colo-texto-negro); /*color texto "ver mas" con cursor arriba*/
+  }
 </style>

@@ -60,6 +60,7 @@
       <div class="table-container">
         <h2>Tabla de Ventas Detalladas</h2>
 
+        <!-- se agrega un color -->
         <div v-if="errorMsg" class="no-data" style="color:#fca5a5">{{ errorMsg }}</div>
 
         <table v-if="ventas.length" class="dark-table">
@@ -241,6 +242,7 @@ export default {
             {
               label: 'Total de Ventas por Día',
               data: data.map((item) => item.total),
+              /*color en script*/
               borderColor: '#2AA68F',
               backgroundColor: 'rgba(42, 166, 143, 0.2)',
               tension: 0.1,
@@ -252,9 +254,11 @@ export default {
           responsive: true,
           maintainAspectRatio: false,
           scales: {
+            /*color en script*/
             y: { ticks: { color: '#FFF' } },
             x: { ticks: { color: '#FFF' } }
           },
+          /*color en script*/
           plugins: { legend: { labels: { color: '#FFF' } } }
         }
       })
@@ -272,6 +276,7 @@ export default {
             {
               label: 'Cantidad Vendida',
               data: data.map((item) => item.total_vendido),
+              /*color en script*/
               backgroundColor: ['#2B5CA8', '#374666', '#83A4CC', '#C9E8F5', '#84C8C0']
             }
           ]
@@ -300,6 +305,7 @@ export default {
           datasets: [
             {
               data: data.map((item) => item.cantidad),
+              /*color en script*/
               backgroundColor: ['#839A2D', '#2AA68F', '#2B5CA8', '#C9E8F5']
             }
           ]
@@ -331,8 +337,8 @@ export default {
 
 <style scoped>
 .reporte-ventas{
-  background: var(--color-octonary);
-  color: #fff;
+  background: var(--color-octonary); /*fondo pantalla reporteventas*/
+  color: #fff; /*texto "pagina 1 de 1" */
   min-height: 100vh;
   font-family: 'Kollektif', sans-serif;
 }
@@ -347,38 +353,69 @@ export default {
 .filtros-container{
   display: flex; flex-wrap: wrap; gap: 14px 20px;
   align-items: end;
-  background: #1e293b; border: 1px solid #223043; border-radius: 12px;
+  background: #1e293b; /*fondo cuadro filtros*/
+  border: 1px solid #223043; /*borde cuadro filtros*/
+  border-radius: 12px;
   padding: 14px 16px;
 }
 .filtro{ display:flex; flex-direction:column; gap:6px; min-width: 220px; }
-.filtro label{ font-weight: 800; color: #fff; }
-.filtro input{
-  padding: 10px 12px; border-radius: 10px; border: 1px solid #334155;
-  background: #0b1326; color: #fff; outline: none;
+.filtro label{
+  font-weight: 800;
+  color: #fff; /*texto filtro "desde, hasta" */
 }
-.filtro input:focus{ border-color: var(--color-quinary); box-shadow: 0 0 0 3px rgba(43,92,168,.25); }
+.filtro input{
+  padding: 10px 12px; border-radius: 10px;
+  border: 1px solid #334155; /*borde input filtro fecha*/
+  background: #0b1326; /*fondo input filtro fecha*/
+  color: #fff; /*texto input filtro fecha*/
+  outline: none;
+}
+.filtro input:focus{
+  border-color: var(--color-quinary); /*borde interior input filtro fecha seleccionado*/
+  box-shadow: 0 0 0 3px rgba(43,92,168,.25); /*borde exterior input filtro fecha seleccionado*/
+}
 .filtro-actions{ display:flex; gap:10px; margin-left: auto; }
 .btn{ padding:10px 14px; border-radius:10px; font-weight:800; border:none; cursor:pointer; }
-.btn--primary{ background: var(--color-quinary); color:#fff; }
-.btn--muted{ background: #334155; color:#fff; }
+.btn--primary{
+  background: var(--color-quinary); /*fondo boton "filtrar" */
+  color:#fff; /*texto "filtrar" */
+}
+.btn--muted{
+  background: #334155; /*fondo boton "limpiar" */
+  color:#fff; /*texto "limpiar"*/
+}
 
 /* KPIs */
 .kpi-container{ display:flex; gap:20px; flex-wrap: wrap; }
 .kpi-card{
-  background:#1e2236; padding:20px; border-radius:12px; border:1px solid #223043;
+  background:#1e2236; /*fondo tarjetas "total ventas, numero facturas"*/
+  padding:20px; border-radius:12px;
+  border:1px solid #223043; /*borde tarjetas "total ventas, numero facturas"*/
 }
 .kpi-card.principal{ flex:1; min-width:260px; }
-.kpi-card h3{ margin:0; color: var(--color-quinary); }
-.kpi-card .valor{ font-size:2rem; font-weight:800; color:#fff; }
-.kpi-card .descripcion{ font-size:.9rem; color:#cbd5e1; }
+.kpi-card h3{
+  margin:0;
+  color: var(--color-quinary); /*titulo tarjetas "total ventas, numero facturas"*/
+}
+.kpi-card .valor{
+  font-size:2rem; font-weight:800;
+  color:#fff; /*numeros tarjetas "total ventas, numero facturas"*/
+}
+.kpi-card .descripcion{
+  font-size:.9rem;
+  color:#cbd5e1; /*subtexto tarjetas "total ventas, numero facturas"*/
+}
 
 /* Charts */
 .chart-container{
-  background:#1e2236; padding:20px; border-radius:12px; border:1px solid #223043;
+  background:#1e2236; /*fondo tarjetas con graficas "evolucion ventas, productos vendidos, metodos pago"*/
+  padding:20px; border-radius:12px;
+  border:1px solid #223043; /*borde tarjetas con graficas "evolucion ventas, productos vendidos, metodos pago"*/
 }
-.chart-container h2{ margin-top:0; color:#fff; }
+.chart-container h2{ margin-top:0; color:#fff; } /*titulos graficas "evolucion ventas, productos vendidos, metodos pago" */
 .chart-placeholder{
-  background:#2c3148; border-radius:10px; height:280px;
+  background:#2c3148; /*fondo de graficas*/
+  border-radius:10px; height:280px;
   display:flex; align-items:center; justify-content:center; overflow:hidden;
 }
 .chart-placeholder.shorter{ height:200px; }
@@ -386,31 +423,50 @@ export default {
 
 /* Tabla */
 .table-container{
-  background:#1e2236; padding:20px; border-radius:12px; border:1px solid #223043; overflow-x:auto;
+  background:#1e2236; /*fondo ficha "tabla de ventas detalladas" */
+  padding:20px; border-radius:12px;
+  border:1px solid #223043; /*borde ficha "tabla de ventas detalladas" */
+  overflow-x:auto;
 }
 table{ width:100%; border-collapse: collapse; }
-th, td{ padding:12px; border:1px solid #2c3148; }
-th{ background: var(--color-senary); color:#fff; text-align:left; }
-tr:nth-child(even){ background:#2b2f40; }
-tr:nth-child(odd){ background:#1f2336; }
-tr:hover{ background:#3c4c6e; }
+th, td{
+  padding:12px;
+  border:1px solid #2c3148; /*opciones bordes tabla "tabla de ventas detalladas" */
+}
+th{
+  background: var(--color-senary); /*nada*/
+  color:#fff; /*nada*/
+  text-align:left;
+}
+tr:nth-child(even){ background:#2b2f40; } /*nada*/
+tr:nth-child(odd){ background:#1f2336; } /*asdf*/
+tr:hover{ background:#3c4c6e; } /*nada*/
 
 /* Paginación */
 .pagination{
   display:flex; justify-content:center; gap:12px; margin-top:16px; align-items:center;
 }
 .pagination button{
-  background: var(--color-quinary); color:#fff; border:none;
+  background: var(--color-quinary); /*nada*/
+  color:#fff; /*texto botones "anterior/siguiente"*/
+  border:none;
   padding:8px 14px; border-radius:8px; cursor:pointer;
 }
-.pagination button:disabled{ background:#475569; cursor:not-allowed; }
+.pagination button:disabled{ background:#475569; /*fondo botones "anterior/siguiente" */
+  cursor:not-allowed;
+}
 
 .loading{ display:grid; place-items:center; gap:8px; padding:20px; }
 .spinner{
   width:28px; height:28px; border-radius:50%;
-  border:3px solid rgba(255,255,255,.25); border-top-color:#fff; animation: spin 1s linear infinite;
+  border:3px solid rgba(255,255,255,.25); /*nada*/
+  border-top-color:#fff; /*nada*/
+  animation: spin 1s linear infinite;
 }
 @keyframes spin{ to { transform: rotate(360deg); } }
 
-.no-data{ color:#cbd5e1; text-align:center; }
+.no-data{
+  color:#cbd5e1; /*nada*/
+  text-align:center;
+  }
 </style>

@@ -20,7 +20,8 @@
           <a href="#">Volver al inicio de sesión</a>
         </div>
 
-        <div v-if="message" :style="{ color: success ? 'green' : 'red', marginTop: '10px' }">
+        <!-- color -->
+        <div v-if="message" :style="{ color: success ? 'green' : 'red', marginTop: '10px' }">  
           {{ message }}
         </div>
 
@@ -79,15 +80,15 @@ export default {
   width: 100%;
   max-width: 400px;
   padding: 30px;
-  background: rgba(255, 255, 255, 0.85);
+  background: rgba(255, 255, 255, 0.85); /*fondo tarjeta recuperar*/
   border-radius: 12px;
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(0, 0, 0, 0.1); /*borde tarjeta recuperar*/
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25); /*sombreado tarjeta recuperar*/
 }
 
 h1 {
   font-family: 'Archivo Black', sans-serif;
-  color: var(--colo-texto-negro);
+  color: var(--colo-texto-negro); /*titulo recuperar*/
   text-align: center;
   margin-bottom: 20px;
 }
@@ -96,7 +97,7 @@ h1 {
 
 .input-group label {
   font-family: 'Kollektif', sans-serif;
-  color: var(--colo-texto-negro);
+  color: var(--colo-texto-negro); /*texto correo*/
   font-weight: bold;
   display: block;
   margin-bottom: 5px;
@@ -107,15 +108,15 @@ h1 {
   padding: 10px;
   font-family: 'Kollektif', sans-serif;
   font-size: 16px;
-  color: var(--colo-texto-negro);
-  background-color: var(--color-septenary);
-  border: 1px solid var(--color-quinary);
+  color: var(--colo-texto-negro); /*texto ingresado en input*/
+  background-color: var(--color-septenary); /*fondo correo input*/
+  border: 1px solid var(--color-quinary); /*borde correo input*/
   border-radius: 4px;
 }
 
 button {
-  background-color: var(--color-secondary);
-  color: white;
+  background-color: var(--color-secondary); /*fondo boton recuperar*/
+  color: white; /*texto boton recuperar*/
   padding: 10px 20px;
   border: none;
   cursor: pointer;
@@ -123,15 +124,19 @@ button {
   width: 100%;
 }
 
-button:hover { background-color: var(--color-quaternary); }
+button:hover {
+  background-color: var(--color-quaternary); /*color boton recuperar con cursor arriba*/
+}
 
 .back-to-login { text-align: center; margin-top: 10px; }
 
 .back-to-login a {
   font-family: 'Kollektif', sans-serif;
-  color: var(--color-quinary);
+  color: var(--color-quinary); /*nada*/
   text-decoration: none;
 }
 
-.back-to-login a:hover { color: var(--colo-texto-negro); }
+.back-to-login a:hover {
+  color: var(--colo-texto-negro); /*nada*/
+  }
 </style>

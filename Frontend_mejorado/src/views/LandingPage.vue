@@ -270,6 +270,7 @@ const menuOpen = ref(false)
 <style scoped>
 html { scroll-behavior: smooth; }
 
+/*Parece no cambiar nada por ahora*/
 :root {
   --bg-1: #0a0f2c;
   --bg-2: #1e293b;
@@ -278,6 +279,7 @@ html { scroll-behavior: smooth; }
   --ink: #e2e8f0;
   --card: #334155;
 }
+
 
 .landing-container {
   font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
@@ -288,55 +290,81 @@ html { scroll-behavior: smooth; }
   position: relative;
 }
 
-/* MENÚ LATERAL */
+
+
+/* MENÚ LATERAL Derecha*/
 .menu-lateral {
   position: fixed; right: 0.75rem; top: 40%; transform: translateY(-40%);
   display: flex; flex-direction: column; gap: 0.5rem; z-index: 20;
 }
+/*Cambia color de opciones que no están seleccionados*/
 .menu-lateral a {
   display: flex; align-items: center; gap: 0.5rem;
   background: rgba(30,41,59,.7); backdrop-filter: blur(6px);
   padding: 0.4rem 0.6rem; border-radius: 999px; text-decoration: none;
   color: #fff; font-weight: 600; font-size: .9rem; transition: .2s ease;
 }
+/*cambia color al tener el cursos arriba de las opciones */
 .menu-lateral a:hover { background: var(--brand); }
-.menu-lateral a.active { background: var(--brand); box-shadow: 0 0 0 3px rgba(42,166,143,.25); }
+/*color de la opcion seleccionada*/
+.menu-lateral a.active { background: var(--brand);
+  box-shadow: 0 0 0 3px rgba(42,166,143,.25); }
 .menu-lateral .icon { font-size: 1.1rem; line-height: 1; }
+
+
 
 /* HERO */
 .hero { position: relative; height: 72vh; min-height: 520px; overflow: hidden; }
 .hero-bg { position: absolute; inset: 0; }
 .hero-bg img { width: 100%; height: 100%; object-fit: cover; filter: saturate(1) contrast(1.05) brightness(.75); }
+
+/* cambia el degradado de la imagen principal, los últimos dos no hacen efecto */
 .hero-overlay { position: absolute; inset: 0; background: radial-gradient(60% 60% at 50% 40%, rgba(255,255,255,.05), transparent), linear-gradient(180deg, rgba(10,15,44,.6), rgba(10,15,44,.9)); }
 .hero-content { position: relative; z-index: 1; height: 100%; display: grid; place-items: center; text-align: center; padding: 0 1rem; }
 .brand { display: inline-flex; align-items: center; gap: .8rem; flex-wrap: wrap; justify-content: center; }
+/*gradiente en el logo superior*/
 .logo-header { height: 64px; width: auto; filter: drop-shadow(0 0 4px rgba(0,0,0,.4)); }
+/*nombre de la empresa*/
 .brand h1 { font-size: clamp(2.2rem, 5vw, 3.4rem); margin: 0; letter-spacing: .5px; color: #fff; }
+/*texto delante la imagen principal*/
 .subtitle { color: var(--ink); margin: .5rem 0 1.2rem; font-size: clamp(1.1rem, 2.8vw, 1.35rem); font-weight: 500; opacity: .95; }
 .cta { display: flex; gap: .75rem; justify-content: center; flex-wrap: wrap; }
-
 .btn { border: 2px solid transparent; padding: .75rem 1.2rem; border-radius: 10px; font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: .5rem; }
+
+/*boton "cotizar ahora" y "enviar" junto texto #enviar"*/
 .btn-primary { background: var(--brand); color: #fff; }
+/*cambia color cuando el cursosr está arriba de "cotizar ahora" y "enviar"*/
 .btn-primary:hover { background: var(--brand-2); }
+/*boton "ver catalogo", color no cambia nada, border cambia el borde de "ver catalogo"*/
 .btn-ghost { background: transparent; color: #fff; border-color: rgba(255,255,255,.45); }
+/*cambia color cuando el cursosr está arriba de "ver catálogo" */
 .btn-ghost:hover { background: rgba(255,255,255,.1); }
 
 /* SECCIONES */
 .landing-section { padding: 3rem 1rem; max-width: 1100px; margin: 0 auto; position: relative; }
+/*titulos y sus lineas separadoras, color: del texto "mision, vision, nuestros prod, y contáctanos"; border bottom: del color de lineas separadoras*/
 .landing-section h2 { font-size: 1.9rem; color: var(--brand); border-bottom: 2px solid var(--brand); padding-bottom: .35rem; margin-bottom: .8rem; }
+/*texto de mision y vision, nombre de productos*/
 .landing-section p { font-size: 1.08rem; line-height: 1.65; color: var(--ink); }
 
+
+
 /* MISIÓN/VISIÓN */
+/*background: tarjetas de mision y vision; box-shadow: sombreado debajo de tarjetas*/
 .mision-vision .info-box { display: flex; align-items: center; gap: 2rem; flex-wrap: wrap; background: var(--bg-2); padding: 2rem; border-radius: 16px; box-shadow: 0 10px 24px rgba(0,0,0,.25); }
 .mision-vision .info-box.reverse { flex-direction: row-reverse; }
 .mision-vision .texto { flex: 1; min-width: 280px; }
+/*sombreado debajo de imagenes mision y vision*/
 .mision-vision img { width: 360px; max-width: 100%; border-radius: 12px; box-shadow: 0 6px 16px rgba(0,0,0,.35); }
 
 /* PRODUCTOS */
 .section-head { display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
 .chips { display: flex; gap: .5rem; flex-wrap: wrap; }
+/*categoria en "nuestros productos", background: fondo opciones; color: letras categorias; border: contorno de categorias*/
 .chip { background: var(--card); color: #fff; border: 1px solid rgba(255,255,255,.1); border-radius: 999px; padding: .45rem .85rem; font-weight: 600; cursor: pointer; transition: .2s; }
+/*al poner cursor arriba de las categorias*/
 .chip:hover { background: #3b4b63; }
+/*boton de categorias seleccionado*/
 .chip.active { background: var(--brand); }
 
 .productos-track { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.2rem; margin-top: 1.2rem; }
@@ -344,46 +372,68 @@ html { scroll-behavior: smooth; }
 .productos-track.carousel .producto-card { scroll-snap-align: start; }
 
 /* Flechas carrusel (desktop) */
+/*background: fondo circulo para mover entre productos; color: flechas*/
 .car-arrow { position: absolute; top: 50%; transform: translateY(-50%); border: none; background: rgba(0,0,0,.3); color: #fff; font-size: 2rem; width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; cursor: pointer; z-index: 5; backdrop-filter: blur(4px); }
+/*color de flechas con el cursor arriba*/
 .car-arrow:hover { background: rgba(0,0,0,.45); }
 .car-arrow.left { left: -6px; }
 .car-arrow.right { right: -6px; }
 @media (max-width: 760px) { .car-arrow { display: none; } }
 
+/*background: tarjeta productos; box-shadow: sombra tarjeta producto; color: letras tarjetas producto*/
 .producto-card { background: var(--card); border-radius: 14px; padding: .9rem; text-align: center; box-shadow: 0 6px 14px rgba(0,0,0,.25); transition: transform .25s ease, box-shadow .25s ease; cursor: pointer; color: white; }
+
+/*box-shadow: sombreado debajo de las tarjetas productos*/
 .producto-card:hover { transform: translateY(-6px); box-shadow: 0 10px 20px rgba(0,0,0,.35); }
 .img-wrap { position: relative; border-radius: 10px; overflow: hidden; }
 .img-wrap img { width: 100%; height: 180px; object-fit: cover; display: block; transition: transform .35s ease; }
 .producto-card:hover .img-wrap img { transform: scale(1.05); }
+
+/*background: degradado de las imagenes categorias*/
 .overlay { position: absolute; inset: 0; display: grid; place-items: center; background: linear-gradient(180deg, transparent, rgba(0,0,0,.45)); opacity: 0; transition: .25s; font-weight: 700; letter-spacing: .5px; }
 .producto-card:hover .overlay { opacity: 1; }
 .nombre { margin: .6rem 0 .15rem; font-weight: 700; }
+
+/*background: fondo mini categoría en tarjetas; border: borde de mini categoria*/
 .tag { font-size: .8rem; opacity: .85; background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.12); padding: .2rem .5rem; border-radius: 999px; }
 
+
+
 /* MODAL */
+/*fondo al expandir la imagen y fondo de boton*/
 .modal { position: fixed; inset: 0; background: rgba(0,0,0,.85); display: grid; place-items: center; z-index: 50; }
+/*sombreado debajo de imagen*/
 .imagen-ampliada { max-width: 92%; max-height: 92%; border-radius: 12px; box-shadow: 0 0 24px rgba(255,255,255,.2); }
+/*color equis al salir*/
 .modal .close { position: fixed; top: 1.2rem; right: 1.2rem; font-size: 2rem; background: transparent; border: none; color: #fff; cursor: pointer; }
 
 /* CONTACTO */
 .contact-grid { display: grid; grid-template-columns: 1.2fr .8fr; gap: 1.2rem; }
+/*background: fondo ficha de contacto ; box-shadow: degradado debajo de la ficha contacto*/
 .contact-form { background: var(--bg-2); padding: 1.2rem; border-radius: 12px; box-shadow: 0 8px 20px rgba(0,0,0,.25); }
 .contact-form .row { display: grid; grid-template-columns: 1fr 1fr; gap: .8rem; }
+/*asdf*/
 .contact-form input, .contact-form textarea { width: 100%; background: #0f172a; border: 1px solid rgba(255,255,255,.1); color: #fff; border-radius: 10px; padding: .75rem .9rem; font-size: .95rem; }
 .contact-form textarea { resize: vertical; }
 .contact-form button { margin-top: .8rem; }
 .panel-redes { display: grid; gap: 1rem; align-content: start; }
 
 /* Íconos redes */
+/*icono fondo*/
 .redes-iconos a { display: inline-flex; align-items: center; justify-content: center; background: #334155; padding: 0.5rem; border-radius: 50%; width: 40px; height: 40px; transition: background 0.3s ease; }
+/*icono con cursor arriba*/
 .redes-iconos a:hover { background: var(--brand); }
+/*simbolo icono*/
 .redes-iconos svg { fill: white; width: 20px; height: 20px; }
-
+/*sombreado debajo del mapa*/
 .mapa iframe { width: 100%; height: 240px; border: 0; border-radius: 12px; box-shadow: 0 6px 16px rgba(0,0,0,.25); }
 
 /* LOGIN FLOTANTE */
+/*background: fondo boton login; color: nada; box-shadow: sombreado abajo login*/
 .btn-login.floating { position: fixed; bottom: 1rem; right: 1rem; background: var(--brand); color: #fff; padding: .7rem 1rem; border-radius: 999px; font-weight: 800; display: inline-flex; align-items: center; gap: .5rem; z-index: 40; text-decoration: none; box-shadow: 0 10px 16px rgba(42,166,143,.35); }
+/*color login con cursos arriba*/
 .btn-login.floating:hover { background: var(--brand-2); }
+/*nada*/
 .icono-login { width: 20px; height: 20px; fill: white; }
 
 /* Utilidades */

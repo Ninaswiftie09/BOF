@@ -7,7 +7,7 @@
         <div class="input-group">
           <label for="email">Correo electrónico</label>
           <input
-            type="email"
+            type="texto"
             id="email"
             v-model.trim="email"
             placeholder="Ingresa tu correo electrónico"
@@ -118,17 +118,17 @@ export default {
   width: 100%;
   max-width: 400px;
   padding: 30px;
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.1); /*fondo tarjeta login*/
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.3); /*borde tarjeta login*/
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25); /*sombreado tarjeta login*/
 }
 
 h1 {
   font-family: 'Archivo Black', sans-serif;
-  color: var(--colo-texto-negro);
+  color: var(--colo-texto-negro); /*texto Inicio sesion*/
   text-align: center;
   margin-bottom: 20px;
 }
@@ -136,7 +136,7 @@ h1 {
 .input-group { margin-bottom: 15px; }
 .input-group label {
   font-family: 'Kollektif', sans-serif;
-  color: var(--colo-texto-negro);
+  color: var(--colo-texto-negro); /*texto correo y contrasenna*/
   font-weight: bold;
   display: block;
   margin-bottom: 5px;
@@ -146,15 +146,15 @@ h1 {
   padding: 10px;
   font-family: 'Kollektif', sans-serif;
   font-size: 16px;
-  color: var(--colo-texto-negro);
-  background-color: var(--color-septenary);
-  border: 1px solid var(--color-quinary);
+  color: var(--colo-texto-negro); /*color texto ingresado*/
+  background-color: var(--color-septenary); /*fondo input correo y contrasenna*/
+  border: 1px solid var(--color-quinary); /*borde input correo y contrasenna*/
   border-radius: 4px;
 }
 
 button {
-  background-color: var(--color-secondary);
-  color: #fff;
+  background-color: var(--color-secondary); /*fondo boton iniciar sesion*/
+  color: #fff; /*texto boton iniciar sesion*/
   padding: 10px 20px;
   border: none;
   cursor: pointer;
@@ -163,17 +163,39 @@ button {
   transition: background-color .2s ease;
 }
 button[disabled] { opacity: .7; cursor: not-allowed; }
-button:hover:not([disabled]) { background-color: var(--color-quaternary); }
+button:hover:not([disabled]) {
+  background-color: var(--color-quaternary); /*color con cursor arriba*/
+}
 
 .forgot-password { text-align: center; margin-top: 10px; }
 .forgot-password a {
   font-family: 'Kollektif', sans-serif;
-  color: var(--color-quinary);
+  color: var(--color-quinary); /*nada*/
   text-decoration: none;
 }
-.forgot-password a:hover { color: var(--colo-texto-negro); }
+.forgot-password a:hover {
+  color: var(--colo-texto-negro); /*nada*/
+}
 
-.msg { margin-top: 16px; text-align: center; font-family: 'Kollektif', sans-serif; font-weight: bold; }
-.msg.success { color: #0f5132; background: #d1e7dd; border: 1px solid #badbcc; padding: 8px; border-radius: 8px; }
-.msg.error { color: #842029; background: #f8d7da; border: 1px solid #f5c2c7; padding: 8px; border-radius: 8px; }
+.msg {
+  margin-top: 16px;
+  text-align: center;
+  font-family: 'Kollektif', sans-serif;
+  font-weight: bold;
+}
+
+.msg.success {
+  color: #0f5132; /*nunca se ve*/
+  background: #d1e7dd; /*nunca se ve*/
+  border: 1px solid #badbcc; /*nunca se ve*/
+  padding: 8px;
+  border-radius: 8px;
+}
+
+.msg.error {
+  color: #842029; /*texto cuadro error*/
+  background: #f8d7da; /*fondo cuadro error*/
+  border: 1px solid #f5c2c7; /*borde cuadro error*/
+  padding: 8px;
+  border-radius: 8px; }
 </style>

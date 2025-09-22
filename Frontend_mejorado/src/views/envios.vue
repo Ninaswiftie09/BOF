@@ -38,11 +38,13 @@
           </tr>
 
           <tr v-if="!cargando && !filas.length">
+            <!-- color en template -->
             <td colspan="8" style="text-align:center; padding:16px; color:#6b7280">
               Sin pedidos aún
             </td>
           </tr>
           <tr v-if="cargando">
+            <!-- color en template -->
             <td colspan="8" style="text-align:center; padding:16px; color:#6b7280">
               Cargando…
             </td>
@@ -435,16 +437,16 @@ export default {
 <style scoped>
 .inventory-container{
   min-height: 100vh;
-  background-color: var(--color-octonary);
+  background-color: var(--color-octonary); /*fondo pagina "pedidos" */
   display:flex; flex-direction:column;
   font-family: 'Segoe UI', sans-serif;
-  color: var(--color-novenary);
+  color: var(--color-senary); /*texto formulario de agregar pedido: Q0.00 , subtotal: Q0.00, total: Q0.00 */
 }
 
-/* === Módulo (igual que en BillPage/Clientes) === */
+/* === Módulo === */
 .module{
-  background:#0d1130;
-  border:2px solid #1e2236;
+  background:#0d1130; /*fondo tarjeta "historial pedidos" */
+  border:2px solid #1e2236; /*borde tarjeta "historial de pedidos" */
   border-radius:16px;
   padding:1.5rem;
   margin: 20px;
@@ -453,50 +455,85 @@ export default {
   font-size: 1.2rem;
   font-weight: 700;
   margin-bottom: 1rem;
-  color:#fff;
+  color:#fff; /*titulo "historial de pedidos" */
   text-transform: uppercase;
 }
 
-/* Search en el header (slot de acciones) */
+/*no cambia nada si se elimina */
 .nav-search{
   width: 320px; max-width: 40vw;
   padding: .5rem .75rem;
   border-radius: 10px;
-  border: 1px solid #cbd5e1;
-  background: #fff; color:#000;
+  border: 1px solid #cbd5e1; /*nada*/
+  background: #fff; /*nada*/
+  color:#000; /*nada*/
   font-size: .95rem;
 }
-.nav-search:focus{ outline:none; box-shadow:0 0 0 3px rgba(99,102,241,.25); border-color:#6366f1; }
+/*no cambia nada si se elimina */
+.nav-search:focus{ outline:none;
+  box-shadow:0 0 0 3px rgba(99,102,241,.25); /*nada*/
+  border-color:#6366f1; /*nada*/
+}
 
 /* Tabla */
-table{ width:100%; border-collapse:collapse; background:#fff; border-radius:12px; overflow:hidden; box-shadow:0 0 10px rgba(0,0,0,.05); margin-bottom:10px; }
-th{ background: var(--color-senary); color:#fff; font-weight:bold; padding:16px; font-size:16px; }
-td{ text-align:center; padding:12px; font-size:15px; color: var(--color-senary); }
-tr:nth-child(even){ background:#f9f9f9; }
+table{
+  width:100%; border-collapse:collapse;
+  background:#fff; /*color1 intercalado de filas de tablas*/
+  border-radius:12px; overflow:hidden;
+  box-shadow:0 0 10px rgba(0,0,0,.05); /*sombreado tabla "historial pedido" */
+  margin-bottom:10px;
+}
+th{
+  background: var(--color-senary); /*fondo encabezado de tabla*/
+  color:#fff; /*texto encabezados tabla historial pedido*/
+  font-weight:bold; padding:16px; font-size:16px;
+}
+td{
+  text-align:center; padding:12px; font-size:15px;
+  color: var(--color-senary); /*texto pedidos tabla*/
+}
+tr:nth-child(even){ background:#f9f9f9; } /*color2 intercalado de filas de tablas*/
 
 /* Botonera inferior */
 .button-row{ display:flex; flex-wrap:wrap; gap:10px; margin:10px 0 0; }
-.button-row button{ background: var(--color-senary); color:#fff; padding:10px 14px; border:none; border-radius:8px; font-weight:bold; cursor:pointer; transition: background-color .3s; }
-.button-row button:hover{ background: var(--color-tertiary); }
+.button-row button{
+  background: var(--color-senary); /*fondo botones "agregar pedido, ver todos/ocultar" */
+  color:#fff; /*texto botones "agregar pedido, ver todos/ocultar"*/
+  padding:10px 14px; border:none; border-radius:8px; font-weight:bold; cursor:pointer;
+  transition: background-color .3s; /*asdf*/
+}
+.button-row button:hover{ background: var(--color-tertiary); } /*fondo botones "agregar pedido, ver todos/ocultar cursor arriba" */
 
 /* Botones pequeños */
-.mini-btn{ background:#334155; color:#fff; padding:6px 10px; border:none; border-radius:6px; font-size:12px; cursor:pointer; }
-.mini-btn.sky{ background:#0284c7; }
-.mini-btn.danger{ background:#e11d48; }
+.mini-btn{
+  background:#334155; /*fondo boton "+ agregar linea" */
+  color:#fff; /*texto botones "editar, eliminar" en formulario "+ agregar linea, quitar" */
+  padding:6px 10px; border:none; border-radius:6px; font-size:12px; cursor:pointer;
+}
+.mini-btn.sky{ background:#0284c7; } /*fondo boton accion "Editar"*/
+.mini-btn.danger{ background:#e11d48; } /*fondo boton accion "eliminar" */
 .flex-gap{ display:flex; gap:8px; justify-content:center; }
 
 /* Modal */
-.modal-overlay{ position:fixed; inset:0; background:rgba(0,0,0,.5); display:flex; align-items:center; justify-content:center; z-index:9999; }
-.modal-content{ background:#fff; padding:25px 30px; border-radius:12px; box-shadow:0 8px 20px rgba(0,0,0,.3); width:90%; max-width: 520px; max-height:90vh; overflow-y:auto; position:relative; }
+.modal-overlay{
+  position:fixed; inset:0;
+  background:rgba(0,0,0,.5); /*fondo pantalla completa formulario "agregar nueva orden"*/
+  display:flex; align-items:center; justify-content:center; z-index:9999;
+}
+.modal-content{
+  background:#fff; /*fondo tarjeta formulario "agregar nueva orden" y fondo boton "cancelar"*/
+  padding:25px 30px; border-radius:12px;
+  box-shadow:0 8px 20px rgba(0,0,0,.3); /*sombreado tarjeta formulario "agregar nueva orden" */
+  width:90%; max-width: 520px; max-height:90vh; overflow-y:auto; position:relative; }
 .large-modal{ max-width: 980px; }
 
-/* ===== Formularios dentro del modal (MEJOR CONTRASTE) ===== */
+/* ===== Formularios dentro del modal ===== */
 .form-vertical label{
   font-weight: 600;
   margin-top: 12px;
   margin-bottom: 5px;
   display: block;
-  color: #1e293b;           /* contraste alto sobre fondo blanco */
+  color: #1e293b; /*titulo campos "cliente, fecha, metodo de pago"*/
   font-size: 0.9rem;
 }
 .form-vertical input,
@@ -505,28 +542,30 @@ tr:nth-child(even){ background:#f9f9f9; }
   width:100%;
   padding:8px 10px;
   border-radius:6px;
-  border:1px solid #cbd5e1;
+  border:1px solid #cbd5e1; /*borde input campos "cliente, fecha, metodo de pago"*/
   font-size:15px;
-  background:#fff;
-  color:#0f172a;
+  background:#fff; /*fondo input campos "cliente, fecha, metodo de pago" */
+  color:#0f172a; /*texto ingresado en input campos "cliente, fecha, metodo de pago" y en tabla "uniforme, cantidad, precio unitario"*/
 }
 
-/* Título y cabecera de la “tabla” de detalles (visibles siempre) */
 .detalle-titulo{
   margin-top:18px;
-  color:#1e293b;
+  color:#1e293b; /*titulo "detalles de la orden" */
   font-weight:700;
 }
 .detalle-grid{ display:grid; grid-template-columns: 3fr 1fr 1fr 1fr auto; align-items:center; gap:10px; margin-top:10px; }
 .detalle-header{
   font-weight:700;
-  background-color: var(--color-senary); /* mismo tono que los <th> */
-  color:#fff;                             /* contraste */
+  background-color: var(--color-senary); /*fondo encabezados tabla formulario "uniforme, cantidad, precio unitario, total"*/
+  color:#fff; /*texto encabezados tabla formulario "uniforme, cantidad, precio unitario, total"*/
   padding:8px 6px;
   border-radius:6px;
 }
 .detalle-header span{ text-align:center; }
-.detalle-nombre{ color:#64748b; display:block; margin-top:2px; }
+.detalle-nombre{
+  color:#64748b; /*texto "→Overol de Trabajo" es el nombre del producto */
+  display:block; margin-top:2px;
+}
 
 .cell-total{ text-align:right; padding-right:8px; }
 
@@ -535,8 +574,20 @@ tr:nth-child(even){ background:#f9f9f9; }
 .total-final{ font-size: 18px; }
 
 .buttons-row{ margin-top: 20px; display:flex; gap:15px; justify-content:flex-end; }
-.btn-primary{ background: var(--color-senary); color:#fff; padding:10px 22px; border-radius:8px; border:none; font-weight:600; cursor:pointer; transition: background-color .3s; }
-.btn-primary:hover{ background: var(--color-tertiary); }
-.btn-cancel{ background:transparent; color:#555; padding:10px 22px; border-radius:8px; border:1px solid #aaa; cursor:pointer; font-weight:600; transition: background-color .3s; }
-.btn-cancel:hover{ background:#eee; }
+.btn-primary{
+  background: var(--color-senary); /*fondo boton "guardar" en formulario "agregar nueva orden" */
+  color:#fff; /*texto boton "guardar" */
+  padding:10px 22px; border-radius:8px; border:none; font-weight:600; cursor:pointer;
+  transition: background-color .3s; /*nada*/
+}
+.btn-primary:hover{ background: var(--color-tertiary); } /*fondo boton "guardar" cursor arriba */
+.btn-cancel{
+  background:transparent;
+  color:#555; /*texto "cancelar" en formulario */
+  padding:10px 22px; border-radius:8px;
+  border:1px solid #aaa; /*borde boton "cancelar" en formulario */
+  cursor:pointer; font-weight:600;
+  transition: background-color .3s;
+}
+.btn-cancel:hover{ background:#eee; } /*fondo boton "cancelar" cursor arriba */
 </style>

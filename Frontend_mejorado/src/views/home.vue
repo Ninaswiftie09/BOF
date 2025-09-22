@@ -35,6 +35,7 @@
           <canvas id="myPieChart"></canvas>
         </div>
 
+        <!-- hay un color en template, no hace nada -->
         <div class="side-panels">
           <div class="panel panel--calendar">
             <v-calendar
@@ -187,6 +188,7 @@ function renderPie(){
       labels:['Telas','Hilos','Uniformes'],
       datasets:[{
         data:[inventarioData.value.Telas,inventarioData.value.Hilos,inventarioData.value.Uniformes],
+        /* se añaden color en script */
         backgroundColor:[css('--color-tertiary')||'#84C8C0',css('--color-septenary')||'#cbd5e1',css('--color-quinary')||'#2B5CA8'],
         borderColor:css('--color-novenary')||'#fff',borderWidth:1
       }]
@@ -236,34 +238,48 @@ bus.on('inventario-actualizado', async ()=>{
 .dashboard-container{
   display:flex;
   min-height:100vh;
-  background: var(--color-octonary, #0f172a);
-  color: var(--color-novenary, #fff);
+  background: var(--color-octonary, #0f172a); /*nada*/
+  color: var(--color-novenary, #fff); /*nada*/
   font-family: 'Kollektif', sans-serif;
 }
 
 /* Sidebar */
 .sidebar{
   width: 260px;
-  background: var(--color-primary, #1e293b);
+  background: var(--color-primary, #1e293b); /*nada*/
   display:flex; flex-direction:column; align-items:center;
   padding: 24px 16px;
-  border-right: 1px solid rgba(255,255,255,.08);
+  border-right: 1px solid rgba(255,255,255,.08); /*borde izquierdo vertical de submenu*/
 }
 .logo{ width: 140px; height:auto; margin-bottom: 18px; }
 
 .nav-links{ display:flex; flex-direction:column; gap:8px; width:100%; }
+
+/*no pasa nada si se elimina*/
 .nav-item{
-  display:flex; align-items:center; gap:12px;
-  padding:12px; border-radius:12px; color:#e5e7eb; text-decoration:none;
-  transition: background-color .2s, transform .12s;
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:12px; border-radius:12px;
+  color:#e5e7eb; /*nada*/
+  text-decoration:none;
+  transition: background-color .2s, transform .12s; /*nada*/
 }
-.nav-item:hover{ background: rgba(255,255,255,.06); transform: translateX(2px); }
-.nav-item.router-link-active{ background: rgba(255,255,255,.14); color:#fff; }
+.nav-item:hover{
+  background: rgba(255,255,255,.06); /*color opciones pantallas con cursor arriba*/
+  transform: translateX(2px);
+}
+.nav-item.router-link-active{
+  background: rgba(255,255,255,.14); /*nada*/
+  color:#fff; /*nada*/
+}
 
 .icon-circle{
-  width:36px; height:36px; border-radius:999px;
-  display:grid; place-items:center;
-  background: rgba(255,255,255,.12);
+  width:36px; height:36px;
+  border-radius:999px;
+  display:grid;
+  place-items:center;
+  background: rgba(255,255,255,.12); /*fondo circulo opciones pantallas*/
 }
 
 /* Main area */
@@ -271,14 +287,18 @@ bus.on('inventario-actualizado', async ()=>{
 .topbar{
   display:flex; align-items:center; justify-content:space-between;
   padding: 14px 20px;
-  border-bottom: 1px solid rgba(255,255,255,.1);
-  background: rgba(255,255,255,.04);
+  border-bottom: 1px solid rgba(255,255,255,.1); /*linea inferior de barra superior home*/
+  background: rgba(255,255,255,.04); /*fondo de barra superior home*/
   backdrop-filter: blur(4px);
 }
-.view-name{ font-weight: 900; letter-spacing:.04em; }
+.view-name{
+  font-weight: 900;
+  letter-spacing:.04em;
+}
+
 .user-circle{
-  width:36px; height:36px; border-radius:999px; border:none; cursor:pointer;
-  background: var(--color-quinary, #2B5CA8);
+  width:36px; height:36px; border-radius:999px;border:none; cursor:pointer;
+  background: var(--color-quinary, #2B5CA8); /*background: (nada,nada)*/
 }
 
 /* Content grid — MÁS espacio para el chart */
@@ -294,8 +314,8 @@ bus.on('inventario-actualizado', async ()=>{
 
 /* Paneles */
 .chart-area, .panel{
-  background: rgba(255,255,255,.06);
-  border: 1px solid rgba(255,255,255,.12);
+  background: rgba(255,255,255,.06); /*fondo de fichas items*/
+  border: 1px solid rgba(255,255,255,.12); /*borde de fichas items*/
   border-radius: 14px;
   padding: 16px;
 }
@@ -321,32 +341,49 @@ bus.on('inventario-actualizado', async ()=>{
 
 /* KPI */
 .kpi{ display:grid; gap:6px; align-items:center; justify-items:center; text-align:center; }
-.kpi h3{ margin:0; color:#e2e8f0; }
-.kpi .value{ font-size:2rem; font-weight:900; color:#fff; }
+.kpi h3{ margin:0; color:#e2e8f0; } /*texto item clientes nuevos*/
+.kpi .value{
+  font-size:2rem;
+  font-weight:900;
+  color:#fff; /*nada*/
+}
 
 /* Help popover */
 .help-popover{
   position: fixed;
   right: 20px; top: 80px;
   width: 320px; max-width: 90vw;
-  background:#0b1226; color:#e5e7eb;
-  border:1px solid #223043; border-radius: 14px;
-  box-shadow: 0 12px 28px rgba(0,0,0,.35);
+  background:#0b1226; /*fondo tarjeta usuario y fondo de su equis*/
+  color:#e5e7eb; /*titulo tarjeta usuario "incidencias & soporte" */
+  border:1px solid #223043; /*borde tarjeta de usuario*/
+  border-radius: 14px;
+  box-shadow: 0 12px 28px rgba(0,0,0,.35); /*sombreado tarjeta de usuario*/
   padding: 14px; z-index: 60;
 }
 .help-hdr{
   display:flex; align-items:center; justify-content:space-between;
-  padding-bottom:8px; border-bottom:1px dashed rgba(255,255,255,.15);
+  padding-bottom:8px;
+  border-bottom:1px dashed rgba(255,255,255,.15); /*linea entrecortada tarjeta usuario*/
 }
 .help-close{
-  background:transparent; border:none; color:#e5e7eb; font-size:18px; cursor:pointer;
+  background:transparent; border:none;
+  color:#e5e7eb; /*color equis tarjeta usuario*/
+  font-size:18px; cursor:pointer;
 }
 .help-item{ display:grid; grid-template-columns: 1fr auto; gap:8px; padding:10px 0; }
-.help-label{ color:#9fb3c8; }
-.help-value{ color:#cbd5e1; text-decoration:none; }
+.help-label{ color:#9fb3c8; } /*texto subtitulo tarjeta usuario "ayuda por texto, llamada de ayuda, correo de contacto"*/
+.help-value{
+  color:#cbd5e1; /*nada*/
+  text-decoration:none;
+}
+
 .help-value:hover{ text-decoration:underline; }
 .help-list{ display:flex; flex-direction:column; gap:6px; }
-.help-ft{ padding-top:8px; border-top:1px dashed rgba(255,255,255,.15); color:#93a3b8; }
+.help-ft{
+  padding-top:8px;
+  border-top:1px dashed rgba(255,255,255,.15); /*linea entrecortada parte inferior tarjeta usuario*/
+  color:#93a3b8; /*color texto horario en tarjeta usuario*/
+}
 
 /* Popover transition */
 .fade-scale-enter-active, .fade-scale-leave-active{ transition: all .16s ease; }

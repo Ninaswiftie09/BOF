@@ -171,8 +171,8 @@ export default {
 /* === Fondo y layout general (igual estilo oscuro que en otras vistas) === */
 .contabilidad-container{
   min-height:100vh;
-  background:#0a0f2c;
-  color:#fff;
+  background:#0a0f2c; /*fondo de pantalla contabilidad*/
+  color:#fff; /*nada*/
   display:flex;
   flex-direction:column;
   font-family:'Segoe UI',sans-serif;
@@ -180,18 +180,21 @@ export default {
 }
 
 /* === Input del header: MISMO estilo que en Clientes === */
+/*no cambia nada si se elimina*/
 .nav-search{
   width: 280px; max-width: 40vw;
   padding: .5rem .75rem;
   border-radius: 10px;
-  border: 1px solid #cbd5e1;
-  background: #fff; color:#000;
+  border: 1px solid #cbd5e1; /*nada*/
+  background: #fff; /*nada*/
+  color:#000; /*nada*/
   font-size: .9rem;
 }
+/*no cambia nada si se elimina*/
 .nav-search:focus{
   outline: none;
-  box-shadow: 0 0 0 3px rgba(99,102,241,.25);
-  border-color:#6366f1;
+  box-shadow: 0 0 0 3px rgba(99,102,241,.25); /*nada*/
+  border-color:#6366f1; /*nada*/
 }
 
 /* === Secciones internas === */
@@ -201,66 +204,88 @@ export default {
 }
 .summary-card{
   flex:1 1 200px;
-  background:#0d1130;
-  border:2px solid #1e2236;
+  background:#0d1130; /*fondo tarjetas "ingresos, gastos, balance, operaciones"*/
+  border:2px solid #1e2236; /*borde tarjetas "ingresos, gastos, balance, operaciones"*/
   border-radius:16px;
   padding:20px; text-align:center;
-  color:#fff;
-  transition: background-color .3s;
+  color:#fff; /*numeros resultantes tarjetas "ingresos, gastos, balance, operaciones"*/
+  transition: background-color .3s; /*nada*/
 }
-.summary-card:hover{ background:#10163a; }
-.summary-card h3{ margin:0; text-transform:uppercase; color:#fff; }
+.summary-card:hover{ background:#10163a; } /*fondo tarjetas "ingresos, gastos, balance, operaciones" con cursor arriba*/
+.summary-card h3{
+  margin:0; text-transform:uppercase;
+  color:#fff; /*titulo tarjetas "ingresos, gastos, balance, operaciones"*/
+}
 .summary-card p{ font-size:1.5rem; margin-top:10px; font-weight:bold; }
 
 .operations-section{
-  background:#0d1130;
-  border:2px solid #1e2236;
+  background:#0d1130; /*fondo tabla "operaciones recientes" */
+  border:2px solid #1e2236; /*borde tabla "operaciones recientes" */
   border-radius:16px;
-  padding:20px; color:#fff;
+  padding:20px; color:#fff; /*nada*/
   margin: 0 2rem;
 }
 .section-header{
   display:flex; justify-content:space-between; align-items:center;
   margin-bottom: 16px;
 }
-.section-title{ margin:0; text-transform:uppercase; color:#fff; text-align:center; }
+.section-title{
+  margin:0; text-transform:uppercase;
+  color:#fff; /*titulo "operaciones recientes" de tabla */
+  text-align:center;
+}
 
 .btn-add{
-  background:#141a3d; color:#dbeafe; border:1px solid #263268;
+  background:#141a3d; /*fondo boton "agregar movimiento"/"cancelar" de tabla */
+  color:#dbeafe; /*texto  boton "agregar movimiento"/"cancelar" de tabla */
+  border:1px solid #263268; /*borde boton "agregar movimiento"/"cancelar" */
   padding:10px 16px; border-radius:10px; font-weight:700; cursor:pointer;
   transition: background-color .2s, transform .05s;
 }
-.btn-add:hover{ background:#1b2354; }
+.btn-add:hover{ background:#1b2354; } /*fondo boton "agregar movimiento"/"cancelar" cursor arriba*/
 .btn-add:active{ transform: translateY(1px); }
 
 .operation-form{
-  background:#f9fafb; padding:20px; border-radius:12px; color:#1e293b;
-  box-shadow:0 6px 18px rgba(0,0,0,.15);
+  background:#f9fafb; /*fondo tarjeta "nueva operacion" */
+  padding:20px; border-radius:12px;
+  color:#1e293b; /*nada*/
+  box-shadow:0 6px 18px rgba(0,0,0,.15); /*sombreado abajo tarjeta "nueva operacion" */
   margin-bottom:20px;
 }
-.operation-form h3{ margin-bottom:16px; text-align:center; color:#1e293b; }
+.operation-form h3{
+  margin-bottom:16px; text-align:center;
+  color:#1e293b; /*titulo "nueva operacion" */
+}
 .form-group{ margin-bottom:15px; }
-.form-group label{ display:block; font-weight:700; margin-bottom:6px; color:#1e293b; }
+.form-group label{
+  display:block; font-weight:700; margin-bottom:6px;
+  color:#1e293b; /*texto campo inputs tarjeta "nueva operacion" */
+}
 .form-group select, .form-group input, .form-group textarea{
-  width:100%; padding:10px; border-radius:8px; border:1px solid #cbd5e1; font-size:1rem; font-family:inherit;
+  width:100%; padding:10px; border-radius:8px;
+  border:1px solid #cbd5e1; /*borde inputs tarjeta "nueva operacion" */
+  font-size:1rem; font-family:inherit;
 }
 
 /* Tabla */
 .operations-table{ width:100%; border-collapse:separate; border-spacing:0 4px; }
 .operations-table th{
-  background:transparent; padding:12px 16px; color:#fff;
-  font-size:.9rem; text-align:center; border-bottom:2px solid #334155;
+  background:transparent; padding:12px 16px;
+  color:#fff; /*titulo encabezado tabla "id, tipo, concepto..." */
+  font-size:.9rem; text-align:center;
+  border-bottom:2px solid #334155; /*color linea separadora entre encabezado y tabla */
 }
 .operations-table td{
   padding:12px 16px; text-align:center; border:none;
 }
 .operations-table tbody tr{
-  background:#1e293b; color:#fff;
+  background:#1e293b; /*color1 lineas intercalado en tabla*/
+  color:#fff; /*todo texto operaciones en tabla */
 }
 .operations-table tbody tr:nth-child(even){
-  background:#162132;
+  background:#162132; /*color2 lineas intercalado en tabla*/
 }
 .operations-table tbody tr:hover{
-  background:#2b3a55;
+  background:#2b3a55; /*color lineas en tabla cursor arriba*/
 }
 </style>

@@ -362,11 +362,11 @@ export default {
 </script>
 
 <style scoped>
-/* === Fondo y layout general unificado (sin padding arriba para que el NavBar quede full-bleed) === */
+/* === Fondo y layout general === */
 .inventory-container{
   min-height:100vh;
-  background:#0a0f2c; /* mismo fondo oscuro que las otras pantallas */
-  color:#fff;
+  background:#0a0f2c; /*fondo pantalla inventario*/
+  color:#fff; /*nada*/
   display:flex;
   flex-direction:column;
   font-family:'Segoe UI',sans-serif;
@@ -377,23 +377,25 @@ export default {
   padding: 40px;
 }
 
-/* === Input del header: MISMO estilo que en las otras vistas === */
+/*no cambia nada si se elimina*/
 .nav-search{
   width: 280px; max-width: 40vw;
   padding: .5rem .75rem;
   border-radius: 10px;
-  border: 1px solid #cbd5e1;
-  background: #fff; color:#000;
+  border: 1px solid #cbd5e1; /*nada*/
+  background: #fff; /*nada*/
+  color:#000; /*nada*/
   font-size: .9rem;
 }
+/*no cambia nada si se elimina*/
 .nav-search:focus{
   outline: none;
-  box-shadow: 0 0 0 3px rgba(99,102,241,.25);
-  border-color:#6366f1;
+  box-shadow: 0 0 0 3px rgba(99,102,241,.25); /*nada*/
+  border-color:#6366f1; /*nada*/
 }
 
 h2{
-  color: #fff;
+  color: #fff; /*titulo de tablas "telas, hilos, productos, categorias" */
   margin-top: 40px;
   margin-bottom: 10px;
 }
@@ -402,15 +404,15 @@ h2{
 table{
   width: 100%;
   border-collapse: collapse;
-  background-color: white;
+  background-color: white; /*color1 fila intercalado en tablas*/
   border-radius: 12px;
   overflow: hidden;
-  box-shadow: 0 0 10px rgba(0,0,0,0.05);
+  box-shadow: 0 0 10px rgba(0,0,0,0.05); /*sombreado abajo de tablas "telas, hilos, productos, categorias" */
   margin-bottom: 10px;
 }
 th{
-  background-color: var(--color-senary);
-  color: white;
+  background-color: var(--color-senary); /*color fondo encabezados tablas*/
+  color: white; /*color texto encabezados tablas*/
   font-weight: bold;
   padding: 16px;
   font-size: 18px;
@@ -419,13 +421,14 @@ td{
   text-align: center;
   padding: 12px;
   font-size: 16px;
-  color: var(--color-senary);
+  color: var(--color-senary); /*todo texto filas resultado de tablas*/
 }
-tr:nth-child(even){ background-color: #f9f9f9; }
+tr:nth-child(even){ background-color: #f9f9f9; } /*color2 fila intercalado en tablas*/
 
+/*no probado aun*/
 .en-escasez{
-  background-color: #fff2f2;
-  color: #b00020;
+  background-color: #fff2f2; /*asdf*/
+  color: #b00020; /*asdf*/
   font-weight: bold;
 }
 
@@ -434,20 +437,23 @@ tr:nth-child(even){ background-color: #f9f9f9; }
   display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px;
 }
 .button-row button{
-  background-color: var(--color-senary);
-  color: white; padding: 10px 14px; border: none; border-radius: 8px;
-  font-weight: bold; cursor: pointer; transition: background-color 0.3s;
+  background-color: var(--color-senary); /*fondo botones opciones "agregar, eliminar, editar producto, y ocultar/ ver todos" */
+  color: white; /*texto botones opciones "agregar, eliminar, editar producto, y ocultar/ver todos" */
+  padding: 10px 14px; border: none; border-radius: 8px;
+  font-weight: bold; cursor: pointer;
+  transition: background-color 0.3s; /*nada*/
 }
-.button-row button:hover{ background-color: var(--color-tertiary); }
+.button-row button:hover{ background-color: var(--color-tertiary); } /*fondo botones opciones con cursor arriba*/
 
 /* ===== Modales ===== */
 .modal-overlay{
-  position: fixed; inset:0; background-color: rgba(0,0,0,0.5);
+  position: fixed; inset:0; background-color: rgba(0,0,0,0.5); /*fondo pantalla completa opciones "agregar" */
   display:flex; align-items:center; justify-content:center; z-index: 9999;
 }
 .modal-content{
-  background: white; padding: 25px 30px; border-radius: 12px;
-  box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+  background: white; /*fondo tarjeta formulario "agregar nuevo" y fondo boton "cancelar", excepto ocultar/ver todos*/
+  padding: 25px 30px; border-radius: 12px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.3); /*sombreado debajo tarjeta formulario*/
   max-width: 450px; width: 90%; max-height: 90vh; overflow-y:auto;
 }
 
@@ -455,29 +461,37 @@ tr:nth-child(even){ background-color: #f9f9f9; }
 .form-vertical input,
 .form-vertical textarea,
 .form-vertical select{
-  width: 100%; padding: 8px 10px; border-radius: 6px; border: 1px solid #ccc; font-size: 15px;
+  width: 100%; padding: 8px 10px; border-radius: 6px;
+  border: 1px solid #ccc; /*borde input formularios*/
+  font-size: 15px;
 }
 .buttons-row{ margin-top: 20px; display:flex; gap: 15px; justify-content: flex-end; }
 .btn-primary{
-  background-color: var(--color-senary); color: var(--colo-texto-blanco);
+  background-color: var(--color-senary); /*fondo boton "guardar" formulario opciones*/
+  color: var(--colo-texto-blanco); /*texto "guardar" formulario opciones*/
   padding: 10px 22px; border-radius: 8px; border:none; font-weight:600; cursor:pointer;
-  transition: background-color .3s ease;
+  transition: background-color .3s ease; /*nada*/
 }
-.btn-primary:hover{ background-color: var(--color-tertiary); }
+.btn-primary:hover{ background-color: var(--color-tertiary); } /*fondo boton "guardar" cursor arriba*/
 .btn-cancel{
-  background: transparent; color:#555; padding:10px 22px; border-radius: 8px;
-  border: 1px solid #aaa; cursor:pointer; font-weight:600; transition: background-color .3s ease;
+  background: transparent;
+  color:#555; /*texto "cancelar" en opciones y ocultar/ver todos*/
+  padding:10px 22px; border-radius: 8px;
+  border: 1px solid #aaa; /*borde boton "cancelar" en opciones y ocultar/ver todos*/
+  cursor:pointer; font-weight:600; transition: background-color .3s ease;
 }
-.btn-cancel:hover{ background-color:#eee; }
+.btn-cancel:hover{ background-color:#eee; } /*fondo boton "cancelar" cursor arriba*/
 
 /* Modal de “ver todos” */
 .full-table-modal{
-  background:white; padding:25px 30px; border-radius:12px;
-  box-shadow:0 8px 20px rgba(0,0,0,0.3);
+  background:white; /*fondo tarjeta*/
+  padding:25px 30px; border-radius:12px;
+  box-shadow:0 8px 20px rgba(0,0,0,0.3); /*sombreado tarjeta en "ocultar" */
   max-width:90vw; width:90vw; max-height:90vh; overflow-y:auto; position:relative;
 }
 .close-btn-top{
-  position:absolute; top:10px; right:15px; background:transparent; border:none; font-size:22px; cursor:pointer; font-weight:bold; color:#333;
+  position:absolute; top:10px; right:15px; background:transparent; border:none; font-size:22px; cursor:pointer; font-weight:bold;
+  color:#333; /*color simbolo x en ocultar/ver todos*/
 }
-.close-btn-top:hover{ color:#b00020; }
+.close-btn-top:hover{ color:#b00020; } /*color simbolo x en ocultar/ver todos cursor arriba*/
 </style>

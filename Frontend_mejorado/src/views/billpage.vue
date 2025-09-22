@@ -131,11 +131,11 @@ export default {
 <style scoped>
 .billpage-container {
   min-height: 100vh;
-  background: var(--color-octonary);
+  background: var(--color-octonary); /*fondo pantalla billpage*/
   display: flex;
   flex-direction: column;
   font-family: 'Segoe UI', sans-serif;
-  color: var(--color-novenary);
+  color: var(--color-novenary); /*texto en opciones "subir factura" y "facturas guardadas"*/
 }
 
 /* === CUERPO === */
@@ -147,19 +147,19 @@ export default {
 }
 .action-box {
   flex: 1 1 200px;
-  background-color: var(--color-quaternary);
+  background-color: var(--color-quaternary); /*fondo opciones "subir factura" y "facturas guardadas"*/
   border-radius: 12px;
   padding: 20px;
   text-align: center;
   cursor: pointer;
-  transition: background-color 0.3s;
+  transition: background-color 0.3s; /*nada*/
 }
-.action-box:hover { background-color: var(--color-tertiary); }
+.action-box:hover { background-color: var(--color-tertiary); } /*fondo opciones "subir factura" y "facturas guardadas" cursor arriba*/
 
 /* === MODULO LISTADO === */
 .module {
-  background:#0d1130;
-  border:2px solid #1e2236;
+  background:#0d1130; /*fondo tarjeta "listado de facturas" */
+  border:2px solid #1e2236; /*borde tarjeta "listado de facturas"*/
   border-radius:16px;
   padding:1.5rem;
   margin: 20px;
@@ -168,34 +168,38 @@ export default {
   font-size: 1.2rem;
   font-weight: 700;
   margin-bottom: 1rem;
-  color: #fff;
+  color: #fff; /*titulo tarjeta "listado de facturas"*/
   text-transform: uppercase;
 }
 
 /* === FACTURAS === */
 .invoice-list { list-style: none; padding: 0; margin: 0; }
 .invoice-card {
-  background-color: var(--color-quaternary);
+  background-color: var(--color-quaternary); /*aun sin función*/
   margin-bottom: 15px;
   border-radius: 8px;
   padding: 15px;
-  transition: background-color 0.3s;
+  transition: background-color 0.3s; /*aun sin función*/
 }
-.invoice-card:hover { background-color: #8cafdc; }
+.invoice-card:hover { background-color: #8cafdc; } /*aun sin función*/
 
 .invoice-info { display: flex; justify-content: space-between; align-items: center; }
-.invoice-description { font-weight: 500; color: var(--color-novenary); text-transform: uppercase; }
+.invoice-description {
+  font-weight: 500;
+  color: var(--color-novenary); /*aun sin función*/
+  text-transform: uppercase;
+}
 
 .btn-download {
-  background-color: var(--color-secondary);
-  color: #fff;
+  background-color: var(--color-secondary); /*aun sin función*/
+  color: #fff; /*aun sin función*/
   padding: 10px 20px;
   border: none;
   font-family: 'Kollektif', sans-serif;
   cursor: pointer;
   border-radius: 6px;
-  transition: background-color 0.3s;
+  transition: background-color 0.3s; /*aun sin función*/
   text-transform: uppercase;
 }
-.btn-download:hover { background-color: var(--color-tertiary); }
+.btn-download:hover { background-color: var(--color-tertiary); } /*aun sin función*/
 </style>

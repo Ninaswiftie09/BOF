@@ -123,12 +123,12 @@ export default {
 
 <style scoped>
 .register-page{
-  background: var(--color-octonary);
+  background: var(--color-octonary); /*fondo pantalla detras de imagen*/
   min-height: 100vh;
 }
 
 .background {
-  background-image: url('@/assets/images/re.jpg');
+  background-image: url('@/assets/images/re.jpg'); /*imagen*/
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -143,15 +143,15 @@ export default {
   width: 100%;
   max-width: 400px;
   padding: 30px;
-  background: rgba(255, 255, 255, 0.85);
+  background: rgba(255, 255, 255, 0.85); /*fondo ficha "registro usuario" */
   border-radius: 12px;
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(0, 0, 0, 0.1); /*borde ficha "registro usuario" */
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25); /*sombreado debajo ficha*/
 }
 
 h1 {
   font-family: 'Archivo Black', sans-serif;
-  color: var(--colo-texto-negro);
+  color: var(--colo-texto-negro); /*titulo "resgistro usuario" */
   text-align: center;
   margin-bottom: 20px;
 }
@@ -160,7 +160,7 @@ h1 {
 
 .input-group label {
   font-family: 'Kollektif', sans-serif;
-  color: var(--colo-texto-negro);
+  color: var(--colo-texto-negro); /*texto campos*/
   font-weight: bold;
   display: block;
   margin-bottom: 5px;
@@ -172,15 +172,15 @@ h1 {
   padding: 10px;
   font-family: 'Kollektif', sans-serif;
   font-size: 16px;
-  color: var(--colo-texto-negro);
-  background-color: var(--color-septenary);
-  border: 1px solid var(--color-quinary);
+  color: var(--colo-texto-negro); /*texto ingresado input campos*/
+  background-color: var(--color-septenary); /*fondo input campos*/
+  border: 1px solid var(--color-quinary); /*borde input campos*/
   border-radius: 6px;
 }
 
 button {
-  background-color: var(--color-secondary);
-  color: white;
+  background-color: var(--color-secondary); /*fondo boton "registrarse" */
+  color: white; /*texto "registrarse" */
   padding: 10px 20px;
   border: none;
   cursor: pointer;
@@ -191,7 +191,7 @@ button {
 }
 
 button[disabled] { opacity: .7; cursor: not-allowed; }
-button:hover:not([disabled]) { background-color: var(--color-quaternary); }
+button:hover:not([disabled]) { background-color: var(--color-quaternary); } /*fondo boton "registrarse" cursor arriba */
 
 .feedback {
   margin-top: 12px;
@@ -199,6 +199,6 @@ button:hover:not([disabled]) { background-color: var(--color-quaternary); }
   font-family: 'Kollektif', sans-serif;
   font-weight: bold;
 }
-.feedback.success { color: #0b8f4d; }
-.feedback.error { color: #b00020; }
+.feedback.success { color: #0b8f4d; } /*nunca se ve*/
+.feedback.error { color: #b00020; } /*mensaje error*/
 </style>
