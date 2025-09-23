@@ -140,13 +140,14 @@
 <script>
 import { useRouter } from 'vue-router'
 import NavBar from '@/components/NavBar.vue'
+import { apiFetch } from '@/utils/api'
 
 // --- Endpoints existentes ---
-const CLIENTES_A   = `/api/cliente/clientes/`
-const CLIENTES_B   = `/api/clientes/`
-const ORDENES_HIST = `/api/ordenes/historial/`
-const ORDEN_ITEM   = id => `/api/ordenes/${id}/`
-const ORDENES_LIST = `/api/ordenes/`
+const CLIENTES_A    = `/api/cliente/clientes/`
+const CLIENTES_B    = `/api/clientes/`
+const ORDENES_HIST  = `/api/ordenes/historial/`
+const ORDEN_ITEM    = id => `/api/ordenes/${id}/`
+const ORDENES_LIST  = `/api/ordenes/`
 const UNIFORME_SHOW = id => `/api/uniformes/${id}/`
 const UNIFORME_LIST = `/api/uniformes/`
 
@@ -216,34 +217,13 @@ export default {
     formatFecha(iso){ if(!iso) return ''; const d = new Date(iso); return d.toLocaleDateString('es-MX',{year:'numeric',month:'short',day:'2-digit'}) },
     toggleVerTodos(){ this.verTodos = !this.verTodos },
 
-    // fetch con CSRF
-    getCSRF(){
-      const name='csrftoken'; const cookies=document.cookie?.split(';')||[]
-      for(const c of cookies){ const t=c.trim(); if(t.startsWith(name+'=')) return decodeURIComponent(t.slice(name.length+1)) }
-      return null
-    },
+    // ⬇️ Unificamos sobre apiFetch (ya maneja CSRF + credentials + errores)
     async req(url, method='GET', data){
-      const opts={ method, credentials:'include', headers:{} }
-      if(method!=='GET' && method!=='HEAD'){
-        opts.headers['Content-Type']='application/json'
-        const csrf=this.getCSRF(); if(csrf) opts.headers['X-CSRFToken']=csrf
-        if(data!==undefined) opts.body=JSON.stringify(data)
-      }
-      const r = await fetch(url, opts)
-      if(!r.ok){
-        const txt = await r.text().catch(()=> '')
-        throw new Error(`${r.status} ${r.statusText} - ${txt}`)
-      }
-      const ct = r.headers.get('content-type')||''
-      return ct.includes('application/json') ? r.json() : null
+      return await apiFetch(url, method, data)
     },
-    async safeGet(url){ try{ return await this.req(url,'GET') }catch(_){ return null } },
-
-    // Método de pago “sidecar”
-    mpKey(id){ return `mp_orden_${id}` },
-    leerMetodoPago(id){ return localStorage.getItem(this.mpKey(id)) || 'efectivo' },
-    guardarMetodoPago(id, metodo){ localStorage.setItem(this.mpKey(id), metodo || 'efectivo') },
-    borrarMetodoPago(id){ localStorage.removeItem(this.mpKey(id)) },
+    async safeGet(url){
+      try { return await apiFetch(url, 'GET') } catch { return null }
+    },
 
     // ============== Carga de datos ==============
     async cargarClientes(){
@@ -281,6 +261,12 @@ export default {
       this.filas = rows.sort((a,b)=> (new Date(b.fecha||0))-(new Date(a.fecha||0)))
       this.cargando=false
     },
+
+    // Método de pago “sidecar”
+    mpKey(id){ return `mp_orden_${id}` },
+    leerMetodoPago(id){ return localStorage.getItem(this.mpKey(id)) || 'efectivo' },
+    guardarMetodoPago(id, metodo){ localStorage.setItem(this.mpKey(id), metodo || 'efectivo') },
+    borrarMetodoPago(id){ localStorage.removeItem(this.mpKey(id)) },
 
     // ============== Modal ==============
     abrirFormulario(accion, row=null){

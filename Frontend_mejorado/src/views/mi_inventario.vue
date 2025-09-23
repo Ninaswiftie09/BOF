@@ -206,18 +206,18 @@ export default {
   },
   data() {
     return {
-      search: '', // <-- buscador del header
+      search: '',
       vistaExtendida: {},
       inventarios: { Telas: [], Hilos: [], Uniformes: [], Categorias: [] },
-      titulosVisibles: { Telas:'Telas', Hilos:'Hilos', Uniformes:'Productos', Categorias:'Categorías' },
+      titulosVisibles: { Telas: 'Telas', Hilos: 'Hilos', Uniformes: 'Productos', Categorias: 'Categorías' },
       columnasPorTipo: {
-        Telas:["id","Nombre","Tipo","Composición","Color","Código","Stock","Descripción"],
-        Hilos:["id","Nombre","Material","Código Color","Color","Código","Stock","Descripción"],
-        Uniformes:["id","Tipo","Talla","Color","Stock","Categoría","Material (tela)"],
-        Categorias:["id","Nombre"]
+        Telas:      ['id','Nombre','Tipo','Composición','Color','Código','Stock','Descripción'],
+        Hilos:      ['id','Nombre','Material','Código Color','Color','Código','Stock','Descripción'],
+        Uniformes:  ['id','Tipo','Talla','Color','Stock','Categoría','Material (tela)'],
+        Categorias: ['id','Nombre'],
       },
-      formVisible:false, tipoFormulario:'', accion:'', formData:{},
-      verTodosVisible:false, tipoVerTodos:'', categoriasOptions:[], seleccionId:null
+      formVisible: false, tipoFormulario: '', accion: '', formData: {},
+      verTodosVisible: false, tipoVerTodos: '', categoriasOptions: [], seleccionId: null,
     }
   },
   mounted() {
@@ -237,95 +237,100 @@ export default {
   },
   methods: {
     /* --- Header search helpers --- */
-    filteredByType(tipo){
+    filteredByType(tipo) {
       const q = this.search.trim().toLowerCase()
       const arr = this.inventarios[tipo] || []
       if (!q) return arr
       return arr.filter(obj =>
-        Object.values(obj).some(v =>
-          (v ?? '').toString().toLowerCase().includes(q)
-        )
+        Object.values(obj).some(v => (v ?? '').toString().toLowerCase().includes(q))
       )
     },
-    itemsToRender(tipo){
+    itemsToRender(tipo) {
       const arr = this.filteredByType(tipo)
       return this.mostrarLimitado(tipo) ? arr.slice(0, 6) : arr
     },
 
-    mostrarLimitado(tipo){ return !this.vistaExtendida[tipo] },
-    toggleVistaCompleta(tipo){
+    mostrarLimitado(tipo) { return !this.vistaExtendida[tipo] },
+    toggleVistaCompleta(tipo) {
       this.vistaExtendida = { ...this.vistaExtendida, [tipo]: !this.vistaExtendida[tipo] }
     },
-    abrirFormulario(accion, tipo){
+
+    abrirFormulario(accion, tipo) {
       this.accion = accion
       this.tipoFormulario = tipo
       this.formVisible = true
       this.formData = {}
       this.seleccionId = null
-      if (tipo==='Uniformes' || tipo==='Categorias') this.cargarCategorias()
+      if (tipo === 'Uniformes' || tipo === 'Categorias') this.cargarCategorias()
     },
-    cerrarFormulario(){ this.formVisible=false; this.formData={}; this.seleccionId=null },
-    abrirVerTodos(tipo){ this.tipoVerTodos=tipo; this.verTodosVisible=true; this.toggleVistaCompleta(tipo) },
-    cerrarVerTodos(){ this.verTodosVisible=false; this.tipoVerTodos='' },
+    cerrarFormulario() { this.formVisible = false; this.formData = {}; this.seleccionId = null },
 
-    formatearProducto(item){
-      return this.tipoFormulario==='Uniformes'
+    abrirVerTodos(tipo) { this.tipoVerTodos = tipo; this.verTodosVisible = true; this.toggleVistaCompleta(tipo) },
+    cerrarVerTodos() { this.verTodosVisible = false; this.tipoVerTodos = '' },
+
+    formatearProducto(item) {
+      return this.tipoFormulario === 'Uniformes'
         ? `${item.id} - ${item.tipo} ${item.talla}`
         : `${item.id} - ${item.nombre || item.tipo}`
     },
 
-    autoCompletarProducto(){
+    autoCompletarProducto() {
       const id = this.seleccionId || this.formData.id
-      if(!id) return
+      if (!id) return
       const lista = this.inventarios[this.tipoFormulario] || []
       const item = lista.find(p => p.id === id)
-      if(!item){ this.formData = { id }; this.seleccionId = null; return }
+      if (!item) { this.formData = { id }; this.seleccionId = null; return }
 
-      if(this.tipoFormulario==='Telas'){
-        const {id:i,nombre,tipo,composicion,color,codigo,stock,descripcion}=item
-        this.formData = {id:i,nombre,tipo,composicion,color,codigo,stock,descripcion}
-      } else if(this.tipoFormulario==='Hilos'){
-        const {id:i,nombre,material,codigo_color,color,codigo,stock,descripcion}=item
-        this.formData = {id:i,nombre,material,codigo_color,color,codigo,stock,descripcion}
-      } else if(this.tipoFormulario==='Uniformes'){
-        const {id:i,tipo,talla,color,stock,material,categoria}=item
-        this.formData = {id:i,tipo,talla,color,stock,material,categoria}
-      } else if(this.tipoFormulario==='Categorias'){
-        const {id:i,nombre}=item
-        this.formData = {id:i,nombre}
+      if (this.tipoFormulario === 'Telas') {
+        const { id: i, nombre, tipo, composicion, color, codigo, stock, descripcion } = item
+        this.formData = { id: i, nombre, tipo, composicion, color, codigo, stock, descripcion }
+      } else if (this.tipoFormulario === 'Hilos') {
+        const { id: i, nombre, material, codigo_color, color, codigo, stock, descripcion } = item
+        this.formData = { id: i, nombre, material, codigo_color, color, codigo, stock, descripcion }
+      } else if (this.tipoFormulario === 'Uniformes') {
+        const { id: i, tipo, talla, color, stock, material, categoria } = item
+        this.formData = { id: i, tipo, talla, color, stock, material, categoria }
+      } else if (this.tipoFormulario === 'Categorias') {
+        const { id: i, nombre } = item
+        this.formData = { id: i, nombre }
       } else {
         this.formData = { ...item }
       }
       this.seleccionId = id
     },
 
-    async submitFormulario(){
-      try{
-        const tipo = this.tipoFormulario.slice(0,-1).toLowerCase()
-        const agregar = {
-          tela:'inventario/agregar-nueva-tela',
-          hilo:'inventario/agregar-nuevo-hilo',
-          uniforme:'inventario/agregar-nuevo-uniforme',
-          categoria:'inventario/agregar-nueva-categoria'
+    /* === FIX ENDPOINTS: crear/editar/eliminar === */
+    async submitFormulario() {
+      try {
+        const tipo = this.tipoFormulario.slice(0, -1).toLowerCase() // Telas->tela, etc.
+
+        // Crear: colecciones base (DRF) excepto categoría que tiene endpoint especial
+        const crear = {
+          tela: '/api/telas/',
+          hilo: '/api/hilos/',
+          uniforme: '/api/uniformes/',
+          categoria: '/api/inventario/agregar-nueva-categoria/',
         }
 
         let url = '', method = '', payload = null
 
         if (this.accion === 'agregar') {
-          url = `/api/${agregar[tipo]}/`
+          url = crear[tipo]
           method = 'POST'
           payload = this.formData
         } else if (this.accion === 'editar') {
-          if (!this.formData.id) return alert('Debe especificar el ID')
+          if (!this.formData.id) { alert('Debe especificar el ID'); return }
           const base = (tipo === 'categoria') ? 'editar-categoria' : `editar-${tipo}`
           url = `/api/inventario/${base}/${this.formData.id}/`
           method = 'PUT'
           payload = this.formData
         } else if (this.accion === 'eliminar') {
-          if (!this.formData.id) return alert('Debe especificar el ID')
+          if (!this.formData.id) { alert('Debe especificar el ID'); return }
           const base = (tipo === 'categoria') ? 'eliminar-categoria' : `eliminar-${tipo}`
           url = `/api/inventario/${base}/${this.formData.id}/`
           method = 'DELETE'
+        } else {
+          alert('Acción desconocida'); return
         }
 
         await apiFetch(url, method, payload)
@@ -334,32 +339,39 @@ export default {
         bus?.emit?.('inventario-actualizado')
         this.cerrarFormulario()
         await this.obtenerInventario(this.tipoFormulario)
-        if(this.tipoFormulario==='Categorias') await this.cargarCategorias()
+        if (this.tipoFormulario === 'Categorias') await this.cargarCategorias()
       } catch (e) {
         console.error(e)
         alert('Error en la operación. Revisa los datos e intenta nuevamente.')
       }
     },
 
-    async obtenerInventario(tipo){
-      try{
-        const data = await apiFetch(`/api/${tipo.toLowerCase()}/`)
+    async obtenerInventario(tipo) {
+      try {
+        // Telas/Hilos/Uniformes: /api/{colección}/  |  Categorias: /api/categorias/
+        const path = (tipo === 'Categorias') ? '/api/categorias/' : `/api/${tipo.toLowerCase()}/`
+        const data = await apiFetch(path)
         this.inventarios[tipo] = (Array.isArray(data) ? data : []).map(item =>
-          tipo==='Uniformes'
-            ? { ...item, material_nombre:item.material_nombre||'N/A', categoria_nombre:item.categoria_nombre||'N/A' }
+          tipo === 'Uniformes'
+            ? { ...item, material_nombre: item.material_nombre || 'N/A', categoria_nombre: item.categoria_nombre || 'N/A' }
             : item
         )
-      }catch(e){ console.error(`Error al obtener ${tipo}:`, e) }
+      } catch (e) {
+        console.error(`Error al obtener ${tipo}:`, e)
+      }
     },
 
-    async cargarCategorias(){
-      try{
+    async cargarCategorias() {
+      try {
         this.categoriasOptions = await apiFetch('/api/categorias/')
-      } catch(e){ console.error('Error cargando categorías', e) }
-    }
+      } catch (e) {
+        console.error('Error cargando categorías', e)
+      }
+    },
   }
 }
 </script>
+
 
 <style scoped>
 /* === Fondo y layout general === */
