@@ -399,3 +399,115 @@ table.light-table td { background: #fff; color: #334155; }
 .modal-window { background: var(--color-primary); padding:2rem; border-radius:14px; min-width:600px; max-width:90%; max-height:90vh; overflow:auto; display:flex; flex-direction:column; gap:1rem; }
 .grid-two { display:grid; grid-template-columns: repeat(auto-fill, minmax(240px,1fr)); gap:.8rem; }
 .modal-actions { display:flex; gap:.6rem; justify-content:center; grid-column:1 / -1; }
+
+/* =================== TABLAS =================== */
+/* Centrado total + alineación vertical */
+.table--center th,
+.table--center td {
+  text-align: center;
+  vertical-align: middle;
+}
+
+/* Asegurar centrado de la col. Acciones */
+.table-actions { justify-content: center; }
+
+/* Bordes y relleno coherentes */
+.table.dark-table th,
+.table.dark-table td {
+  border-bottom: 1px solid rgba(255,255,255,.06);
+}
+
+/* =================== MODALES (BASE) =================== */
+.modal-overlay{
+  position: fixed; inset:0;
+  background: rgba(0,0,0,.55);
+  backdrop-filter: blur(2px);
+  display:flex; align-items:center; justify-content:center;
+  z-index: 9999;
+}
+
+/* Base oscura para todos los modales */
+.modal-content{
+  background: var(--color-primary);             /* fondo oscuro */
+  color: var(--color-novenary);
+  border: 1px solid rgba(255,255,255,.06);
+  border-radius: 14px;
+  box-shadow: 0 20px 60px rgba(0,0,0,.45);
+  padding: 22px 24px;
+  max-height: 90vh;
+  overflow: auto;
+}
+
+/* Variantes de tamaño */
+.modal--compact{             /* usar en el modal de formularios (editar/agregar/eliminar) */
+  max-width: 520px;
+  width: 92%;
+}
+.modal--wide{                /* usar en el modal de "Ver Todos" */
+  width: 95vw;
+  max-width: 1400px;
+  max-height: 86vh;
+}
+
+/* =================== FORMULARIO EN MODAL =================== */
+.form-vertical{
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+.form-field{ display: flex; flex-direction: column; gap: 6px; }
+.modal-actions{ display:flex; gap:10px; justify-content:flex-end; }
+
+/* Inputs/textarea oscuros con fondo sólido */
+.input--dark{
+  width: 100%;
+  background: #111827;                 /* fondo sólido */
+  color: var(--color-novenary);
+  border: 1px solid #223043;
+  border-radius: var(--radius);
+  padding: 10px 12px;
+  outline: none;
+}
+.input--dark::placeholder{ color: var(--color-septenary); }
+.input--dark:focus{ border-color: var(--color-quinary); }
+
+/* Select estilizado (mismo fondo que los inputs) */
+.select-wrap{ position: relative; }
+.select--dark{
+  width: 100%;
+  appearance: none;
+  background: #111827;                 /* fondo sólido */
+  color: var(--color-novenary);
+  border: 1px solid #223043;
+  border-radius: var(--radius);
+  padding: 10px 40px 10px 12px;        /* espacio para la flechita */
+  outline: none;
+}
+.select-wrap::after{
+  content: '';
+  position: absolute;
+  right: 12px; top: 50%;
+  width: 10px; height: 10px;
+  transform: translateY(-50%) rotate(45deg);
+  border-right: 2px solid var(--color-septenary);
+  border-bottom: 2px solid var(--color-septenary);
+  pointer-events: none;
+}
+
+/* Evita “desencajes” de controles en modales */
+.modal-content select,
+.modal-content input,
+.modal-content textarea{
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+/* =================== MODAL "VER TODOS" =================== */
+.full-table-modal .table{      /* la tabla ocupa 100% del modal */
+  width: 100%;
+  min-width: unset;            /* quita min-width global para evitar scroll horizontal */
+}
+.full-table-modal .table-wrapper{
+  max-height: 70vh;            /* scroll vertical cómodo dentro del modal ancho */
+  overflow: auto;
+}

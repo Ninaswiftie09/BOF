@@ -1,91 +1,81 @@
 <template>
-  <div class="inventory-container">
-    <!-- Header unificado (como en Clientes) -->
+  <div class="page">
     <NavBar title="PEDIDOS">
       <template #actions>
-        <input
-          v-model="tablaQuery"
-          class="nav-search"
-          placeholder="Buscar pedidos…"
-        />
+        <input v-model="tablaQuery" class="input input--white" placeholder="Buscar pedidos…" />
       </template>
     </NavBar>
 
-    <section class="module">
-      <h2 class="module-title">Historial de pedidos</h2>
+    <div class="container">
+      <section class="module">
+        <h2 class="section-title">Historial de pedidos</h2>
 
-      <table>
-        <thead>
-          <tr>
-            <th v-for="h in headers" :key="h">{{ h }}</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="row in filasMostradas" :key="row.key">
-            <td>{{ row.cliente_nombre }}</td>
-            <td>{{ formatFecha(row.fecha) }}</td>
-            <td>{{ row.metodo_pago }}</td>
-            <td>{{ row.producto }}</td>
-            <td>Q{{ toMoney(row.precio_unitario) }}</td>
-            <td>Q{{ toMoney(row.subtotal) }}</td>
-            <td>Q{{ toMoney(row.total) }}</td>
-            <td>
-              <div class="flex-gap">
-                <button class="mini-btn sky" @click="abrirFormulario('editar', row)">Editar</button>
-                <button class="mini-btn danger" @click="abrirFormulario('eliminar', row)">Eliminar</button>
-              </div>
-            </td>
-          </tr>
+        <!-- Tabla principal (limitada a 6) -->
+        <TablaBase
+          class="table--center"
+          :columns="columns"
+          :rows="filasMostradas"
+          row-key="key"
+          :actions="{ edit:true, delete:true }"
+          :searchable="true"
+          v-model:search="tablaQuery"
+          :useLocalFilter="false"
+          :showAddButton="false"
+          addLabel="Agregar pedido"
+          :show-see-all="false"   
+          :auto-limit="6"        
+          @add="abrirFormulario('agregar')"
+          @edit="(row)=>abrirFormulario('editar', row)"
+          @delete="(row)=>abrirFormulario('eliminar', row)"
+        />
 
-          <tr v-if="!cargando && !filas.length">
-            <!-- color en template -->
-            <td colspan="8" style="text-align:center; padding:16px; color:#6b7280">
-              Sin pedidos aún
-            </td>
-          </tr>
-          <tr v-if="cargando">
-            <!-- color en template -->
-            <td colspan="8" style="text-align:center; padding:16px; color:#6b7280">
-              Cargando…
-            </td>
-          </tr>
-        </tbody>
-      </table>
+        <!-- Pie con los botones (a la derecha) -->
+        <div class="footer-actions">
+          <button class="btn" @click="abrirFormulario('agregar')">Agregar pedido</button>
+          <button class="btn btn--muted" @click="abrirVerTodos">Ver Todos</button>
+        </div>
+      </section>
+    </div>
 
-      <div class="button-row">
-        <button @click="abrirFormulario('agregar')">Agregar pedido</button>
-        <button @click="toggleVerTodos">{{ verTodos ? 'Ocultar' : 'Ver Todos' }}</button>
-      </div>
-    </section>
-
-    <!-- Modal -->
-    <div v-if="formVisible" class="modal-overlay">
-      <div class="modal-content large-modal">
+    <!-- Modal CRUD -->
+    <div v-if="formVisible" class="modal-overlay" @click.self="cerrarFormulario">
+      <div class="modal-window" :class="{'modal--wide': accion!=='eliminar'}">
         <h3 v-if="accion==='agregar'">Agregar nueva orden</h3>
         <h3 v-else-if="accion==='editar'">Editar orden #{{ formData.id }}</h3>
         <h3 v-else>Eliminar orden #{{ formData.id }}</h3>
 
+        <!-- AGREGAR / EDITAR -->
         <form v-if="accion!=='eliminar'" class="form-vertical" @submit.prevent="submitFormulario">
-          <label>Cliente</label>
-          <select v-model.number="formData.cliente" required>
-            <option :value="''" disabled>Selecciona un cliente</option>
-            <option v-for="c in clientes" :key="c.id" :value="c.id">{{ c.nombre }}</option>
-          </select>
+          <div class="form-field">
+            <label>Cliente</label>
+            <div class="select-wrap">
+              <select v-model.number="formData.cliente" class="select--dark" required>
+                <option :value="''" disabled>Selecciona un cliente</option>
+                <option v-for="c in clientes" :key="c.id" :value="c.id">{{ c.nombre }}</option>
+              </select>
+            </div>
+          </div>
 
-          <label>Fecha</label>
-          <input type="date" v-model="formData.fecha" />
+          <div class="form-field">
+            <label>Fecha</label>
+            <input type="date" v-model="formData.fecha" class="input--dark" />
+          </div>
 
-          <label>Método de pago</label>
-          <select v-model="formData.metodo_pago" required>
-            <option value="efectivo">Efectivo</option>
-            <option value="transferencia">Transferencia</option>
-            <option value="tarjeta">Tarjeta</option>
-            <option value="otro">Otro</option>
-          </select>
+          <div class="form-field">
+            <label>Método de pago</label>
+            <div class="select-wrap">
+              <select v-model="formData.metodo_pago" class="select--dark" required>
+                <option value="efectivo">Efectivo</option>
+                <option value="transferencia">Transferencia</option>
+                <option value="tarjeta">Tarjeta</option>
+                <option value="otro">Otro</option>
+              </select>
+            </div>
+          </div>
 
-          <h4 class="detalle-titulo">Detalles de la orden</h4>
+          <h4 class="detalle-title">Detalles de la orden</h4>
 
-          <!-- Encabezados de la “tabla” de detalles -->
+          <!-- Encabezados de detalles -->
           <div class="detalle-grid detalle-header">
             <span>Uniforme (ID)</span>
             <span>Cantidad</span>
@@ -94,21 +84,24 @@
             <span></span>
           </div>
 
-          <!-- Filas editables -->
+          <!-- Filas de detalle -->
           <div v-for="(d, i) in formData.detalles" :key="i" class="detalle-grid">
             <div>
               <input
-                type="number"
-                min="1"
+                type="number" min="1"
                 v-model.number="d.producto"
+                class="input--dark"
                 placeholder="ID de uniforme"
                 @change="onUniformeChange(i)"
               />
               <small v-if="d.nombre" class="detalle-nombre">→ {{ d.nombre }}</small>
             </div>
-            <input type="number" min="1" v-model.number="d.cantidad" @input="recalcularTotales" />
-            <input type="number" step="0.01" min="0" v-model.number="d.precio_unitario" @input="recalcularTotales" />
+
+            <input type="number" min="1" v-model.number="d.cantidad" class="input--dark" @input="recalcularTotales" />
+            <input type="number" step="0.01" min="0" v-model.number="d.precio_unitario" class="input--dark" @input="recalcularTotales" />
+
             <div class="cell-total">Q{{ toMoney((d.cantidad || 0) * (d.precio_unitario || 0)) }}</div>
+
             <button type="button" class="mini-btn danger" @click="quitarDetalle(i)">Quitar</button>
           </div>
 
@@ -119,18 +112,50 @@
             <div class="total-row total-final"><span>Total:</span><strong>Q{{ toMoney(formData.precio_total) }}</strong></div>
           </div>
 
-          <div class="buttons-row">
-            <button type="submit" class="btn-primary">{{ accion==='agregar' ? 'Guardar' : 'Actualizar' }}</button>
-            <button type="button" class="btn-cancel" @click="cerrarFormulario">Cancelar</button>
+          <div class="modal-actions">
+            <button type="submit" class="btn"> {{ accion==='agregar' ? 'Guardar' : 'Actualizar' }} </button>
+            <button type="button" class="btn secondary" @click="cerrarFormulario">Cancelar</button>
           </div>
         </form>
 
+        <!-- ELIMINAR -->
         <div v-else class="form-vertical">
           <p>¿Seguro que deseas eliminar la orden <strong>#{{ formData.id }}</strong>?</p>
-          <div class="buttons-row">
-            <button class="btn-primary" @click="submitFormulario">Eliminar</button>
-            <button class="btn-cancel" @click="cerrarFormulario">Cancelar</button>
+          <div class="modal-actions">
+            <button class="btn btn--danger" @click="submitFormulario">Eliminar</button>
+            <button class="btn secondary" @click="cerrarFormulario">Cancelar</button>
           </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal VER TODOS (lista completa) -->
+    <div v-if="verTodosVisible" class="modal-overlay" @click.self="cerrarVerTodos">
+      <div class="modal-window modal--wide">
+        <button class="close-btn-top" @click="cerrarVerTodos">✕</button>
+        <h3>Pedidos - Lista Completa</h3>
+        <div class="table-wrapper">
+          <table class="table dark-table table--center">
+            <thead>
+              <tr>
+                <th v-for="c in columns" :key="c.key">{{ c.label }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="r in filasFiltradas" :key="r.key">
+                <td>{{ r.cliente_nombre }}</td>
+                <td>{{ r.fecha_fmt }}</td>
+                <td>{{ r.metodo_pago }}</td>
+                <td>{{ r.producto }}</td>
+                <td style="text-align:right;">{{ r.precio_unitario_fmt }}</td>
+                <td style="text-align:right;">{{ r.subtotal_fmt }}</td>
+                <td style="text-align:right;">{{ r.total_fmt }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="modal-actions">
+          <button class="btn secondary" @click="cerrarVerTodos">Cerrar</button>
         </div>
       </div>
     </div>
@@ -140,9 +165,8 @@
 <script>
 import { useRouter } from 'vue-router'
 import NavBar from '@/components/NavBar.vue'
-import { apiFetch } from '@/utils/api'
+import TablaBase from '@/components/Reutilizacion/Tablas.vue'
 
-// --- Endpoints existentes ---
 const CLIENTES_A    = `/api/cliente/clientes/`
 const CLIENTES_B    = `/api/clientes/`
 const ORDENES_HIST  = `/api/ordenes/historial/`
@@ -152,7 +176,7 @@ const UNIFORME_SHOW = id => `/api/uniformes/${id}/`
 const UNIFORME_LIST = `/api/uniformes/`
 
 export default {
-  components: { NavBar },
+  components: { NavBar, TablaBase },
   setup(){
     const router = useRouter()
     const goHome = () => router.push({ name:'home' })
@@ -160,13 +184,19 @@ export default {
   },
   data(){
     return {
-      headers: ['Cliente','Fecha','Método de pago','Producto','Precio unitario','Subtotal','Total','Acciones'],
-      filas: [],
-      verTodos: false,
-      cargando: false,
-
       tablaQuery: '',
-
+      verTodosVisible: false,
+      cargando: false,
+      columns: [
+        { key:'cliente_nombre',        label:'Cliente' },
+        { key:'fecha_fmt',             label:'Fecha' },
+        { key:'metodo_pago',           label:'Método de pago' },
+        { key:'producto',              label:'Producto' },
+        { key:'precio_unitario_fmt',   label:'Precio unitario', align:'right' },
+        { key:'subtotal_fmt',          label:'Subtotal', align:'right' },
+        { key:'total_fmt',             label:'Total',    align:'right' }
+      ],
+      filas: [],
       formVisible: false,
       accion: 'agregar',
       formData: {
@@ -177,31 +207,24 @@ export default {
         detalles: [],
         precio_total: 0
       },
-
       clientes: [],
       clientesMap: {},
-      uniformesCache: {}, // { [id]: { nombre: string } }
+      uniformesCache: {}
     }
   },
-  computed: {
+  computed:{
     filasFiltradas(){
       const q = this.tablaQuery.trim().toLowerCase()
       if(!q) return this.filas
-      return this.filas.filter(r => {
-        const cliente  = (r.cliente_nombre || '').toLowerCase()
-        const fecha    = this.formatFecha(r.fecha).toLowerCase()
-        const metodo   = (r.metodo_pago || '').toLowerCase()
-        const producto = (r.producto || '').toLowerCase()
-        const pu       = String(r.precio_unitario || '').toLowerCase()
-        const sub      = String(r.subtotal || '').toLowerCase()
-        const tot      = String(r.total || '').toLowerCase()
-        return cliente.includes(q) || fecha.includes(q) || metodo.includes(q) ||
-               producto.includes(q) || pu.includes(q) || sub.includes(q) || tot.includes(q)
-      })
+      return this.filas.filter(r =>
+        [r.cliente_nombre, r.fecha_fmt, r.metodo_pago, r.producto,
+         r.precio_unitario_fmt, r.subtotal_fmt, r.total_fmt]
+         .some(v => (v||'').toString().toLowerCase().includes(q))
+      )
     },
-    filasMostradas(){ return this.verTodos ? this.filasFiltradas : this.filasFiltradas.slice(0,10) },
+    filasMostradas(){ return this.filasFiltradas },
     subtotal(){
-      return this.formData.detalles.reduce(
+      return (this.formData.detalles||[]).reduce(
         (acc, d)=> acc + (Number(d.cantidad)||0) * (Number(d.precio_unitario)||0), 0
       )
     }
@@ -211,21 +234,37 @@ export default {
     await this.cargarClientes()
     await this.cargarFilas()
   },
-  methods: {
-    // ============== Utils ==============
+  methods:{
     toMoney(n){ const v = Number(n||0); return v.toLocaleString('es-MX',{minimumFractionDigits:2,maximumFractionDigits:2}) },
     formatFecha(iso){ if(!iso) return ''; const d = new Date(iso); return d.toLocaleDateString('es-MX',{year:'numeric',month:'short',day:'2-digit'}) },
-    toggleVerTodos(){ this.verTodos = !this.verTodos },
 
-    // ⬇️ Unificamos sobre apiFetch (ya maneja CSRF + credentials + errores)
+    getCSRF(){
+      const name='csrftoken'; const cookies=document.cookie?.split(';')||[]
+      for(const c of cookies){ const t=c.trim(); if(t.startsWith(name+'=')) return decodeURIComponent(t.slice(name.length+1)) }
+      return null
+    },
     async req(url, method='GET', data){
-      return await apiFetch(url, method, data)
+      const opts={ method, credentials:'include', headers:{} }
+      if(method!=='GET' && method!=='HEAD'){
+        opts.headers['Content-Type']='application/json'
+        const csrf=this.getCSRF(); if(csrf) opts.headers['X-CSRFToken']=csrf
+        if(data!==undefined) opts.body=JSON.stringify(data)
+      }
+      const r = await fetch(url, opts)
+      if(!r.ok){
+        const txt = await r.text().catch(()=> '')
+        throw new Error(`${r.status} ${r.statusText} - ${txt}`)
+      }
+      const ct = r.headers.get('content-type')||''
+      return ct.includes('application/json') ? r.json() : null
     },
-    async safeGet(url){
-      try { return await apiFetch(url, 'GET') } catch { return null }
-    },
+    async safeGet(url){ try{ return await this.req(url,'GET') }catch(_){ return null } },
 
-    // ============== Carga de datos ==============
+    mpKey(id){ return `mp_orden_${id}` },
+    leerMetodoPago(id){ return localStorage.getItem(this.mpKey(id)) || 'efectivo' },
+    guardarMetodoPago(id, metodo){ localStorage.setItem(this.mpKey(id), metodo || 'efectivo') },
+    borrarMetodoPago(id){ localStorage.removeItem(this.mpKey(id)) },
+
     async cargarClientes(){
       let data = await this.safeGet(CLIENTES_A)
       if(!data) data = await this.safeGet(CLIENTES_B)
@@ -243,9 +282,9 @@ export default {
         const mp = this.leerMetodoPago(o.id)
         const detalles = Array.isArray(o.detalles) ? o.detalles : []
         for(const d of detalles){
-          const pu = Number(d.precio || 0)
+          const pu  = Number(d.precio || 0)
           const sub = Number((Number(d.cantidad||0) * pu) - Number(d.descuento || 0))
-          rows.push({
+          const row = {
             key: `orden-${o.id}-${d.id || k++}`,
             id: o.id,
             cliente_nombre: o.cliente || '—',
@@ -255,20 +294,18 @@ export default {
             precio_unitario: pu,
             subtotal: sub,
             total: Number(o.total || 0)
-          })
+          }
+          row.fecha_fmt = this.formatFecha(row.fecha)
+          row.precio_unitario_fmt = `Q${this.toMoney(row.precio_unitario)}`
+          row.subtotal_fmt = `Q${this.toMoney(row.subtotal)}`
+          row.total_fmt = `Q${this.toMoney(row.total)}`
+          rows.push(row)
         }
       }
       this.filas = rows.sort((a,b)=> (new Date(b.fecha||0))-(new Date(a.fecha||0)))
       this.cargando=false
     },
 
-    // Método de pago “sidecar”
-    mpKey(id){ return `mp_orden_${id}` },
-    leerMetodoPago(id){ return localStorage.getItem(this.mpKey(id)) || 'efectivo' },
-    guardarMetodoPago(id, metodo){ localStorage.setItem(this.mpKey(id), metodo || 'efectivo') },
-    borrarMetodoPago(id){ localStorage.removeItem(this.mpKey(id)) },
-
-    // ============== Modal ==============
     abrirFormulario(accion, row=null){
       this.accion = accion
       this.formVisible = true
@@ -332,7 +369,6 @@ export default {
     },
     recalcularTotales(){ this.formData.detalles=[...this.formData.detalles] },
 
-    // ======= Lookup SOLO UNIFORMES, mostrando SOLO el 'tipo' =======
     async onUniformeChange(index){
       const d = this.formData.detalles[index]
       if(!d || !d.producto) return
@@ -364,7 +400,9 @@ export default {
       }catch(_){ return null }
     },
 
-    // ============== Guardar / Eliminar ==============
+    abrirVerTodos(){ this.verTodosVisible = true },
+    cerrarVerTodos(){ this.verTodosVisible = false },
+
     async submitFormulario(){
       try{
         if(this.accion==='eliminar'){
@@ -376,7 +414,6 @@ export default {
           return
         }
 
-        // construir payload Orden (producto es TEXTO; usamos el 'nombre' detectado)
         const detalles = (this.formData.detalles||[]).filter(d => (d.nombre || d.producto) && d.cantidad>0)
         if(detalles.length===0){ alert('Agrega al menos un detalle.'); return }
 
@@ -421,159 +458,30 @@ export default {
 </script>
 
 <style scoped>
-.inventory-container{
-  min-height: 100vh;
-  background-color: var(--color-octonary); /*fondo pagina "pedidos" */
-  display:flex; flex-direction:column;
-  font-family: 'Segoe UI', sans-serif;
-  color: var(--color-senary); /*texto formulario de agregar pedido: Q0.00 , subtotal: Q0.00, total: Q0.00 */
-}
+.page{ min-height:100vh; background:var(--color-octonary); color:#fff; }
+.container{ padding: 24px; }
+.module{ background:#0d1130; border:2px solid #1e2236; border-radius:16px; padding:16px; }
+.section-title{ color:#fff; margin:0 0 12px 0; }
 
-/* === Módulo === */
-.module{
-  background:#0d1130; /*fondo tarjeta "historial pedidos" */
-  border:2px solid #1e2236; /*borde tarjeta "historial de pedidos" */
-  border-radius:16px;
-  padding:1.5rem;
-  margin: 20px;
-}
-.module-title{
-  font-size: 1.2rem;
-  font-weight: 700;
-  margin-bottom: 1rem;
-  color:#fff; /*titulo "historial de pedidos" */
-  text-transform: uppercase;
-}
-
-/*no cambia nada si se elimina */
-.nav-search{
-  width: 320px; max-width: 40vw;
-  padding: .5rem .75rem;
-  border-radius: 10px;
-  border: 1px solid #cbd5e1; /*nada*/
-  background: #fff; /*nada*/
-  color:#000; /*nada*/
-  font-size: .95rem;
-}
-/*no cambia nada si se elimina */
-.nav-search:focus{ outline:none;
-  box-shadow:0 0 0 3px rgba(99,102,241,.25); /*nada*/
-  border-color:#6366f1; /*nada*/
-}
-
-/* Tabla */
-table{
-  width:100%; border-collapse:collapse;
-  background:#fff; /*color1 intercalado de filas de tablas*/
-  border-radius:12px; overflow:hidden;
-  box-shadow:0 0 10px rgba(0,0,0,.05); /*sombreado tabla "historial pedido" */
-  margin-bottom:10px;
-}
-th{
-  background: var(--color-senary); /*fondo encabezado de tabla*/
-  color:#fff; /*texto encabezados tabla historial pedido*/
-  font-weight:bold; padding:16px; font-size:16px;
-}
-td{
-  text-align:center; padding:12px; font-size:15px;
-  color: var(--color-senary); /*texto pedidos tabla*/
-}
-tr:nth-child(even){ background:#f9f9f9; } /*color2 intercalado de filas de tablas*/
-
-/* Botonera inferior */
-.button-row{ display:flex; flex-wrap:wrap; gap:10px; margin:10px 0 0; }
-.button-row button{
-  background: var(--color-senary); /*fondo botones "agregar pedido, ver todos/ocultar" */
-  color:#fff; /*texto botones "agregar pedido, ver todos/ocultar"*/
-  padding:10px 14px; border:none; border-radius:8px; font-weight:bold; cursor:pointer;
-  transition: background-color .3s; /*asdf*/
-}
-.button-row button:hover{ background: var(--color-tertiary); } /*fondo botones "agregar pedido, ver todos/ocultar cursor arriba" */
-
-/* Botones pequeños */
-.mini-btn{
-  background:#334155; /*fondo boton "+ agregar linea" */
-  color:#fff; /*texto botones "editar, eliminar" en formulario "+ agregar linea, quitar" */
-  padding:6px 10px; border:none; border-radius:6px; font-size:12px; cursor:pointer;
-}
-.mini-btn.sky{ background:#0284c7; } /*fondo boton accion "Editar"*/
-.mini-btn.danger{ background:#e11d48; } /*fondo boton accion "eliminar" */
-.flex-gap{ display:flex; gap:8px; justify-content:center; }
-
-/* Modal */
-.modal-overlay{
-  position:fixed; inset:0;
-  background:rgba(0,0,0,.5); /*fondo pantalla completa formulario "agregar nueva orden"*/
-  display:flex; align-items:center; justify-content:center; z-index:9999;
-}
-.modal-content{
-  background:#fff; /*fondo tarjeta formulario "agregar nueva orden" y fondo boton "cancelar"*/
-  padding:25px 30px; border-radius:12px;
-  box-shadow:0 8px 20px rgba(0,0,0,.3); /*sombreado tarjeta formulario "agregar nueva orden" */
-  width:90%; max-width: 520px; max-height:90vh; overflow-y:auto; position:relative; }
-.large-modal{ max-width: 980px; }
-
-/* ===== Formularios dentro del modal ===== */
-.form-vertical label{
-  font-weight: 600;
-  margin-top: 12px;
-  margin-bottom: 5px;
-  display: block;
-  color: #1e293b; /*titulo campos "cliente, fecha, metodo de pago"*/
-  font-size: 0.9rem;
-}
-.form-vertical input,
-.form-vertical textarea,
-.form-vertical select{
-  width:100%;
-  padding:8px 10px;
-  border-radius:6px;
-  border:1px solid #cbd5e1; /*borde input campos "cliente, fecha, metodo de pago"*/
-  font-size:15px;
-  background:#fff; /*fondo input campos "cliente, fecha, metodo de pago" */
-  color:#0f172a; /*texto ingresado en input campos "cliente, fecha, metodo de pago" y en tabla "uniforme, cantidad, precio unitario"*/
-}
-
-.detalle-titulo{
-  margin-top:18px;
-  color:#1e293b; /*titulo "detalles de la orden" */
-  font-weight:700;
-}
+/* Detalles */
+.detalle-title{ margin-top:18px; font-weight:700; }
 .detalle-grid{ display:grid; grid-template-columns: 3fr 1fr 1fr 1fr auto; align-items:center; gap:10px; margin-top:10px; }
-.detalle-header{
-  font-weight:700;
-  background-color: var(--color-senary); /*fondo encabezados tabla formulario "uniforme, cantidad, precio unitario, total"*/
-  color:#fff; /*texto encabezados tabla formulario "uniforme, cantidad, precio unitario, total"*/
-  padding:8px 6px;
-  border-radius:6px;
-}
+.detalle-header{ font-weight:700; background:var(--color-senary); color:#fff; padding:8px 6px; border-radius:6px; }
 .detalle-header span{ text-align:center; }
-.detalle-nombre{
-  color:#64748b; /*texto "→Overol de Trabajo" es el nombre del producto */
-  display:block; margin-top:2px;
-}
-
+.detalle-nombre{ color:#94a3b8; display:block; margin-top:4px; }
 .cell-total{ text-align:right; padding-right:8px; }
 
-.totales{ margin-top: 16px; display:flex; flex-direction:column; gap:8px; align-items:flex-end; }
+.totales{ margin-top: 14px; display:flex; flex-direction:column; gap:6px; align-items:flex-end; }
 .total-row{ display:flex; gap:16px; align-items:center; }
 .total-final{ font-size: 18px; }
 
-.buttons-row{ margin-top: 20px; display:flex; gap:15px; justify-content:flex-end; }
-.btn-primary{
-  background: var(--color-senary); /*fondo boton "guardar" en formulario "agregar nueva orden" */
-  color:#fff; /*texto boton "guardar" */
-  padding:10px 22px; border-radius:8px; border:none; font-weight:600; cursor:pointer;
-  transition: background-color .3s; /*nada*/
-}
-.btn-primary:hover{ background: var(--color-tertiary); } /*fondo boton "guardar" cursor arriba */
-.btn-cancel{
-  background:transparent;
-  color:#555; /*texto "cancelar" en formulario */
-  padding:10px 22px; border-radius:8px;
-  border:1px solid #aaa; /*borde boton "cancelar" en formulario */
-  cursor:pointer; font-weight:600;
-  transition: background-color .3s;
-}
-.btn-cancel:hover{ background:#eee; } /*fondo boton "cancelar" cursor arriba */
+/* Modal CRUD + VerTodos reutiliza estilos globales del style.css */
+.modal-window{ background:#1e293b; color:#fff; padding:20px; border-radius:14px; min-width:560px; max-width:90%; max-height:90vh; overflow:auto; position:relative; }
+.modal--wide{ min-width:860px; }
+.modal-actions{ display:flex; justify-content:flex-end; gap:10px; margin-top:12px; }
+.close-btn-top{ position:absolute; top:10px; right:15px; background:transparent; border:none; font-size:22px; cursor:pointer; font-weight:bold; color:#fff; }
+.table-wrapper{ max-height:70vh; overflow:auto; }
+
+/* Pie (botones a la derecha) */
+.footer-actions{ display:flex; justify-content:flex-end; gap:10px; margin-top:10px; }
 </style>

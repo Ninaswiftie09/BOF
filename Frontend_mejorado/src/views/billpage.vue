@@ -1,9 +1,9 @@
 <template>
-  <div class="billpage-container">
-    <!-- Header unificado -->
+  <div class="billpage-container page">
+    <!-- Header sin buscador (lo ponemos en el módulo para que siempre se vea) -->
     <NavBar title="OPCIONES DE FACTURACIÓN" />
 
-    <!-- OPCIONES DE FACTURACIÓN -->
+    <!-- Opciones -->
     <div class="actions-row">
       <div class="action-box" @click="uploadInvoice">
         <h3>SUBIR FACTURA</h3>
@@ -15,19 +15,39 @@
       </div>
     </div>
 
-    <!-- LISTADO DE FACTURAS -->
+    <!-- Listado -->
     <section class="module">
-      <h2 class="module-title">LISTADO DE FACTURAS</h2>
+      <div class="module-head">
+        <h2 class="module-title">LISTADO DE FACTURAS</h2>
+        <!-- 🔍 Buscador estilo “Tabla” -->
+        <input
+          v-model="search"
+          class="input input--white"
+          placeholder="Buscar facturas…"
+        />
+      </div>
+
       <ul class="invoice-list">
-        <li v-for="invoice in invoices" :key="invoice.id" class="invoice-card">
+        <li
+          v-for="invoice in filteredInvoices"
+          :key="invoice.id"
+          class="invoice-card"
+        >
           <div class="invoice-info">
             <span class="invoice-description">
-              Factura #{{ invoice.no_recibo }} — Cliente: {{ invoice.cliente_id }} — Total: Q{{ invoice.total }}
+              Factura #{{ invoice.no_recibo || '—' }}
+              — Cliente: {{ invoice.cliente_id ?? '—' }}
+              — Total: Q{{ Number(invoice.total || 0).toLocaleString() }}
             </span>
-            <button class="btn-download" @click="onDownloadPDF(invoice)">
-              DESCARGAR PDF
+
+            <button class="btn" @click="onDownloadPDF(invoice)">
+              Descargar PDF
             </button>
           </div>
+        </li>
+
+        <li v-if="filteredInvoices.length === 0" class="invoice-empty">
+          No hay facturas que coincidan con la búsqueda
         </li>
       </ul>
     </section>
@@ -51,11 +71,28 @@ export default {
   },
   data() {
     return {
-      invoices: []
+      invoices: [],
+      search: '' // 🔍 buscador
     }
   },
   mounted() {
     this.fetchInvoices()
+  },
+  computed: {
+    filteredInvoices() {
+      const q = this.search.trim().toLowerCase()
+      if (!q) return this.invoices
+      return this.invoices.filter(inv =>
+        [
+          inv.no_recibo,
+          inv.cliente_id,
+          inv.total,
+          inv.fecha
+        ]
+          .map(v => (v ?? '').toString().toLowerCase())
+          .some(txt => txt.includes(q))
+      )
+    }
   },
   methods: {
     async fetchInvoices() {
@@ -81,8 +118,8 @@ export default {
         doc.text('Ciudad, Huehuetenango 13001', 20, 26)
 
         doc.setFontSize(11)
-        doc.text(`Recibo No: ${venta.no_recibo}`, 150, 20)
-        doc.text(`Fecha: ${venta.fecha}`, 150, 26)
+        doc.text(`Recibo No: ${venta.no_recibo}`, 150, 20, { align: 'right' })
+        doc.text(`Fecha: ${venta.fecha}`, 150, 26, { align: 'right' })
 
         // Cliente
         doc.setFontSize(12)
@@ -92,24 +129,23 @@ export default {
           doc.text(`Dirección: ${venta.cliente.direccion || ''}`, 20, 52)
         }
 
-        // Tabla de productos
+        // Tabla
         const rows = (venta.detalles || []).map(d => [
           d.producto?.nombre ?? '',
           d.cantidad,
           `Q${d.precio_unitario}`,
-          `Q${d.subtotal}`,
+          `Q${d.subtotal}`
         ])
-
         autoTable(doc, {
           head: [['Producto', 'Cantidad', 'Precio U.', 'Subtotal']],
           body: rows,
-          startY: 65,
+          startY: 65
         })
 
         // Total
         const y = (doc.lastAutoTable?.finalY ?? 65) + 10
         doc.setFontSize(12)
-        doc.text(`Total: Q${venta.total}`, 150, y)
+        doc.text(`Total: Q${venta.total}`, 150, y, { align: 'right' })
 
         doc.save(`recibo_${venta.no_recibo}.pdf`)
       } catch (error) {
@@ -131,14 +167,13 @@ export default {
 <style scoped>
 .billpage-container {
   min-height: 100vh;
-  background: var(--color-octonary); /*fondo pantalla billpage*/
+  background: var(--color-octonary);
   display: flex;
   flex-direction: column;
-  font-family: 'Segoe UI', sans-serif;
-  color: var(--color-novenary); /*texto en opciones "subir factura" y "facturas guardadas"*/
+  color: var(--color-novenary);
 }
 
-/* === CUERPO === */
+/* Opciones superiores */
 .actions-row {
   display: flex;
   flex-wrap: wrap;
@@ -146,60 +181,53 @@ export default {
   margin: 20px;
 }
 .action-box {
-  flex: 1 1 200px;
-  background-color: var(--color-quaternary); /*fondo opciones "subir factura" y "facturas guardadas"*/
+  flex: 1 1 240px;
+  background: var(--color-quaternary);
   border-radius: 12px;
   padding: 20px;
   text-align: center;
   cursor: pointer;
-  transition: background-color 0.3s; /*nada*/
+  transition: background-color .2s ease;
 }
-.action-box:hover { background-color: var(--color-tertiary); } /*fondo opciones "subir factura" y "facturas guardadas" cursor arriba*/
+.action-box:hover { background: var(--color-tertiary); }
 
-/* === MODULO LISTADO === */
-.module {
-  background:#0d1130; /*fondo tarjeta "listado de facturas" */
-  border:2px solid #1e2236; /*borde tarjeta "listado de facturas"*/
-  border-radius:16px;
-  padding:1.5rem;
-  margin: 20px;
+/* Cabecera del módulo con buscador a la derecha */
+.module { margin: 20px; }
+.module-head{
+  display:flex; align-items:center; justify-content:space-between; gap:12px;
+  margin-bottom: 12px;
 }
 .module-title {
   font-size: 1.2rem;
   font-weight: 700;
-  margin-bottom: 1rem;
-  color: #fff; /*titulo tarjeta "listado de facturas"*/
+  color: #fff;
   text-transform: uppercase;
+  margin: 0;
+  line-height: 1;
 }
+.module-head .input { max-width: 320px; }
 
-/* === FACTURAS === */
-.invoice-list { list-style: none; padding: 0; margin: 0; }
+/* Listado */
+.invoice-list { list-style: none; margin: 0; padding: 0; }
 .invoice-card {
-  background-color: var(--color-quaternary); /*aun sin función*/
-  margin-bottom: 15px;
+  background: var(--color-quaternary);
   border-radius: 8px;
   padding: 15px;
-  transition: background-color 0.3s; /*aun sin función*/
+  margin-bottom: 12px;
 }
-.invoice-card:hover { background-color: #8cafdc; } /*aun sin función*/
+.invoice-info {
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+  align-items: center;
+}
+.invoice-description { font-weight: 600; text-transform: uppercase; }
 
-.invoice-info { display: flex; justify-content: space-between; align-items: center; }
-.invoice-description {
-  font-weight: 500;
-  color: var(--color-novenary); /*aun sin función*/
-  text-transform: uppercase;
+.invoice-empty {
+  padding: 14px;
+  text-align: center;
+  color: var(--color-septenary);
+  background: #0b1326;
+  border-radius: 8px;
 }
-
-.btn-download {
-  background-color: var(--color-secondary); /*aun sin función*/
-  color: #fff; /*aun sin función*/
-  padding: 10px 20px;
-  border: none;
-  font-family: 'Kollektif', sans-serif;
-  cursor: pointer;
-  border-radius: 6px;
-  transition: background-color 0.3s; /*aun sin función*/
-  text-transform: uppercase;
-}
-.btn-download:hover { background-color: var(--color-tertiary); } /*aun sin función*/
 </style>
