@@ -154,6 +154,7 @@ import IconFc from '@/components/icons/fc.vue'
 import IconIg from '@/components/icons/ig.vue'
 import IconWs from '@/components/icons/ws.vue'
 import IconUser from '@/components/icons/IconUser.vue'
+import emailjs from '@emailjs/browser' // <-- agregado
 
 // Hero
 const heroImage = new URL('@/assets/images/ep2.jpg', import.meta.url).href
@@ -256,16 +257,53 @@ function scrollPrev() {
   track.value.scrollBy({ left: -step, behavior: 'smooth' })
 }
 
-// Formulario de contacto → WhatsApp
+// ====== Contacto (EmailJS) ======
 const form = ref({ nombre: '', email: '', mensaje: '' })
-const enviarFormulario = () => {
-  const msg = `Hola, soy ${form.value.nombre}. ${form.value.mensaje} (Email: ${form.value.email})`
-  window.open(`${whatsappCta}?text=${encodeURIComponent(msg)}`, '_blank')
+
+// Lee las variables Vite (.env.development / .env.production)
+const EMAILJS_SERVICE_ID = import.meta.env.VITE_EMAILJS_SERVICE_ID
+const EMAILJS_TEMPLATE_ID = import.meta.env.VITE_EMAILJS_TEMPLATE_ID
+const EMAILJS_PUBLIC_KEY  = import.meta.env.VITE_EMAILJS_PUBLIC_KEY
+
+function validaEmail(e) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e)
+}
+
+async function enviarFormulario() {
+  // Validaciones mínimas (no alteran tu UI)
+  if (!form.value.nombre.trim() || !form.value.email.trim() || !form.value.mensaje.trim()) {
+    alert('Por favor, completa todos los campos.')
+    return
+  }
+  if (!validaEmail(form.value.email)) {
+    alert('Ingresa un correo válido.')
+    return
+  }
+
+  try {
+    await emailjs.send(
+      EMAILJS_SERVICE_ID,
+      EMAILJS_TEMPLATE_ID,
+      {
+        from_name: form.value.nombre,
+        reply_to: form.value.email,
+        message: form.value.mensaje,
+        to_email: 'abriluniformesybordados@gmail.com', // destino fijo
+      },
+      { publicKey: EMAILJS_PUBLIC_KEY }
+    )
+    alert('¡Mensaje enviado! Te responderemos pronto.')
+    form.value = { nombre: '', email: '', mensaje: '' }
+  } catch (e) {
+    console.error('[EmailJS] error:', e)
+    alert('Ocurrió un error al enviar. Inténtalo de nuevo.')
+  }
 }
 
 // Menú responsive (si lo usas después)
 const menuOpen = ref(false)
 </script>
+
 
 <style scoped>
 html { scroll-behavior: smooth; }
