@@ -10,7 +10,9 @@ from .views import (
 
     # --- INVENTARIO Y PROVEEDORES ---
     ProveedorViewSet, CompraViewSet, CompraDetalleViewSet,
-    TelaListAPIView, HiloListAPIView, UniformeListAPIView,
+    # (ANTES: ListAPIView)  # TelaListAPIView, HiloListAPIView, UniformeListAPIView,
+    # (dejamos importadas por si las usas en otro lado, pero ya no las mapeamos en estas rutas)
+    TelaViewSet, HiloViewSet, UniformeViewSet,
     EliminarTela, EliminarHilo, EliminarUniforme,
     EditarTela, EditarHilo, EditarUniforme,
 
@@ -51,6 +53,42 @@ router.register(r'operaciones', OperacionViewSet, basename='operacion')
 router.register(r'ordenes', OrdenViewSet, basename='orden')
 
 
+# ========= Mapeo explícito de ViewSets a rutas CRUD (telas/hilos/uniformes) =========
+tela_list = TelaViewSet.as_view({
+    'get': 'list',
+    'post': 'create',
+})
+tela_detail = TelaViewSet.as_view({
+    'get': 'retrieve',
+    'put': 'update',
+    'patch': 'partial_update',
+    'delete': 'destroy',
+})
+
+hilo_list = HiloViewSet.as_view({
+    'get': 'list',
+    'post': 'create',
+})
+hilo_detail = HiloViewSet.as_view({
+    'get': 'retrieve',
+    'put': 'update',
+    'patch': 'partial_update',
+    'delete': 'destroy',
+})
+
+uniforme_list = UniformeViewSet.as_view({
+    'get': 'list',
+    'post': 'create',
+})
+uniforme_detail = UniformeViewSet.as_view({
+    'get': 'retrieve',
+    'put': 'update',
+    'patch': 'partial_update',
+    'delete': 'destroy',
+})
+# =============================================================================
+
+
 urlpatterns = [
     # --- AUTH ---
     path("ping/", ping, name='ping'),
@@ -71,15 +109,20 @@ urlpatterns = [
     path("ventas/metodos-pago/", MetodosPagoUsadosAPIView.as_view(), name="metodos-pago"),
     path("ventas/detalles/", DetalleVentasAPIView.as_view(), name="detalle-ventas"),
 
-    # --- INVENTARIO ---
-    path("telas/", TelaListAPIView.as_view(), name="listar-telas"),
-    path("hilos/", HiloListAPIView.as_view(), name="listar-hilos"),
-    path("uniformes/", UniformeListAPIView.as_view(), name="listar-uniformes"),
+    # --- INVENTARIO (ahora con CRUD completo vía ViewSet mapeado) ---
+    path("telas/", tela_list, name="telas-list"),
+    path("telas/<int:pk>/", tela_detail, name="telas-detail"),
 
+    path("hilos/", hilo_list, name="hilos-list"),
+    path("hilos/<int:pk>/", hilo_detail, name="hilos-detail"),
+
+    path("uniformes/", uniforme_list, name="uniformes-list"),
+    path("uniformes/<int:pk>/", uniforme_detail, name="uniformes-detail"),
+
+    # (Opcional: puedes dejar estos 6 endpoints antiguos por compatibilidad, pero ya no son necesarios)
     path("inventario/eliminar-tela/<int:pk>/", EliminarTela.as_view(), name="eliminar-tela"),
     path("inventario/eliminar-hilo/<int:pk>/", EliminarHilo.as_view(), name="eliminar-hilo"),
     path("inventario/eliminar-uniforme/<int:pk>/", EliminarUniforme.as_view(), name="eliminar-uniforme"),
-
     path("inventario/editar-tela/<int:pk>/", EditarTela.as_view(), name="editar-tela"),
     path("inventario/editar-hilo/<int:pk>/", EditarHilo.as_view(), name="editar-hilo"),
     path("inventario/editar-uniforme/<int:pk>/", EditarUniforme.as_view(), name="editar-uniforme"),
@@ -96,6 +139,6 @@ urlpatterns = [
     # --- ORDENES ---
     path("ordenes/historial/", HistorialPedidosAPIView.as_view(), name="historial-pedidos"),
 
-    # --- RUTAS AUTOMÁTICAS ---
+    # --- RUTAS AUTOMÁTICAS DE OTROS VIEWSETS ---
     path("", include(router.urls)),
 ]

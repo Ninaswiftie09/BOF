@@ -39,7 +39,7 @@
       </div>
     </div>
 
-    <!-- ============== Modal Formulario (compacto + oscuro) ============== -->
+    <!-- ============== Modal Formulario  ============== -->
     <div v-if="formVisible" class="modal-overlay">
       <div class="modal-content modal--compact">
         <h3 v-if="accion === 'agregar'">Agregar nuevo {{ titulosVisibles[tipoFormulario] || tipoFormulario }}</h3>
@@ -361,9 +361,17 @@ export default {
       } else if(this.tipoFormulario==='Hilos'){
         const {id:i,nombre,material,codigo_color,color,codigo,stock,descripcion}=item
         this.formData = {id:i,nombre,material,codigo_color,color,codigo,stock,descripcion}
-      } else if(this.tipoFormulario==='Uniformes'){
-        const {id:i,tipo,talla,color,stock,material,categoria}=item
-        this.formData = {id:i,tipo,talla,color,stock,material,categoria}
+      } else if (this.tipoFormulario === 'Uniformes') {
+  const { id:i, tipo, talla, color, stock, material, categoria } = item
+  this.formData = {
+    id: i,
+    tipo,
+    talla,
+    color,
+    stock,
+    material: (material && typeof material === 'object') ? material.id : material,     // << ID
+    categoria: (categoria && typeof categoria === 'object') ? categoria.id : categoria // << ID
+  }
       } else if(this.tipoFormulario==='Categorias'){
         const {id:i,nombre}=item
         this.formData = {id:i,nombre}
@@ -373,48 +381,111 @@ export default {
       this.seleccionId = id
     },
 
-    async submitFormulario(){
-      try{
-        const tipo = this.tipoFormulario.slice(0,-1).toLowerCase()
-        const agregar = {
-          tela:'inventario/agregar-nueva-tela',
-          hilo:'inventario/agregar-nuevo-hilo',
-          uniforme:'inventario/agregar-nuevo-uniforme',
-          categoria:'inventario/agregar-nueva-categoria'
-        }
+   async submitFormulario() {
+  try {
+    const tipo = this.tipoFormulario.slice(0, -1).toLowerCase(); // 'tela' | 'hilo' | 'uniforme' | 'categoria'
+    const plural = { tela: 'telas', hilo: 'hilos', uniforme: 'uniformes' }[tipo];
 
-        let url = '', method = '', payload = null
+    
+    const toId = (v) => {
+      if (v && typeof v === 'object') return Number(v.id ?? NaN);
+      if (v === '' || v === undefined) return null;
+      const n = Number(v);
+      return Number.isFinite(n) ? n : null;
+    };
 
-        if (this.accion === 'agregar') {
-          url = `/api/${agregar[tipo]}/`
-          method = 'POST'
-          payload = this.formData
-        } else if (this.accion === 'editar') {
-          if (!this.formData.id) return alert('Debe especificar el ID')
-          const base = (tipo === 'categoria') ? 'editar-categoria' : `editar-${tipo}`
-          url = `/api/inventario/${base}/${this.formData.id}/`
-          method = 'PUT'
-          payload = this.formData
-        } else if (this.accion === 'eliminar') {
-          if (!this.formData.id) return alert('Debe especificar el ID')
-          const base = (tipo === 'categoria') ? 'eliminar-categoria' : `eliminar-${tipo}`
-          url = `/api/inventario/${base}/${this.formData.id}/`
-          method = 'DELETE'
-        }
+    let url = '', method = '', payload = null;
 
-        await apiFetch(url, method, payload)
+    if (this.accion === 'agregar') {
+      if (tipo === 'categoria') {
+        url = `/api/inventario/agregar-nueva-categoria/`;
+        method = 'POST';
+        payload = this.formData;
 
-        alert(`${this.accion} completado con éxito`)
-        bus?.emit?.('inventario-actualizado')
-        this.cerrarFormulario()
-        await this.obtenerInventario(this.tipoFormulario)
-        if(this.tipoFormulario==='Categorias') await this.cargarCategorias()
-      } catch (e) {
-        console.error(e)
-        alert('Error en la operación. Revisa los datos e intenta nuevamente.')
+      } else if (tipo === 'uniforme') {
+        const f = this.formData || {};
+        const materialId  = toId(f.material);
+        const categoriaId = toId(f.categoria);
+        if (!materialId)  return alert('Selecciona un material (tela).');
+        if (!categoriaId) return alert('Selecciona una categoría.');
+
+        payload = {
+          tipo:  f.tipo ?? '',
+          talla: f.talla ?? '',
+          color: f.color ?? '',
+          stock: Number(f.stock ?? 0),
+          material: materialId,     // <-- ID de Tela
+          categoria: categoriaId,   // <-- ID de Categoría
+          
+        };
+        url = `/api/uniformes/`;
+        method = 'POST';
+
+      } else {
+        url = `/api/${plural}/`;
+        method = 'POST';
+        payload = this.formData;
       }
-    },
 
+    } else if (this.accion === 'editar') {
+      if (!this.formData.id) return alert('Debe especificar el ID');
+
+      if (tipo === 'categoria') {
+        url = `/api/inventario/editar-categoria/${this.formData.id}/`;
+        method = 'PUT';
+        payload = this.formData;
+
+      } else if (tipo === 'uniforme') {
+        const f = this.formData || {};
+        const materialId  = toId(f.material);
+        const categoriaId = toId(f.categoria);
+        if (!materialId)  return alert('Selecciona un material (tela).');
+        if (!categoriaId) return alert('Selecciona una categoría.');
+
+        payload = {
+          tipo:  f.tipo ?? '',
+          talla: f.talla ?? '',
+          color: f.color ?? '',
+          stock: Number(f.stock ?? 0),
+          material: materialId,
+          categoria: categoriaId,
+        };
+        url = `/api/uniformes/${this.formData.id}/`;
+        method = 'PUT';
+
+      } else {
+        url = `/api/${plural}/${this.formData.id}/`;
+        method = 'PUT';
+        payload = this.formData;
+      }
+
+    } else if (this.accion === 'eliminar') {
+      if (!this.formData.id) return alert('Debe especificar el ID');
+
+      if (tipo === 'categoria') {
+        url = `/api/inventario/eliminar-categoria/${this.formData.id}/`;
+        method = 'DELETE';
+      } else {
+        url = `/api/${plural}/${this.formData.id}/`;
+        method = 'DELETE';
+      }
+    }
+
+    await apiFetch(url, method, payload);
+
+    alert(`${this.accion} completado con éxito`);
+    bus?.emit?.('inventario-actualizado');
+    this.cerrarFormulario();
+    await this.obtenerInventario(this.tipoFormulario);
+    if (this.tipoFormulario === 'Categorias') await this.cargarCategorias();
+
+  } catch (e) {
+    console.error(e);
+    const detalle = e?.payload ? JSON.stringify(e.payload) : e?.message || 'Error';
+    alert(`Error en la operación: ${detalle}`);
+  }
+}
+,
     async obtenerInventario(tipo){
       try{
         const data = await apiFetch(`/api/${tipo.toLowerCase()}/`)
@@ -425,7 +496,6 @@ export default {
         )
       }catch(e){ console.error(`Error al obtener ${tipo}:`, e) }
     },
-
     async cargarCategorias(){
       try{
         this.categoriasOptions = await apiFetch('/api/categorias/')

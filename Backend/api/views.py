@@ -160,6 +160,20 @@ class EditarUniforme(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+
+class TelaViewSet(viewsets.ModelViewSet):
+    queryset = Tela.objects.all().order_by('id')
+    serializer_class = TelaSerializer
+
+class HiloViewSet(viewsets.ModelViewSet):
+    queryset = Hilo.objects.all().order_by('id')
+    serializer_class = HiloSerializer
+
+class UniformeViewSet(viewsets.ModelViewSet):
+    queryset = Uniforme.objects.all().order_by('id')
+    serializer_class = UniformeSerializer
+
+
 # =======================
 # AUTENTICACIÓN
 # =======================
