@@ -20,6 +20,15 @@ from rest_framework.filters import SearchFilter
 from rest_framework.generics import ListAPIView, RetrieveAPIView
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from .permissions import IsAdmin, IsAdminOrEmpleado
+
+
+from .utils.roles import get_role
+
+
+
 
 from .models import (
     Empresa, Cliente, Pedido, PedidoDetalle, CuentaPagada,
@@ -182,6 +191,19 @@ def ping(request):
     return JsonResponse({"message": "pong"})
 
 
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def me(request):
+    u = request.user
+    return Response({
+        "id": u.id,
+        "email": u.email,
+        "first_name": getattr(u, "first_name", ""),
+        "role": get_role(u),             # <-- "admin" | "empleado" | "ninguno"
+        "group_ids": list(u.groups.values_list("id", flat=True)),  # por si quieres verlo
+    })
+    
+    
 @csrf_exempt
 def register_user(request):
     if request.method == 'POST':

@@ -1,5 +1,10 @@
-from rest_framework import routers
 from django.urls import path, include
+from . import views
+from rest_framework.routers import DefaultRouter
+router = DefaultRouter()
+
+
+
 
 from .views import (
     # --- AUTH ---
@@ -32,7 +37,7 @@ from .views import (
     VentasPorFechaAPIView, EvolucionVentasAPIView, ProductosMasVendidosAPIView, MetodosPagoUsadosAPIView, DetalleVentasAPIView,
 )
 
-router = routers.DefaultRouter()
+router = DefaultRouter()
 
 # --- CLIENTES ---
 router.register(r'empresas', EmpresaViewSet, basename='empresa')
@@ -92,6 +97,7 @@ uniforme_detail = UniformeViewSet.as_view({
 urlpatterns = [
     # --- AUTH ---
     path("ping/", ping, name='ping'),
+    path('me/', views.me, name='me'),           # <-- AGREGA ESTA LÍNEA
     path("register/", register_user, name='register'),
     path("login/", login_user, name='login'),
     path("forgot-password/", forgot_password, name='forgot-password'),
