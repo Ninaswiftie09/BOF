@@ -26,16 +26,19 @@
       </div>
     </div>
 
-    <!-- Tabla -->
+    <!-- Tabla principal -->
     <div class="operations-section">
       <div class="section-header">
         <h2 class="section-title">OPERACIONES RECIENTES</h2>
-        <button class="btn" @click="openNew">AGREGAR MOVIMIENTO</button>
+        <div class="section-buttons">
+          <button class="btn" @click="openNew">AGREGAR MOVIMIENTO</button>
+          <button class="btn btn--muted" @click="abrirVerTodos">VER TODO</button>
+        </div>
       </div>
 
       <Tablas
         :columns="columns"
-        :rows="tableRows"
+        :rows="tableRows.slice(0,6)"
         :center="true"
         :searchable="false"
         :actions="{ edit:false, delete:false }"
@@ -74,6 +77,36 @@
         </form>
       </div>
     </div>
+
+    <!-- Modal: Ver Todo -->
+    <div v-if="verTodosVisible" class="modal-overlay" @click.self="cerrarVerTodos">
+      <div class="modal-content modal--wide full-table-modal">
+        <button class="close-btn-top" @click="cerrarVerTodos">✕</button>
+        <h3>OPERACIONES - LISTA COMPLETA</h3>
+        <div class="table-wrapper">
+          <table class="table dark-table table--center">
+            <thead>
+              <tr>
+                <th v-for="col in columns" :key="col.key">{{ col.label }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="row in tableRows" :key="row.id">
+                <td>{{ row.id }}</td>
+                <td>{{ row.tipo }}</td>
+                <td>{{ row.concepto }}</td>
+                <td>{{ row.monto }}</td>
+                <td>{{ row.fecha }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="modal-actions">
+          <button class="btn btn--muted" @click="cerrarVerTodos">Cerrar</button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -97,15 +130,14 @@ export default {
       summary: { ingresos: 0, egresos: 0, balance: 0, total: 0 },
       search: '',
       modalOpen: false,
+      verTodosVisible: false,
       newOperation: { tipo: 'ingreso', monto: '', concepto: '' },
-
-      // columnas para Tablas.vue
       columns: [
-        { key: 'id',      label: 'ID' },
-        { key: 'tipo',    label: 'TIPO' },
-        { key: 'concepto',label: 'CONCEPTO' },
-        { key: 'monto',   label: 'MONTO' },
-        { key: 'fecha',   label: 'FECHA' },
+        { key: 'id', label: 'ID' },
+        { key: 'tipo', label: 'TIPO' },
+        { key: 'concepto', label: 'CONCEPTO' },
+        { key: 'monto', label: 'MONTO' },
+        { key: 'fecha', label: 'FECHA' },
       ],
     }
   },
@@ -123,7 +155,6 @@ export default {
         ].some(v => v.toString().toLowerCase().includes(q))
       })
     },
-    // filas ya formateadas para la tabla reutilizable
     tableRows() {
       return this.filteredOperations.map(op => ({
         id: op.id,
@@ -157,6 +188,8 @@ export default {
     },
     openNew() { this.modalOpen = true },
     closeModal() { this.modalOpen = false },
+    abrirVerTodos() { this.verTodosVisible = true },
+    cerrarVerTodos() { this.verTodosVisible = false },
     async addOperation() {
       if (!this.newOperation.monto || !this.newOperation.concepto.trim()) {
         alert('Completa todos los campos'); return
@@ -194,7 +227,6 @@ export default {
   padding-bottom: 2rem;
 }
 
-/* Resumen */
 .summary-section{
   display:flex; flex-wrap:wrap; gap:20px;
   margin: 2rem; margin-bottom:30px;
@@ -210,7 +242,6 @@ export default {
 .summary-card h3{ margin:0; text-transform:uppercase; }
 .summary-card p{ font-size:1.5rem; margin-top:10px; font-weight:bold; }
 
-/* Caja de la tabla */
 .operations-section{
   background:#0d1130;
   border:2px solid #1e2236;
@@ -222,8 +253,15 @@ export default {
   display:flex; justify-content:space-between; align-items:center;
   margin-bottom: 16px;
 }
-.section-title{ margin:0; text-transform:uppercase; }
-
-/* Botón usa .btn global; aquí solo aseguramos alineación */
+.section-buttons{
+  display:flex; gap:10px;
+}
 .btn{ font-weight:700; }
+
+.close-btn-top{
+  position:absolute; top:10px; right:15px;
+  background:transparent; border:none; font-size:22px;
+  cursor:pointer; font-weight:bold; color:#fff;
+}
+.table-wrapper{ max-height:70vh; overflow:auto; }
 </style>
