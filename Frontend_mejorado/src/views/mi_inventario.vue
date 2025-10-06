@@ -47,6 +47,7 @@
         <h3 v-else-if="accion === 'eliminar'">Eliminar {{ titulosVisibles[tipoFormulario] || tipoFormulario }}</h3>
 
         <form @submit.prevent="submitFormulario" class="form-vertical">
+
           <!-- Selección de producto para edición -->
           <template v-if="accion === 'editar'">
             <label>Seleccionar producto:</label>
@@ -60,10 +61,17 @@
             </div>
           </template>
 
-          <!-- ID cuando es eliminación -->
+          <!-- Selección de producto para eliminación (cambio nuevo aquí 👇) -->
           <template v-else-if="accion === 'eliminar'">
-            <label>ID del producto:</label>
-            <input class="input--dark" v-model.number="formData.id" type="number" min="1" required />
+            <label>Seleccionar elemento a eliminar:</label>
+            <div class="select-wrap">
+              <select class="select--dark" v-model.number="formData.id" required>
+                <option :value="null" disabled>Seleccione un elemento</option>
+                <option v-for="item in inventarios[tipoFormulario]" :key="item.id" :value="item.id">
+                  {{ formatearProducto(item) }}
+                </option>
+              </select>
+            </div>
           </template>
 
           <!-- Campos cuando no es eliminar -->
@@ -268,14 +276,12 @@ export default {
       const lista=this.inventarios[this.tipoFormulario]||[]
       const item=lista.find(p=>p.id===id)
       if(!item)return
-      if(this.tipoFormulario==='Telas'||this.tipoFormulario==='Hilos'||this.tipoFormulario==='Categorias'||this.tipoFormulario==='Uniformes')
-        this.formData={...item}
+      this.formData={...item}
     },
     async safeApiFetch(url, method='GET', payload){
       try{
         return await apiFetch(url,method,payload)
       }catch(err){
-        // Manejo especial de error DELETE
         if(method==='DELETE' && (err.message?.includes('Failed to fetch') || err.message?.includes('ERR_CONTENT_LENGTH_MISMATCH'))){
           console.warn('DELETE inconsistente, se asume éxito')
           return null
