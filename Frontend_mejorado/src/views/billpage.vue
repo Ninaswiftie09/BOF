@@ -123,11 +123,21 @@ export default {
 
         // Cliente
         doc.setFontSize(12)
-        if (venta.cliente) {
-          doc.text(`Cliente: ${venta.cliente.nombre}`, 20, 40)
-          doc.text(`NIT: ${venta.cliente.nit || 'C/F'}`, 20, 46)
-          doc.text(`Dirección: ${venta.cliente.direccion || ''}`, 20, 52)
-        }
+        const cliente = venta.cliente || {}
+        const clienteNombre = cliente.nombre || 'Cliente no registrado'
+        const clienteNit = cliente.nit || 'C/F'
+        const clienteDireccion = cliente.direccion || cliente.direccion_entrega || 'Sin dirección'
+        const clienteTelefono = cliente.telefono || 'Sin teléfono'
+        const clienteCorreo = cliente.email || 'Sin correo'
+
+        doc.text(`Cliente: ${clienteNombre}`, 20, 40)
+        doc.text(`NIT: ${clienteNit}`, 20, 46)
+        doc.text(`Dirección: ${clienteDireccion}`, 20, 52)
+        doc.text(`Teléfono: ${clienteTelefono}`, 20, 58)
+        doc.text(`Correo: ${clienteCorreo}`, 20, 64)
+
+        doc.text(`Método de pago: ${venta.metodo_pago || 'No especificado'}`, 20, 74)
+        doc.text(`Estado: ${venta.estado || 'No especificado'}`, 20, 80)
 
         // Tabla
         const rows = (venta.detalles || []).map(d => [
