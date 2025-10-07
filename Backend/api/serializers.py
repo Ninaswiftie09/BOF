@@ -94,11 +94,13 @@ class DetalleVentaSerializer(serializers.ModelSerializer):
 
 class VentaSerializer(serializers.ModelSerializer):
     detalles = DetalleVentaSerializer(many=True, read_only=True)
+    cliente_nombre = serializers.CharField(source='cliente.nombre', read_only=True)
 
     class Meta:
         model = Venta
         fields = '__all__'
         read_only_fields = ['total']
+
 
 
 class VentaDetalleSerializer(serializers.ModelSerializer):

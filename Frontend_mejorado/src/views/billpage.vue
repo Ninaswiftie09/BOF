@@ -36,8 +36,9 @@
           <div class="invoice-info">
             <span class="invoice-description">
               Factura #{{ invoice.no_recibo || '—' }}
-              — Cliente: {{ invoice.cliente_id ?? '—' }}
+              — Cliente: {{ invoice.cliente_nombre || 'Cliente no registrado' }}
               — Total: Q{{ Number(invoice.total || 0).toLocaleString() }}
+
             </span>
 
             <button class="btn" @click="onDownloadPDF(invoice)">
@@ -72,7 +73,7 @@ export default {
   data() {
     return {
       invoices: [],
-      search: '' // 🔍 buscador
+      search: '' 
     }
   },
   mounted() {
@@ -149,11 +150,11 @@ export default {
         autoTable(doc, {
           head: [['Producto', 'Cantidad', 'Precio U.', 'Subtotal']],
           body: rows,
-          startY: 65
+          startY: 90
         })
 
         // Total
-        const y = (doc.lastAutoTable?.finalY ?? 65) + 10
+        const y = (doc.lastAutoTable?.finalY ?? 90) + 10
         doc.setFontSize(12)
         doc.text(`Total: Q${venta.total}`, 150, y, { align: 'right' })
 
