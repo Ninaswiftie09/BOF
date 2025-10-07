@@ -37,7 +37,7 @@
             <span class="invoice-description">
               Factura #{{ invoice.no_recibo || '—' }}
               — Cliente: {{ invoice.cliente_nombre || 'Cliente no registrado' }}
-              — Total: Q{{ Number(invoice.total || 0).toLocaleString() }}
+              — Total: Q{{ Number(invoice.total || 0).toLocaleString() }} 
 
             </span>
 
@@ -81,19 +81,22 @@ export default {
   },
   computed: {
     filteredInvoices() {
-      const q = this.search.trim().toLowerCase()
-      if (!q) return this.invoices
-      return this.invoices.filter(inv =>
-        [
-          inv.no_recibo,
-          inv.cliente_id,
-          inv.total,
-          inv.fecha
-        ]
-          .map(v => (v ?? '').toString().toLowerCase())
-          .some(txt => txt.includes(q))
-      )
-    }
+  const q = this.search.trim().toLowerCase()
+  if (!q) return this.invoices
+
+  return this.invoices.filter(inv =>
+    [
+      inv.no_recibo,
+      inv.cliente_nombre,
+      inv.cliente_nit,
+      inv.total,
+      inv.fecha
+    ]
+      .map(v => (v ?? '').toString().toLowerCase())
+      .some(txt => txt.includes(q))
+  )
+}
+
   },
   methods: {
     async fetchInvoices() {

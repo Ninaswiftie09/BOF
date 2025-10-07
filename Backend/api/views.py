@@ -484,7 +484,19 @@ class MetodosPagoUsadosAPIView(APIView):
 
 class DetalleVentasAPIView(APIView):
     def get(self, request):
+        cliente = request.query_params.get('cliente')
+        fecha = request.query_params.get('fecha')
+        nit = request.query_params.get('nit')
+
         ventas = Venta.objects.all()
+
+        if cliente:
+            ventas = ventas.filter(cliente__nombre__icontains=cliente)
+        if fecha:
+            ventas = ventas.filter(fecha=fecha)
+        if nit:
+            ventas = ventas.filter(cliente__nit__icontains=nit)
+
         serializer = VentaSerializer(ventas, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
     
