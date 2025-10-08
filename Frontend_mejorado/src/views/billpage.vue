@@ -1,25 +1,12 @@
 <template>
   <div class="billpage-container page">
-    <!-- Header sin buscador (lo ponemos en el módulo para que siempre se vea) -->
+    <!-- Header -->
     <NavBar title="OPCIONES DE FACTURACIÓN" />
-
-    <!-- Opciones -->
-    <div class="actions-row">
-      <div class="action-box" @click="uploadInvoice">
-        <h3>SUBIR FACTURA</h3>
-        <p>Selecciona o arrastra y suelta el PDF aquí</p>
-      </div>
-      <div class="action-box" @click="viewSavedInvoices">
-        <h3>FACTURAS GUARDADAS</h3>
-        <p>Revisa todas las facturas guardadas</p>
-      </div>
-    </div>
 
     <!-- Listado -->
     <section class="module">
       <div class="module-head">
         <h2 class="module-title">LISTADO DE FACTURAS</h2>
-        <!-- 🔍 Buscador estilo “Tabla” -->
         <input
           v-model="search"
           class="input input--white"
@@ -37,8 +24,7 @@
             <span class="invoice-description">
               Factura #{{ invoice.no_recibo || '—' }}
               — Cliente: {{ invoice.cliente_nombre || 'Cliente no registrado' }}
-              — Total: Q{{ Number(invoice.total || 0).toLocaleString() }} 
-
+              — Total: Q{{ Number(invoice.total || 0).toLocaleString() }}
             </span>
 
             <button class="btn" @click="onDownloadPDF(invoice)">
@@ -73,7 +59,7 @@ export default {
   data() {
     return {
       invoices: [],
-      search: '' 
+      search: ''
     }
   },
   mounted() {
@@ -81,22 +67,21 @@ export default {
   },
   computed: {
     filteredInvoices() {
-  const q = this.search.trim().toLowerCase()
-  if (!q) return this.invoices
+      const q = this.search.trim().toLowerCase()
+      if (!q) return this.invoices
 
-  return this.invoices.filter(inv =>
-    [
-      inv.no_recibo,
-      inv.cliente_nombre,
-      inv.cliente_nit,
-      inv.total,
-      inv.fecha
-    ]
-      .map(v => (v ?? '').toString().toLowerCase())
-      .some(txt => txt.includes(q))
-  )
-}
-
+      return this.invoices.filter(inv =>
+        [
+          inv.no_recibo,
+          inv.cliente_nombre,
+          inv.cliente_nit,
+          inv.total,
+          inv.fecha
+        ]
+          .map(v => (v ?? '').toString().toLowerCase())
+          .some(txt => txt.includes(q))
+      )
+    }
   },
   methods: {
     async fetchInvoices() {
@@ -166,13 +151,6 @@ export default {
         console.error('Error generando recibo:', error)
         alert('No se pudo generar el recibo')
       }
-    },
-
-    uploadInvoice() {
-      console.log('SUBIR FACTURA (pendiente de implementar)')
-    },
-    viewSavedInvoices() {
-      console.log('VER FACTURAS GUARDADAS (pendiente de implementar)')
     }
   }
 }
@@ -187,25 +165,6 @@ export default {
   color: var(--color-novenary);
 }
 
-/* Opciones superiores */
-.actions-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 20px;
-  margin: 20px;
-}
-.action-box {
-  flex: 1 1 240px;
-  background: var(--color-quaternary);
-  border-radius: 12px;
-  padding: 20px;
-  text-align: center;
-  cursor: pointer;
-  transition: background-color .2s ease;
-}
-.action-box:hover { background: var(--color-tertiary); }
-
-/* Cabecera del módulo con buscador a la derecha */
 .module { margin: 20px; }
 .module-head{
   display:flex; align-items:center; justify-content:space-between; gap:12px;
