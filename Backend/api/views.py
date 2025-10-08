@@ -374,9 +374,9 @@ class CrearVentaAPIView(APIView):
         total = Decimal("0")
 
         for item in detalles_data:
-            producto = get_object_or_404(Producto, pk=item["producto"])
+            producto = get_object_or_404(Uniforme, pk=item["producto"])
             cantidad = int(item["cantidad"])
-            precio_unitario = Decimal(item.get("precio_unitario", producto.precio))
+            precio_unitario = Decimal(item.get("precio_unitario", 0))
             subtotal = cantidad * precio_unitario
 
             DetalleVenta.objects.create(

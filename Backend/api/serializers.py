@@ -66,59 +66,6 @@ class CuentaPagadaSerializer(serializers.ModelSerializer):
 
 
 # =======================
-# VENTAS
-# =======================
-
-class CategoriaSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Categoria
-        fields = '__all__'
-
-
-class ProductoSerializer(serializers.ModelSerializer):
-    categoria = serializers.PrimaryKeyRelatedField(queryset=Categoria.objects.all())
-    categoria_nombre = serializers.CharField(source='categoria.nombre', read_only=True)
-
-    class Meta:
-        model = Producto
-        fields = ['id', 'nombre', 'categoria', 'categoria_nombre', 'precio', 'descripcion']
-
-
-class DetalleVentaSerializer(serializers.ModelSerializer):
-    producto = ProductoSerializer(read_only=True)
-
-    class Meta:
-        model = DetalleVenta
-        fields = '__all__'
-
-
-class VentaSerializer(serializers.ModelSerializer):
-    detalles = DetalleVentaSerializer(many=True, read_only=True)
-    cliente_nombre = serializers.CharField(source='cliente.nombre', read_only=True)
-    cliente_nit = serializers.CharField(source='cliente.nit', read_only=True)
-
-    class Meta:
-        model = Venta
-        fields = '__all__'
-        read_only_fields = ['total']
-
-
-
-class VentaDetalleSerializer(serializers.ModelSerializer):
-    cliente = serializers.SerializerMethodField()
-    detalles = DetalleVentaSerializer(many=True, read_only=True)
-
-    class Meta:
-        model = Venta
-        fields = ['id', 'fecha', 'cliente', 'metodo_pago', 'total', 'estado', 'detalles', 'no_recibo']
-
-    def get_cliente(self, obj):
-        if obj.cliente:
-            return ClienteSerializer(obj.cliente).data
-        return None
-
-
-# =======================
 # PROVEEDORES Y COMPRAS
 # =======================
 
@@ -202,6 +149,58 @@ class UniformeSerializer(serializers.ModelSerializer):
         instance.save()
         return instance
 
+
+# =======================
+# VENTAS
+# =======================
+
+class CategoriaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Categoria
+        fields = '__all__'
+
+
+class ProductoSerializer(serializers.ModelSerializer):
+    categoria = serializers.PrimaryKeyRelatedField(queryset=Categoria.objects.all())
+    categoria_nombre = serializers.CharField(source='categoria.nombre', read_only=True)
+
+    class Meta:
+        model = Producto
+        fields = ['id', 'nombre', 'categoria', 'categoria_nombre', 'precio', 'descripcion']
+
+
+class DetalleVentaSerializer(serializers.ModelSerializer):
+    producto = UniformeSerializer(read_only=True)
+
+    class Meta:
+        model = DetalleVenta
+        fields = '__all__'
+
+
+class VentaSerializer(serializers.ModelSerializer):
+    detalles = DetalleVentaSerializer(many=True, read_only=True)
+    cliente_nombre = serializers.CharField(source='cliente.nombre', read_only=True)
+    cliente_nit = serializers.CharField(source='cliente.nit', read_only=True)
+
+    class Meta:
+        model = Venta
+        fields = '__all__'
+        read_only_fields = ['total']
+
+
+
+class VentaDetalleSerializer(serializers.ModelSerializer):
+    cliente = serializers.SerializerMethodField()
+    detalles = DetalleVentaSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Venta
+        fields = ['id', 'fecha', 'cliente', 'metodo_pago', 'total', 'estado', 'detalles', 'no_recibo']
+
+    def get_cliente(self, obj):
+        if obj.cliente:
+            return ClienteSerializer(obj.cliente).data
+        return None
 
 # =======================
 # CONTABILIDAD

@@ -15,8 +15,7 @@ from .views import (
 
     # --- INVENTARIO Y PROVEEDORES ---
     ProveedorViewSet, CompraViewSet, CompraDetalleViewSet,
-    # (ANTES: ListAPIView)  # TelaListAPIView, HiloListAPIView, UniformeListAPIView,
-    # (dejamos importadas por si las usas en otro lado, pero ya no las mapeamos en estas rutas)
+    
     TelaViewSet, HiloViewSet, UniformeViewSet,
     EliminarTela, EliminarHilo, EliminarUniforme,
     EditarTela, EditarHilo, EditarUniforme,
@@ -97,7 +96,7 @@ uniforme_detail = UniformeViewSet.as_view({
 urlpatterns = [
     # --- AUTH ---
     path("ping/", ping, name='ping'),
-    path('me/', views.me, name='me'),           # <-- AGREGA ESTA LÍNEA
+    path('me/', views.me, name='me'),           
     path("register/", register_user, name='register'),
     path("login/", login_user, name='login'),
     path("forgot-password/", forgot_password, name='forgot-password'),
@@ -125,7 +124,6 @@ urlpatterns = [
     path("uniformes/", uniforme_list, name="uniformes-list"),
     path("uniformes/<int:pk>/", uniforme_detail, name="uniformes-detail"),
 
-    # (Opcional: puedes dejar estos 6 endpoints antiguos por compatibilidad, pero ya no son necesarios)
     path("inventario/eliminar-tela/<int:pk>/", EliminarTela.as_view(), name="eliminar-tela"),
     path("inventario/eliminar-hilo/<int:pk>/", EliminarHilo.as_view(), name="eliminar-hilo"),
     path("inventario/eliminar-uniforme/<int:pk>/", EliminarUniforme.as_view(), name="eliminar-uniforme"),
