@@ -39,7 +39,7 @@
       </div>
     </div>
 
-    <!-- ============== Modal Formulario  ============== -->
+    <!-- ============== Modal Formulario ============== -->
     <div v-if="formVisible" class="modal-overlay">
       <div class="modal-content modal--compact">
         <h3 v-if="accion === 'agregar'">Agregar nuevo {{ titulosVisibles[tipoFormulario] || tipoFormulario }}</h3>
@@ -61,7 +61,7 @@
             </div>
           </template>
 
-          <!-- Selección de producto para eliminación (cambio nuevo aquí 👇) -->
+          <!-- Selección para eliminar -->
           <template v-else-if="accion === 'eliminar'">
             <label>Seleccionar elemento a eliminar:</label>
             <div class="select-wrap">
@@ -141,10 +141,20 @@
                 <label>Color</label>
                 <input class="input--dark" v-model="formData.color" />
               </div>
+
+              <!-- CAMBIO NUEVO: Select de Telas -->
               <div class="form-field">
-                <label>ID de Tela relacionada</label>
-                <input class="input--dark" type="number" v-model.number="formData.material" />
+                <label>Tela relacionada</label>
+                <div class="select-wrap">
+                  <select class="select--dark" v-model.number="formData.material">
+                    <option :value="null" disabled>Seleccione una tela</option>
+                    <option v-for="t in inventarios.Telas" :key="t.id" :value="t.id">
+                      {{ t.nombre ? t.nombre : `${t.tipo} (${t.color})` }}
+                    </option>
+                  </select>
+                </div>
               </div>
+
               <div class="form-field">
                 <label>Stock</label>
                 <input class="input--dark" type="number" v-model.number="formData.stock" />
