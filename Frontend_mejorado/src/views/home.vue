@@ -124,7 +124,7 @@ const navItems = [
 ]
 
 const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim()
-const inventarioData = ref({ Telas:0, Hilos:0, Uniformes:0 })
+const inventarioData = ref({ Telas:0, Hilos:0, Productos:0 })
 const calendarAttrs = ref([{ key: 'hoy', highlight: true, dates: new Date() }])
 
 let pieChart=null
@@ -168,7 +168,7 @@ const onGlobalClick = e => {
 
 /* Inventario */
 async function fetchInventarioData(){
-  const endpoints=[['Telas','/api/telas/'],['Hilos','/api/hilos/'],['Uniformes','/api/uniformes/']]
+  const endpoints=[['Telas','/api/telas/'],['Hilos','/api/hilos/'],['Productos','/api/uniformes/']]
   try{
     const datasets = await Promise.all(endpoints.map(([,p])=>apiFetch(p)))
     datasets.forEach((data,i)=>{
@@ -180,17 +180,26 @@ async function fetchInventarioData(){
 
 /* Chart */
 function renderPie(){
-  const ctx=document.getElementById('myPieChart')?.getContext('2d'); if(!ctx) return
+  const ctx=document.getElementById('myPieChart')?.getContext('2d');
+  if(!ctx) return;
   pieChart?.destroy()
+
+  /* se extraen las claves/nombres de los objetos*/
+  const etiquetas = Object.keys(inventarioData.value);
+
+  /*se extraen los valores/inventarioData.value de los objetos*/
+  const datos = Object.values(inventarioData.value);
+
   pieChart=new Chart(ctx,{
     type:'pie',
     data:{
-      labels:['Telas','Hilos','Uniformes'],
+      labels: etiquetas,
       datasets:[{
-        data:[inventarioData.value.Telas,inventarioData.value.Hilos,inventarioData.value.Uniformes],
+        data: datos,
         /* se añaden color en script */
         backgroundColor:[css('--color-tertiary')||'#84C8C0',css('--color-septenary')||'#cbd5e1',css('--color-quinary')||'#2B5CA8'],
-        borderColor:css('--color-novenary')||'#fff',borderWidth:1
+        borderColor:css('--color-novenary')||'#fff',
+        borderWidth:1
       }]
     },
     options:{
@@ -227,9 +236,10 @@ bus.on('clientes-actualizados', ({ nuevosMes }) => {
 bus.on('inventario-actualizado', async ()=>{
   await fetchInventarioData()
   if(pieChart){
-    pieChart.data.datasets[0].data=[inventarioData.value.Telas,inventarioData.value.Hilos,inventarioData.value.Uniformes]
+    pieChart.data.datasets[0].data=Object.values(inventarioData.value)
     pieChart.update()
-  } else renderPie()
+  } else
+    renderPie()
 })
 </script>
 
