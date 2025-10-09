@@ -15,6 +15,7 @@ import ClientesRegistro from '../views/clientesregistro.vue'
 import Proveedores from '../views/proveedores.vue'
 import LandingPage from '@/views/LandingPage.vue'
 import Envios from '../views/envios.vue'
+import NewPassView from '../views/newpass.vue'
 
 // ---------- Mini helper para /api/me/ ----------
 let ME = null
@@ -47,7 +48,7 @@ const routes = [
   { path: '/LandingPage', name: 'inicio', component: LandingPage, meta: { requiresAuth: false } },
   { path: '/login', name: 'login', component: Login, meta: { requiresAuth: false } },
   { path: '/forgotpass', name: 'forgotpass', component: Forgotpass, meta: { requiresAuth: false } },
-
+  { path: '/newpass', name: 'newpass', component: NewPassView, meta: { requiresAuth: false } },
 
   // 🚫 FORBIDDEN (403)
   {

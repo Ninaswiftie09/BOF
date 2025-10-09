@@ -125,6 +125,53 @@ class CompraDetalle(models.Model):
 
 
 # =======================
+# INVENTARIO
+# =======================
+
+class Material(models.Model):
+    id = models.AutoField(primary_key=True)
+    nombre = models.CharField(max_length=100)
+    color = models.CharField(max_length=50)
+    codigo = models.CharField(max_length=50, unique=True)
+    descripcion = models.TextField(blank=True, null=True)
+
+    class Meta:
+        abstract = True
+
+
+class Hilo(Material):
+    material = models.CharField(max_length=50)
+    codigo_color = models.CharField(max_length=20)
+    stock = models.PositiveIntegerField(default=0)
+
+
+class Tela(Material):
+    tipo = models.CharField(max_length=50)
+    composicion = models.CharField(max_length=100)
+    stock = models.PositiveIntegerField(default=0)
+
+
+class Uniforme(models.Model):
+    id = models.AutoField(primary_key=True)
+    tipo = models.CharField(max_length=100)
+    talla = models.CharField(max_length=10)
+    color = models.CharField(max_length=50)
+    material = models.ForeignKey(Tela, on_delete=models.SET_NULL, null=True, blank=True)
+    stock = models.PositiveIntegerField(default=0)
+
+    categoria = models.ForeignKey(
+        'Categoria',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='uniformes'
+    )
+
+    def __str__(self):
+        return f"{self.tipo} - {self.talla} - {self.color}"
+
+
+# =======================
 # VENTAS
 # =======================
 
@@ -179,62 +226,13 @@ class Venta(models.Model):
 
 class DetalleVenta(models.Model):
     venta = models.ForeignKey(Venta, on_delete=models.CASCADE, related_name='detalles')
-    producto = models.ForeignKey(Producto, on_delete=models.CASCADE)
+    producto = models.ForeignKey(Uniforme, on_delete=models.CASCADE)
     cantidad = models.PositiveIntegerField()
     precio_unitario = models.DecimalField(max_digits=10, decimal_places=2)
     subtotal = models.DecimalField(max_digits=10, decimal_places=2)
 
     def __str__(self):
         return f"Detalle {self.id} de Venta {self.venta.id}"
-
-
-# =======================
-# INVENTARIO
-# =======================
-
-class Material(models.Model):
-    id = models.AutoField(primary_key=True)
-    nombre = models.CharField(max_length=100)
-    color = models.CharField(max_length=50)
-    codigo = models.CharField(max_length=50, unique=True)
-    descripcion = models.TextField(blank=True, null=True)
-
-    class Meta:
-        abstract = True
-
-
-class Hilo(Material):
-    material = models.CharField(max_length=50)
-    codigo_color = models.CharField(max_length=20)
-    stock = models.PositiveIntegerField(default=0)
-
-
-class Tela(Material):
-    tipo = models.CharField(max_length=50)
-    composicion = models.CharField(max_length=100)
-    stock = models.PositiveIntegerField(default=0)
-
-
-class Uniforme(models.Model):
-    id = models.AutoField(primary_key=True)
-    tipo = models.CharField(max_length=100)
-    talla = models.CharField(max_length=10)
-    color = models.CharField(max_length=50)
-    material = models.ForeignKey(Tela, on_delete=models.SET_NULL, null=True, blank=True)
-    stock = models.PositiveIntegerField(default=0)
-
-    categoria = models.ForeignKey(
-        'Categoria',
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name='uniformes'
-    )
-
-    def __str__(self):
-        return f"{self.tipo} - {self.talla} - {self.color}"
-
-
 # =======================
 # CONTABILIDAD
 # =======================

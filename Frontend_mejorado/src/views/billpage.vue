@@ -1,25 +1,12 @@
 <template>
   <div class="billpage-container page">
-    <!-- Header sin buscador (lo ponemos en el módulo para que siempre se vea) -->
+    <!-- Header -->
     <NavBar title="OPCIONES DE FACTURACIÓN" />
-
-    <!-- Opciones -->
-    <div class="actions-row">
-      <div class="action-box" @click="uploadInvoice">
-        <h3>SUBIR FACTURA</h3>
-        <p>Selecciona o arrastra y suelta el PDF aquí</p>
-      </div>
-      <div class="action-box" @click="viewSavedInvoices">
-        <h3>FACTURAS GUARDADAS</h3>
-        <p>Revisa todas las facturas guardadas</p>
-      </div>
-    </div>
 
     <!-- Listado -->
     <section class="module">
       <div class="module-head">
         <h2 class="module-title">LISTADO DE FACTURAS</h2>
-        <!-- 🔍 Buscador estilo “Tabla” -->
         <input
           v-model="search"
           class="input input--white"
@@ -36,7 +23,7 @@
           <div class="invoice-info">
             <span class="invoice-description">
               Factura #{{ invoice.no_recibo || '—' }}
-              — Cliente: {{ invoice.cliente_id ?? '—' }}
+              — Cliente: {{ invoice.cliente_nombre || 'Cliente no registrado' }}
               — Total: Q{{ Number(invoice.total || 0).toLocaleString() }}
             </span>
 
@@ -72,7 +59,7 @@ export default {
   data() {
     return {
       invoices: [],
-      search: '' // 🔍 buscador
+      search: ''
     }
   },
   mounted() {
@@ -82,10 +69,12 @@ export default {
     filteredInvoices() {
       const q = this.search.trim().toLowerCase()
       if (!q) return this.invoices
+
       return this.invoices.filter(inv =>
         [
           inv.no_recibo,
-          inv.cliente_id,
+          inv.cliente_nombre,
+          inv.cliente_nit,
           inv.total,
           inv.fecha
         ]
@@ -123,11 +112,21 @@ export default {
 
         // Cliente
         doc.setFontSize(12)
-        if (venta.cliente) {
-          doc.text(`Cliente: ${venta.cliente.nombre}`, 20, 40)
-          doc.text(`NIT: ${venta.cliente.nit || 'C/F'}`, 20, 46)
-          doc.text(`Dirección: ${venta.cliente.direccion || ''}`, 20, 52)
-        }
+        const cliente = venta.cliente || {}
+        const clienteNombre = cliente.nombre || 'Cliente no registrado'
+        const clienteNit = cliente.nit || 'C/F'
+        const clienteDireccion = cliente.direccion || cliente.direccion_entrega || 'Sin dirección'
+        const clienteTelefono = cliente.telefono || 'Sin teléfono'
+        const clienteCorreo = cliente.email || 'Sin correo'
+
+        doc.text(`Cliente: ${clienteNombre}`, 20, 40)
+        doc.text(`NIT: ${clienteNit}`, 20, 46)
+        doc.text(`Dirección: ${clienteDireccion}`, 20, 52)
+        doc.text(`Teléfono: ${clienteTelefono}`, 20, 58)
+        doc.text(`Correo: ${clienteCorreo}`, 20, 64)
+
+        doc.text(`Método de pago: ${venta.metodo_pago || 'No especificado'}`, 20, 74)
+        doc.text(`Estado: ${venta.estado || 'No especificado'}`, 20, 80)
 
         // Tabla
         const rows = (venta.detalles || []).map(d => [
@@ -139,11 +138,11 @@ export default {
         autoTable(doc, {
           head: [['Producto', 'Cantidad', 'Precio U.', 'Subtotal']],
           body: rows,
-          startY: 65
+          startY: 90
         })
 
         // Total
-        const y = (doc.lastAutoTable?.finalY ?? 65) + 10
+        const y = (doc.lastAutoTable?.finalY ?? 90) + 10
         doc.setFontSize(12)
         doc.text(`Total: Q${venta.total}`, 150, y, { align: 'right' })
 
@@ -152,13 +151,6 @@ export default {
         console.error('Error generando recibo:', error)
         alert('No se pudo generar el recibo')
       }
-    },
-
-    uploadInvoice() {
-      console.log('SUBIR FACTURA (pendiente de implementar)')
-    },
-    viewSavedInvoices() {
-      console.log('VER FACTURAS GUARDADAS (pendiente de implementar)')
     }
   }
 }
@@ -173,25 +165,6 @@ export default {
   color: var(--color-novenary);
 }
 
-/* Opciones superiores */
-.actions-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 20px;
-  margin: 20px;
-}
-.action-box {
-  flex: 1 1 240px;
-  background: var(--color-quaternary);
-  border-radius: 12px;
-  padding: 20px;
-  text-align: center;
-  cursor: pointer;
-  transition: background-color .2s ease;
-}
-.action-box:hover { background: var(--color-tertiary); }
-
-/* Cabecera del módulo con buscador a la derecha */
 .module { margin: 20px; }
 .module-head{
   display:flex; align-items:center; justify-content:space-between; gap:12px;

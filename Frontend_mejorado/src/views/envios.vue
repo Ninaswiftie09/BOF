@@ -167,13 +167,21 @@ import { useRouter } from 'vue-router'
 import NavBar from '@/components/NavBar.vue'
 import TablaBase from '@/components/Reutilizacion/Tablas.vue'
 
-const CLIENTES_A    = `/api/cliente/clientes/`
-const CLIENTES_B    = `/api/clientes/`
-const ORDENES_HIST  = `/api/ordenes/historial/`
-const ORDEN_ITEM    = id => `/api/ordenes/${id}/`
-const ORDENES_LIST  = `/api/ordenes/`
+// Clientes
+const CLIENTES_A    = `/api/clientes/`       
+const CLIENTES_B    = `/api/clientes/`        
+
+// Ventas 
+const ORDENES_LIST  = `/api/ventas/crear/`
+const ORDEN_ITEM    = id => `/api/ventas/${id}/recibo/`
+const ORDENES_HIST  = `/api/ventas/detalles/`
+
+
+
+// Inventario 
 const UNIFORME_SHOW = id => `/api/uniformes/${id}/`
 const UNIFORME_LIST = `/api/uniformes/`
+
 
 export default {
   components: { NavBar, TablaBase },
@@ -403,56 +411,55 @@ export default {
     abrirVerTodos(){ this.verTodosVisible = true },
     cerrarVerTodos(){ this.verTodosVisible = false },
 
-    async submitFormulario(){
-      try{
-        if(this.accion==='eliminar'){
-          if(!this.formData.id){ alert('Sin ID'); return }
-          await this.req(ORDEN_ITEM(this.formData.id),'DELETE')
-          this.borrarMetodoPago(this.formData.id)
-          this.formVisible=false
-          await this.cargarFilas()
-          return
-        }
-
-        const detalles = (this.formData.detalles||[]).filter(d => (d.nombre || d.producto) && d.cantidad>0)
-        if(detalles.length===0){ alert('Agrega al menos un detalle.'); return }
-
-        const clienteNombre = this.clientesMap[this.formData.cliente] || '—'
-        const payload = {
-          cliente: clienteNombre,
-          fecha: this.formData.fecha,
-          total: Number(this.subtotal.toFixed(2)),
-          detalles: await Promise.all(detalles.map(async d => {
-            let nombre = d.nombre
-            if(!nombre && d.producto){
-              const info = await this.fetchUniforme(d.producto) || await this.fetchUniformeDesdeLista(d.producto)
-              nombre = info?.nombre || `Uniforme #${d.producto}`
-            }
-            return {
-              producto: String(nombre || 'Uniforme'),
-              talla: '-', color: '-', tela: '-', bordado: '-',
-              cantidad: Number(d.cantidad),
-              precio: Number((+d.precio_unitario || 0).toFixed(2)),
-              descuento: 0
-            }
-          }))
-        }
-
-        if(this.accion==='editar' && this.formData.id){
-          await this.req(ORDEN_ITEM(this.formData.id),'PUT', payload)
-          this.guardarMetodoPago(this.formData.id, this.formData.metodo_pago)
-        }else{
-          const created = await this.req(ORDENES_LIST,'POST', payload)
-          if(created?.id) this.guardarMetodoPago(created.id, this.formData.metodo_pago)
-        }
-
-        this.formVisible=false
-        await this.cargarFilas()
-      }catch(e){
-        console.error('Error guardando/eliminando:', e)
-        alert('No se pudo completar la acción. Revisa los datos e intenta de nuevo.')
-      }
+    async submitFormulario() {
+  try {
+    if (this.accion === 'eliminar') {
+      if (!this.formData.id) { alert('Sin ID'); return }
+      await this.req(ORDEN_ITEM(this.formData.id), 'DELETE')
+      this.borrarMetodoPago(this.formData.id)
+      this.formVisible = false
+      await this.cargarFilas()
+      return
     }
+
+    const detalles = (this.formData.detalles || []).filter(
+      d => d.producto && d.cantidad > 0
+    )
+    if (detalles.length === 0) {
+      alert('Agrega al menos un detalle.')
+      return
+    }
+
+    const payload = {
+      cliente: this.formData.cliente,       
+      fecha: this.formData.fecha,
+      metodo_pago: this.formData.metodo_pago,
+      estado: 'completada',
+      detalles: detalles.map(d => ({
+        producto: Number(d.producto),            
+        cantidad: Number(d.cantidad),
+        precio_unitario: Number((+d.precio_unitario || 0).toFixed(2))
+      }))
+    }
+
+    // 🧾 Crear o actualizar venta
+    if (this.accion === 'editar' && this.formData.id) {
+      await this.req(ORDEN_ITEM(this.formData.id), 'PUT', payload)
+      this.guardarMetodoPago(this.formData.id, this.formData.metodo_pago)
+    } else {
+      const created = await this.req(ORDENES_LIST, 'POST', payload)
+      if (created?.id)
+        this.guardarMetodoPago(created.id, this.formData.metodo_pago)
+    }
+
+    this.formVisible = false
+    await this.cargarFilas()
+  } catch (e) {
+    console.error('Error guardando/eliminando:', e)
+    alert('No se pudo completar la acción. Revisa los datos e intenta de nuevo.')
+  }
+}
+
   }
 }
 </script>

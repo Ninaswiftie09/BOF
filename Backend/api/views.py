@@ -53,8 +53,11 @@ class EmpresaViewSet(viewsets.ModelViewSet):
 
 
 class ClienteViewSet(viewsets.ModelViewSet):
-    queryset = Cliente.objects.all()
+    queryset = Cliente.objects.all().order_by('nombre')
     serializer_class = ClienteSerializer
+    filter_backends = [SearchFilter]
+    search_fields = ['nombre', 'nit', 'email']
+
 
 
 class PedidoViewSet(viewsets.ModelViewSet):
@@ -371,9 +374,9 @@ class CrearVentaAPIView(APIView):
         total = Decimal("0")
 
         for item in detalles_data:
-            producto = get_object_or_404(Producto, pk=item["producto"])
+            producto = get_object_or_404(Uniforme, pk=item["producto"])
             cantidad = int(item["cantidad"])
-            precio_unitario = Decimal(item.get("precio_unitario", producto.precio))
+            precio_unitario = Decimal(item.get("precio_unitario", 0))
             subtotal = cantidad * precio_unitario
 
             DetalleVenta.objects.create(
@@ -481,7 +484,19 @@ class MetodosPagoUsadosAPIView(APIView):
 
 class DetalleVentasAPIView(APIView):
     def get(self, request):
+        cliente = request.query_params.get('cliente')
+        fecha = request.query_params.get('fecha')
+        nit = request.query_params.get('nit')
+
         ventas = Venta.objects.all()
+
+        if cliente:
+            ventas = ventas.filter(cliente__nombre__icontains=cliente)
+        if fecha:
+            ventas = ventas.filter(fecha=fecha)
+        if nit:
+            ventas = ventas.filter(cliente__nit__icontains=nit)
+
         serializer = VentaSerializer(ventas, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
     
