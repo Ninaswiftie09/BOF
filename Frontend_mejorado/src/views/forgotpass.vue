@@ -53,7 +53,12 @@ export default {
       try {
         const data = await apiFetch('/api/forgot-password/', 'POST', { email: this.email })
         this.success = true
-        this.message = data?.message || "Revisa tu correo para obtener la nueva contraseña."
+        this.message = data?.message || "Solicitud enviada. Redirigiendo..."
+        setTimeout(() => {
+          this.$router.push('/newpass'); // Redirige a la página para ingresar el código
+        }, 1500);
+
+
       } catch (error) {
         console.error("Error:", error)
         this.success = false
@@ -63,80 +68,98 @@ export default {
   }
 };
 </script>
-
 <style scoped>
 .background {
   background-image: url('@/assets/images/re.jpg');
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-  height: 100vh;
+  min-height: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
+  overflow: hidden;
 }
 
 .forgotpass-container {
   width: 100%;
   max-width: 400px;
-  padding: 30px;
-  background: rgba(255, 255, 255, 0.85); /*fondo tarjeta recuperar*/
-  border-radius: 12px;
-  border: 1px solid rgba(0, 0, 0, 0.1); /*borde tarjeta recuperar*/
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25); /*sombreado tarjeta recuperar*/
+  padding: 2rem;
+  background-color: rgba(13, 17, 48, 0.75); /* Fondo azul oscuro semitransparente */
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2); /* Borde blanco sutil */
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
 }
 
 h1 {
   font-family: 'Archivo Black', sans-serif;
-  color: var(--colo-texto-negro); /*titulo recuperar*/
+  color: var(--color-text-light-primary); /* Texto blanco */
   text-align: center;
-  margin-bottom: 20px;
+  margin-bottom: 1.5rem;
 }
 
-.input-group { margin-bottom: 15px; }
+.input-group {
+  margin-bottom: 1rem;
+}
 
 .input-group label {
   font-family: 'Kollektif', sans-serif;
-  color: var(--colo-texto-negro); /*texto correo*/
-  font-weight: bold;
+  color: var(--color-text-light-secondary); /* Texto gris claro */
+  font-weight: normal;
   display: block;
-  margin-bottom: 5px;
+  margin-bottom: 6px;
 }
 
 .input-group input {
   width: 100%;
-  padding: 10px;
-  font-family: 'Kollektif', sans-serif;
-  font-size: 16px;
-  color: var(--colo-texto-negro); /*texto ingresado en input*/
-  background-color: var(--color-septenary); /*fondo correo input*/
-  border: 1px solid var(--color-quinary); /*borde correo input*/
-  border-radius: 4px;
+  padding: 12px;
+  border-radius: 8px;
+  background-color: rgba(0, 0, 0, 0.3); /* Fondo negro semitransparente */
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: var(--color-text-light-primary); /* Texto blanco */
+  font-size: 1rem;
 }
 
 button {
-  background-color: var(--color-secondary); /*fondo boton recuperar*/
-  color: white; /*texto boton recuperar*/
-  padding: 10px 20px;
+  background-color: var(--color-action-primary); /* Botón azul */
+  color: var(--color-text-light-primary); /* Texto blanco */
+  padding: 10px 16px;
   border: none;
+  border-radius: 8px;
   cursor: pointer;
   font-family: 'Kollektif', sans-serif;
   width: 100%;
+  transition: filter .15s ease, transform .05s ease;
 }
 
-button:hover {
-  background-color: var(--color-quaternary); /*color boton recuperar con cursor arriba*/
+button:hover:not([disabled]) {
+  filter: brightness(1.08);
 }
 
-.back-to-login { text-align: center; margin-top: 10px; }
+button:active {
+  transform: translateY(1px);
+}
+
+button[disabled] {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.back-to-login {
+  text-align: center;
+  margin-top: 1rem;
+}
 
 .back-to-login a {
   font-family: 'Kollektif', sans-serif;
-  color: var(--color-quinary); /*nada*/
+  color: var(--color-text-light-secondary); /* Enlace gris claro */
   text-decoration: none;
+  font-size: 0.9rem;
 }
 
 .back-to-login a:hover {
-  color: var(--colo-texto-negro); /*nada*/
-  }
+  text-decoration: underline;
+}
 </style>
