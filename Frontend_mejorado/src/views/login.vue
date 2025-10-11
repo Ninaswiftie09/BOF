@@ -91,9 +91,11 @@
 </template>
 
 <script>
-import { apiFetch } from '@/utils/api' // si no tienes alias "@", usa: '../utils/api'
+import { apiFetch } from '@/utils/api'
+import { useAuthStore } from '@/stores/auth'
+import { useCatalogsStore } from '@/stores/catalogs'
 
-const LOGIN_URL = '/api/login/' // cambia solo esta ruta si tu backend usa otra
+const LOGIN_URL = '/api/login/'
 
 export default {
   name: 'LoginView',
@@ -122,21 +124,54 @@ export default {
 
       this.loading = true
       try {
+        // 1. Hacer login (establece cookie de sesión)
         const payload = { email, password }
         const data = await apiFetch(LOGIN_URL, 'POST', payload)
 
-        if (data && data.user) {
-          sessionStorage.setItem('user', JSON.stringify(data.user))
-        }
+        // 2. Guardar en sessionStorage (compatibilidad con sistema anterior)
         sessionStorage.setItem('isLoggedIn', 'true')
+
+        // 3. ✅ NUEVO: Obtener datos del usuario desde /api/me/
+        const userResponse = await fetch('/api/me/', { 
+          credentials: 'include' // importante para enviar cookies
+        })
+        
+        if (!userResponse.ok) {
+          throw new Error('No se pudieron obtener los datos del usuario')
+        }
+        
+        const userData = await userResponse.json()
+        console.log('📦 Datos de /api/me/:', userData)
+
+        // 4. ✅ NUEVO: Guardar en Pinia
+        const authStore = useAuthStore()
+        const catalogsStore = useCatalogsStore()
+
+        authStore.setAuth({
+          token: 'session-cookie', // No usamos JWT, usamos cookies
+          user: {
+            id: userData.id,
+            email: userData.email,
+            nombre: userData.first_name,
+            rol: userData.role // "admin" o "empleado"
+          },
+          role: userData.role
+        })
+
+        // 5. Pre-cargar catálogos en background
+        catalogsStore.fetchAll().catch(err => {
+          console.warn('No se pudieron cargar catálogos:', err)
+        })
 
         this.messageType = 'success'
         this.message = '¡Bienvenida! Inicio de sesión exitoso.'
+        
         const next = this.$route?.query?.next || '/home'
         this.$router.replace(next)
       } catch (err) {
         this.messageType = 'error'
         this.message = err?.message || 'No se pudo iniciar sesión.'
+        console.error('Error en login:', err)
       } finally {
         this.loading = false
       }
@@ -164,17 +199,17 @@ export default {
   width: 100%;
   max-width: 400px;
   padding: 30px;
-  background: rgba(255, 255, 255, 0.1); /* fondo tarjeta login */
+  background: rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.3); /* borde tarjeta login */
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25); /* sombreado tarjeta login */
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
 }
 
 h1 {
   font-family: 'Archivo Black', sans-serif;
-  color: var(--colo-texto-negro); /* texto Inicio sesion */
+  color: var(--colo-texto-negro);
   text-align: center;
   margin-bottom: 20px;
 }
@@ -183,7 +218,7 @@ h1 {
 
 .input-group label {
   font-family: 'Kollektif', sans-serif;
-  color: var(--colo-texto-negro); /* texto correo y contrasenna */
+  color: var(--colo-texto-negro);
   font-weight: bold;
   display: block;
   margin-bottom: 5px;
@@ -194,9 +229,9 @@ h1 {
   padding: 10px;
   font-family: 'Kollektif', sans-serif;
   font-size: 16px;
-  color: var(--colo-texto-negro); /* color texto ingresado */
-  background-color: var(--color-septenary); /* fondo input */
-  border: 1px solid var(--color-quinary); /* borde input */
+  color: var(--colo-texto-negro);
+  background-color: var(--color-septenary);
+  border: 1px solid var(--color-quinary);
   border-radius: 4px;
 }
 
@@ -205,7 +240,7 @@ h1 {
 }
 
 .password-field input {
-  padding-right: 52px; /* más espacio para el ojito más grande */
+  padding-right: 52px;
 }
 
 .toggle-pass {
@@ -216,8 +251,8 @@ h1 {
   border: none;
   background: transparent;
   cursor: pointer;
-  padding: 6px;         /* área clic cómoda */
-  width: 36px;          /* objetivo táctil ~36px */
+  padding: 6px;
+  width: 36px;
   height: 36px;
   line-height: 0;
   display: inline-flex;
@@ -236,8 +271,8 @@ h1 {
 }
 
 button {
-  background-color: var(--color-secondary); /* fondo boton iniciar sesion */
-  color: #fff; /* texto boton iniciar sesion */
+  background-color: var(--color-secondary);
+  color: #fff;
   padding: 10px 20px;
   border: none;
   cursor: pointer;
@@ -249,7 +284,7 @@ button {
 button[disabled] { opacity: .7; cursor: not-allowed; }
 
 button:hover:not([disabled]) {
-  background-color: var(--color-quaternary); /* color con cursor arriba */
+  background-color: var(--color-quaternary);
 }
 
 .forgot-password { text-align: center; margin-top: 10px; }
@@ -280,9 +315,9 @@ button:hover:not([disabled]) {
 }
 
 .msg.error {
-  color: #842029; /* texto cuadro error */
-  background: #f8d7da; /* fondo cuadro error */
-  border: 1px solid #f5c2c7; /* borde cuadro error */
+  color: #842029;
+  background: #f8d7da;
+  border: 1px solid #f5c2c7;
   padding: 8px;
   border-radius: 8px;
 }

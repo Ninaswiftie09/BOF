@@ -30,12 +30,10 @@
       </header>
 
       <section class="content">
-        <!-- le agregamos ref para observar tamaño -->
         <div class="chart-area" ref="chartAreaEl">
           <canvas id="myPieChart"></canvas>
         </div>
 
-        <!-- hay un color en template, no hace nada -->
         <div class="side-panels">
           <div class="panel panel--calendar">
             <v-calendar
@@ -101,10 +99,14 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onBeforeUnmount } from 'vue'
+import { ref, onMounted, onBeforeUnmount, computed } from 'vue'
 import Chart from 'chart.js/auto'
 import { bus } from '@/event-bus'
 import { apiFetch } from '@/utils/api'
+
+//Importar stores de Pinia
+import { useAuthStore } from '@/stores/auth'
+import { usePermissionsStore } from '@/stores/permissions'
 
 import IconClientes from '@/components/icons/IconClientes.vue'
 import IconFacturas from '@/components/icons/IconFacturas.vue'
@@ -113,15 +115,102 @@ import IconInventario from '@/components/icons/IconInventario.vue'
 import IconReporteVentas from '@/components/icons/IconRVentas.vue'
 import IconUser from '@/components/icons/IconUser.vue'
 
-const navItems = [
-  { label: 'Clientes y Proveedores', icon: IconClientes, route: '/clientes' },
-  { label: 'Facturas', icon: IconFacturas, route: '/billpage' },
-  { label: 'Contabilidad', icon: IconContabilidad, route: '/accounting' },
-  { label: 'Inventario', icon: IconInventario, route: '/mi_inventario' },
-  { label: 'Reporte de ventas', icon: IconReporteVentas, route: '/ReporteVentas' },
-  { label: 'Gestión de Usuarios', icon: IconUser, route: '/register' },
-  { label: 'Pedidos', icon: IconUser, route: '/envios' }
+//  Inicializar stores
+const authStore = useAuthStore()
+const permissions = usePermissionsStore()
+
+// campo 'requiredPermission' a cada item
+const allNavItems = [
+  { 
+    label: 'Clientes y Proveedores', 
+    icon: IconClientes, 
+    route: '/clientes',
+    requiredModule: 'clientes',
+    requiredAction: 'ver'
+  },
+  { 
+    label: 'Facturas', 
+    icon: IconFacturas, 
+    route: '/billpage',
+    requiredModule: 'facturas',
+    requiredAction: 'ver'
+  },
+  { 
+    label: 'Contabilidad', 
+    icon: IconContabilidad, 
+    route: '/accounting',
+    requiredModule: 'metricas', 
+    requiredAction: 'ver',
+    adminOnly: true 
+  },
+  { 
+    label: 'Inventario', 
+    icon: IconInventario, 
+    route: '/mi_inventario',
+    requiredModule: 'inventario',
+    requiredAction: 'ver'
+  },
+  { 
+    label: 'Reporte de ventas', 
+    icon: IconReporteVentas, 
+    route: '/ReporteVentas',
+    requiredModule: 'ventas',
+    requiredAction: 'reportes',
+    adminOnly: true
+     
+  },
+  { 
+    label: 'Gestión de Usuarios', 
+    icon: IconUser, 
+    route: '/register',
+    adminOnly: true 
+  },
+  { 
+    label: 'Pedidos', 
+    icon: IconUser, 
+    route: '/envios',
+    requiredModule: 'ventas',
+    requiredAction: 'ver'
+  }
 ]
+
+//Computed que filtra items según permisos
+const navItems = computed(() => {
+  console.log('🔍 Evaluando navItems...')
+  console.log('authStore.isAdmin:', authStore.isAdmin)
+  console.log('authStore.role:', authStore.role)
+  
+  const filtered = allNavItems.filter(item => {
+    console.log(`Evaluando item: ${item.label}`)
+    
+    // Si requiere ser admin
+    if (item.adminOnly) {
+      console.log(`  - Requiere admin: ${item.adminOnly}, Usuario es admin: ${authStore.isAdmin}`)
+      if (!authStore.isAdmin) {
+        console.log(`  ❌ Bloqueado (no es admin)`)
+        return false
+      }
+    }
+    
+    // Si tiene permisos específicos de módulo/acción
+    if (item.requiredModule && item.requiredAction) {
+      const hasPermission = permissions.can(item.requiredModule, item.requiredAction)
+      console.log(`  - Permiso requerido: ${item.requiredModule}/${item.requiredAction}`)
+      console.log(`  - Tiene permiso: ${hasPermission}`)
+      
+      if (!hasPermission) {
+        console.log(`  ❌ Bloqueado (sin permiso)`)
+        return false
+      }
+    }
+    
+    console.log(`  ✅ Permitido`)
+    return true
+  })
+  
+  console.log(`Total items visibles: ${filtered.length}`)
+  return filtered
+})
 
 const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim()
 const inventarioData = ref({ Telas:0, Hilos:0, Productos:0 })
@@ -184,10 +273,7 @@ function renderPie(){
   if(!ctx) return;
   pieChart?.destroy()
 
-  /* se extraen las claves/nombres de los objetos*/
   const etiquetas = Object.keys(inventarioData.value);
-
-  /*se extraen los valores/inventarioData.value de los objetos*/
   const datos = Object.values(inventarioData.value);
 
   pieChart=new Chart(ctx,{
@@ -196,7 +282,6 @@ function renderPie(){
       labels: etiquetas,
       datasets:[{
         data: datos,
-        /* se añaden color en script */
         backgroundColor:[css('--color-tertiary')||'#84C8C0',css('--color-septenary')||'#cbd5e1',css('--color-quinary')||'#2B5CA8'],
         borderColor:css('--color-novenary')||'#fff',
         borderWidth:1
@@ -209,7 +294,6 @@ function renderPie(){
   })
 }
 
-/* === NUEVO: ResizeObserver para redimensionar el chart si cambia el contenedor === */
 const chartAreaEl = ref(null)
 let ro
 function initResizeObserver(){
@@ -229,7 +313,7 @@ onBeforeUnmount(()=>{
   document.removeEventListener('click', onGlobalClick, true)
   ro?.disconnect()
 })
-/* Live updates */
+
 bus.on('clientes-actualizados', ({ nuevosMes }) => {
   if (typeof nuevosMes === 'number') clientesNuevos.value = nuevosMes
 })
@@ -248,8 +332,8 @@ bus.on('inventario-actualizado', async ()=>{
 .dashboard-container{
   display:flex;
   min-height:100vh;
-  background: var(--color-octonary, #0f172a); /*nada*/
-  color: var(--color-novenary, #fff); /*nada*/
+  background: var(--color-octonary, #0f172a); 
+  color: var(--color-novenary, #fff); 
   font-family: 'Kollektif', sans-serif;
 }
 
