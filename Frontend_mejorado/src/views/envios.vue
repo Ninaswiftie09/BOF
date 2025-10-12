@@ -76,8 +76,9 @@
           <h4 class="detalle-title">Detalles de la orden</h4>
 
           <!-- Encabezados de detalles -->
-          <div class="detalle-grid detalle-header">
-            <span>Uniforme (ID)</span>
+          <div class="detalle-grid-doble detalle-header">
+            <span>ID</span>
+            <span>Producto</span>
             <span>Cantidad</span>
             <span>Precio unitario</span>
             <span>Total</span>
@@ -85,16 +86,31 @@
           </div>
 
           <!-- Filas de detalle -->
-          <div v-for="(d, i) in formData.detalles" :key="i" class="detalle-grid">
-            <div>
+          <div v-for="(d, i) in formData.detalles" :key="i" class="detalle-grid-doble">
+            <!-- Campo ID -->
+            <div class="select-wrap">
               <input
-                type="number" min="1"
+                type="number"
+                min="1"
                 v-model.number="d.producto"
                 class="input--dark"
-                placeholder="ID de uniforme"
-                @change="onUniformeChange(i)"
+                placeholder="ID"
+                @input="onIdChange(i)"
               />
-              <small v-if="d.nombre" class="detalle-nombre">→ {{ d.nombre }}</small>
+            </div>
+
+            <!-- Campo Producto (Select con búsqueda) -->
+            <div class="select-wrap">
+              <select 
+                v-model.number="d.producto" 
+                class="select--dark"
+                @change="onProductoSelectChange(i)"
+              >
+                <option :value="null" disabled>Selecciona un producto</option>
+              <option v-for="u in uniformesFiltrados(d.searchQuery)" :key="u.id" :value="u.id">
+              {{ u.tipo }} - Stock: {{ u.stock }}
+              </option>  
+              </select>
             </div>
 
             <input type="number" min="1" v-model.number="d.cantidad" class="input--dark" @input="recalcularTotales" />
@@ -173,7 +189,9 @@ const CLIENTES_B = `/api/clientes/`
 
 // Ventas 
 const ORDENES_LIST = `/api/ventas/crear/`
-const ORDEN_ITEM = id => `/api/ventas/${id}/recibo/`
+const ORDEN_EDITAR = id => `/api/ventas/editar/${id}/`
+const ORDEN_ELIMINAR = id => `/api/ventas/eliminar/${id}/`
+const ORDEN_RECIBO = id => `/api/ventas/${id}/recibo/`
 const ORDENES_HIST = `/api/ventas/detalles/`
 
 // Inventario 
@@ -214,7 +232,8 @@ export default {
       },
       clientes: [],
       clientesMap: {},
-      uniformesCache: {}
+      uniformesCache: {},
+      todosUniformes: []
     }
   },
   computed: {
@@ -237,6 +256,7 @@ export default {
   watch: { subtotal(v) { this.formData.precio_total = v } },
   async mounted() {
     await this.cargarClientes()
+    await this.cargarTodosUniformes()
     await this.cargarFilas()
   },
   methods: {
@@ -248,21 +268,32 @@ export default {
       for (const c of cookies) { const t = c.trim(); if (t.startsWith(name + '=')) return decodeURIComponent(t.slice(name.length + 1)) }
       return null
     },
+    
     async req(url, method = 'GET', data) {
       const opts = { method, credentials: 'include', headers: {} }
       if (method !== 'GET' && method !== 'HEAD') {
         opts.headers['Content-Type'] = 'application/json'
-        const csrf = this.getCSRF(); if (csrf) opts.headers['X-CSRFToken'] = csrf
+        const csrf = this.getCSRF()
+        if (csrf) opts.headers['X-CSRFToken'] = csrf
         if (data !== undefined) opts.body = JSON.stringify(data)
       }
+      
       const r = await fetch(url, opts)
+      
+      // Manejo especial para DELETE (puede retornar 204 o 500 pero funciona)
+      if (method === 'DELETE' && (r.status === 204 || r.status === 500)) {
+        return null
+      }
+      
       if (!r.ok) {
         const txt = await r.text().catch(() => '')
         throw new Error(`${r.status} ${r.statusText} - ${txt}`)
       }
+      
       const ct = r.headers.get('content-type') || ''
       return ct.includes('application/json') ? r.json() : null
     },
+    
     async safeGet(url) { try { return await this.req(url, 'GET') } catch (_) { return null } },
 
     mpKey(id) { return `mp_orden_${id}` },
@@ -275,6 +306,55 @@ export default {
       if (!data) data = await this.safeGet(CLIENTES_B)
       this.clientes = Array.isArray(data) ? data : (data?.results || [])
       this.clientesMap = Object.fromEntries((this.clientes || []).map(c => [c.id, c.nombre]))
+    },
+
+    async cargarTodosUniformes() {
+      try {
+        const data = await this.req(UNIFORME_LIST, 'GET')
+        this.todosUniformes = Array.isArray(data) ? data : (data?.results || [])
+      } catch (e) {
+        console.warn('No se pudieron cargar los uniformes', e)
+        this.todosUniformes = []
+      }
+    },
+
+    uniformesFiltrados(query) {
+      return this.todosUniformes
+    },
+
+    onIdChange(index) {
+      const d = this.formData.detalles[index]
+      const id = d.producto
+      
+      if (!id) {
+        d.nombre = null
+        return
+      }
+
+      const uniforme = this.todosUniformes.find(u => u.id === id)
+      if (uniforme) {
+        d.nombre = `${uniforme.tipo} - ${uniforme.talla} - ${uniforme.color}`
+        this.uniformesCache[id] = { nombre: d.nombre }
+      } else {
+        d.nombre = null
+      }
+      
+      this.recalcularTotales()
+    },
+
+    onProductoSelectChange(index) {
+      const d = this.formData.detalles[index]
+      const id = d.producto
+      
+      if (!id) return
+
+      const uniforme = this.todosUniformes.find(u => u.id === id)
+      if (uniforme) {
+        d.nombre = `${uniforme.tipo} - ${uniforme.talla} - ${uniforme.color}`
+        this.uniformesCache[id] = { nombre: d.nombre }
+      }
+      
+      this.recalcularTotales()
     },
 
     async cargarFilas() {
@@ -339,7 +419,13 @@ export default {
           cliente: '',
           fecha: new Date().toISOString().slice(0, 10),
           metodo_pago: 'efectivo',
-          detalles: [{ producto: null, nombre: null, cantidad: 1, precio_unitario: 0 }],
+          detalles: [{ 
+            producto: null, 
+            nombre: null, 
+            cantidad: 1, 
+            precio_unitario: 0,
+            searchQuery: ''
+          }],
           precio_total: 0
         }
         return
@@ -367,61 +453,60 @@ export default {
 
     async cargarOrden(id) {
       try {
-        const data = await this.req(ORDEN_ITEM(id), 'GET')
+        const data = await this.req(ORDEN_RECIBO(id), 'GET')
         const dets = Array.isArray(data.detalles) ? data.detalles : []
-        this.formData.detalles = dets.map(d => ({
-          producto: null,
-          nombre: d.producto || null,
-          cantidad: Number(d.cantidad || 1),
-          precio_unitario: Number(d.precio || 0),
-        }))
+        
+        this.formData.detalles = dets.map(d => {
+          let productoId = null
+          let productoNombre = null
+          
+          if (typeof d.producto === 'object' && d.producto !== null) {
+            productoId = d.producto.id
+            productoNombre = d.producto.tipo || d.producto.nombre || `Uniforme #${d.producto.id}`
+          } else if (typeof d.producto === 'number') {
+            productoId = d.producto
+            productoNombre = `Uniforme #${d.producto}`
+          }
+          
+          return {
+            id: d.id,
+            producto: productoId,
+            nombre: productoNombre,
+            cantidad: Number(d.cantidad || 1),
+            precio_unitario: Number(d.precio_unitario || d.precio || 0),
+            searchQuery: ''
+          }
+        })
+        
+        this.formData.cliente = data.cliente?.id || data.cliente || ''
         this.recalcularTotales()
       } catch (e) {
         console.warn('No se pudo cargar la orden', e)
-        this.formData.detalles = [{ producto: null, nombre: null, cantidad: 1, precio_unitario: 0 }]
+        this.formData.detalles = [{ 
+          producto: null, 
+          nombre: null, 
+          cantidad: 1, 
+          precio_unitario: 0,
+          searchQuery: ''
+        }]
       }
     },
 
     agregarDetalle() {
       if (!Array.isArray(this.formData.detalles)) this.formData.detalles = []
-      this.formData.detalles.push({ producto: null, nombre: null, cantidad: 1, precio_unitario: 0 })
+      this.formData.detalles.push({ 
+        producto: null, 
+        nombre: null, 
+        cantidad: 1, 
+        precio_unitario: 0,
+        searchQuery: ''
+      })
     },
     quitarDetalle(i) {
       if (Array.isArray(this.formData.detalles)) this.formData.detalles.splice(i, 1)
       this.recalcularTotales()
     },
     recalcularTotales() { this.formData.detalles = [...this.formData.detalles] },
-
-    async onUniformeChange(index) {
-      const d = this.formData.detalles[index]
-      if (!d || !d.producto) return
-
-      if (this.uniformesCache[d.producto]) {
-        d.nombre = this.uniformesCache[d.producto].nombre
-        this.recalcularTotales()
-        return
-      }
-
-      let info = await this.fetchUniforme(d.producto) || await this.fetchUniformeDesdeLista(d.producto)
-      const nombre = info?.nombre ?? `Uniforme #${d.producto}`
-      this.uniformesCache[d.producto] = { nombre }
-      d.nombre = nombre
-      this.recalcularTotales()
-    },
-    async fetchUniforme(id) {
-      try {
-        const u = await this.req(UNIFORME_SHOW(id), 'GET')
-        return { nombre: u?.tipo || `Uniforme #${id}` }
-      } catch (_) { return null }
-    },
-    async fetchUniformeDesdeLista(id) {
-      try {
-        const list = await this.req(UNIFORME_LIST, 'GET')
-        const arr = Array.isArray(list) ? list : (list?.results || [])
-        const u = arr.find(x => String(x.id) === String(id))
-        return u ? { nombre: u.tipo || `Uniforme #${id}` } : null
-      } catch (_) { return null }
-    },
 
     abrirVerTodos() { this.verTodosVisible = true },
     cerrarVerTodos() { this.verTodosVisible = false },
@@ -430,18 +515,24 @@ export default {
       try {
         if (this.accion === 'eliminar') {
           if (!this.formData.id) { alert('Sin ID'); return }
-          await this.req(ORDEN_ITEM(this.formData.id), 'DELETE')
+          await this.req(ORDEN_ELIMINAR(this.formData.id), 'DELETE')
           this.borrarMetodoPago(this.formData.id)
           this.formVisible = false
           await this.cargarFilas()
           return
         }
 
+        if (!this.formData.cliente) {
+          alert('Selecciona un cliente')
+          return
+        }
+
         const detalles = (this.formData.detalles || []).filter(
           d => d.producto && d.cantidad > 0
         )
+        
         if (detalles.length === 0) {
-          alert('Agrega al menos un detalle.')
+          alert('Agrega al menos un detalle con un uniforme válido.')
           return
         }
 
@@ -450,15 +541,23 @@ export default {
           fecha: this.formData.fecha,
           metodo_pago: this.formData.metodo_pago,
           estado: 'completada',
-          detalles: detalles.map(d => ({
-            producto: Number(d.producto),
-            cantidad: Number(d.cantidad),
-            precio_unitario: Number((+d.precio_unitario || 0).toFixed(2))
-          }))
+          detalles: detalles.map(d => {
+            const detalle = {
+              producto: Number(d.producto),
+              cantidad: Number(d.cantidad),
+              precio_unitario: Number((+d.precio_unitario || 0).toFixed(2))
+            }
+            
+            if (this.accion === 'editar' && d.id) {
+              detalle.id = d.id
+            }
+            
+            return detalle
+          })
         }
 
         if (this.accion === 'editar' && this.formData.id) {
-          await this.req(ORDEN_ITEM(this.formData.id), 'PUT', payload)
+          await this.req(ORDEN_EDITAR(this.formData.id), 'PUT', payload)
           this.guardarMetodoPago(this.formData.id, this.formData.metodo_pago)
         } else {
           const created = await this.req(ORDENES_LIST, 'POST', payload)
@@ -469,8 +568,8 @@ export default {
         this.formVisible = false
         await this.cargarFilas()
       } catch (e) {
-        console.error('Error guardando/eliminando:', e)
-        alert('No se pudo completar la acción. Revisa los datos e intenta de nuevo.')
+        console.error('Error:', e)
+        alert('Ocurrió un error. Por favor verifica los datos e intenta nuevamente.')
       }
     }
   }
@@ -484,10 +583,18 @@ export default {
 .section-title{ color:#fff; margin:0 0 12px 0; }
 
 .detalle-title{ margin-top:18px; font-weight:700; }
-.detalle-grid{ display:grid; grid-template-columns: 3fr 1fr 1fr 1fr auto; align-items:center; gap:10px; margin-top:10px; }
+
+.detalle-grid-doble{ 
+  display:grid; 
+  grid-template-columns: 80px 2fr 1fr 1fr 1fr auto; 
+  align-items:center; 
+  gap:10px; 
+  margin-top:10px; 
+}
+
 .detalle-header{ font-weight:700; background:var(--color-senary); color:#fff; padding:8px 6px; border-radius:6px; }
 .detalle-header span{ text-align:center; }
-.detalle-nombre{ color:#94a3b8; display:block; margin-top:4px; }
+.detalle-nombre{ color:#10b981; display:block; margin-top:4px; font-weight:500; }
 .cell-total{ text-align:right; padding-right:8px; }
 
 .totales{ margin-top:14px; display:flex; flex-direction:column; gap:6px; align-items:flex-end; }
