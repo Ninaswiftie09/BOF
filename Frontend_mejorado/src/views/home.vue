@@ -90,6 +90,15 @@
           </div>
         </div>
 
+        <hr class="my-2 border-gray-600" />
+        <button
+          @click="logout"
+          class="w-full bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-md mt-2"
+        >
+          Cerrar sesión
+        </button>
+
+
         <footer class="help-ft">
           <small>Horario: Lun–Vie 9:00–18:00</small>
         </footer>
@@ -114,6 +123,32 @@ import IconContabilidad from '@/components/icons/IconContabilidad.vue'
 import IconInventario from '@/components/icons/IconInventario.vue'
 import IconReporteVentas from '@/components/icons/IconRVentas.vue'
 import IconUser from '@/components/icons/IconUser.vue'
+
+import { useRouter } from 'vue-router'
+const router = useRouter()
+
+async function logout () {
+  try {
+    // (Opcional) si creas el endpoint en Django:
+    // await fetch('/api/logout/', { method: 'POST', credentials: 'include' })
+  } catch (err) {
+    console.warn('No se pudo contactar el backend en logout:', err)
+  }
+
+  // Cerrar el popover por UX
+  showHelp.value = false
+
+  // Limpiar sesión en el front
+  sessionStorage.clear()
+  localStorage.removeItem('isLoggedIn')
+
+  // (Opcional) si tu Pinia tiene algo para resetear:
+  // authStore.$reset?.()
+  // permissions.$reset?.()
+
+  // Enviar al login
+  router.push('/login')
+}
 
 //  Inicializar stores
 const authStore = useAuthStore()
