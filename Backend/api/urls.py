@@ -8,7 +8,7 @@ router = DefaultRouter()
 
 from .views import (
     # --- AUTH ---
-    ping, register_user, login_user, forgot_password,
+    ping, register_user, login_user, forgot_password,send_verification_code, verify_and_reset_password,
 
     # --- CLIENTES ---
     EmpresaViewSet, ClienteViewSet, PedidoViewSet, PedidoDetalleViewSet, CuentaPagadaViewSet,
@@ -100,8 +100,9 @@ urlpatterns = [
     path("register/", register_user, name='register'),
     path("login/", login_user, name='login'),
     path("forgot-password/", forgot_password, name='forgot-password'),
-    path('auth/enviar-codigo/', enviar_codigo_recuperacion, name='enviar-codigo'),
-    path('auth/restablecer-contrasena/', verificar_codigo_y_cambiar_contraseña, name='restablecer-contrasena'),
+    path('auth/send-code/', send_verification_code, name='send-code'),
+    path('auth/reset-password/', verify_and_reset_password, name='reset-password'),
+
 
 
     # --- VENTAS ---

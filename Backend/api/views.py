@@ -32,9 +32,6 @@ from .permissions import IsAdmin, IsAdminOrEmpleado
 
 from .utils.roles import get_role
 
-
-
-
 from .models import (
     Empresa, Cliente, Pedido, PedidoDetalle, CuentaPagada,
     Categoria, Compra, DetalleVenta, Hilo, Operacion, Orden,
