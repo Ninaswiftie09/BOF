@@ -72,7 +72,7 @@ export default {
   name: 'NewPassView',
   data() {
     return {
-      email: this.$route.query.email || "",  // se recibe por query desde forgotpass.vue
+      email: this.$route.query.email || "", 
       code: "",
       newPassword: ""
     };
@@ -99,7 +99,7 @@ export default {
 
         if (response.ok) {
           alert("Contraseña restablecida con éxito. Ahora puedes iniciar sesión.");
-          this.$router.push({ name: "Login" }); // Asegúrate de que exista esta ruta
+          this.$router.push({ name: "Login" }); 
         } else {
           alert(data.message || "Error al restablecer la contraseña.");
         }

@@ -31,36 +31,48 @@
 </template>
 
 <script>
+import { BASE_URL } from '@/config';
 
 export default {
-  name: "ForgotPasswordView",  
+  name: "ForgotPasswordView",
   data() {
     return {
-      email: "",
-      message: "",
-      success: false
+      email: ""
     };
   },
   methods: {
     async handleSubmit() {
-  fetch(`${BASE_URL}/auth/send-code/`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email: this.email })
-  })
-    .then(res => res.json())
-    .then(data => {
-      alert('Código enviado a tu correo');
-      this.$router.push({ name: 'NewPassView', query: { email: this.email } });
-    })
-    .catch(err => {
-      console.error(err);
-      alert('Error al enviar código');
-    });
+      if (!this.email) {
+        alert("Por favor ingresa tu correo electrónico.");
+        return;
+      }
+
+      try {
+        const response = await fetch(`${BASE_URL}/auth/forgot-password/`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: this.email })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          alert("Código de verificación enviado a tu correo.");
+          // Redirigir a la vista donde se introduce el código y la nueva contraseña
+          this.$router.push({ name: 'NewPassword', query: { email: this.email } });
+        } else {
+          alert(data.message || "Error al enviar el correo.");
+        }
+      } catch (error) {
+        console.error("Error en la solicitud:", error);
+        alert("Ocurrió un error. Intenta nuevamente.");
+      }
     }
   }
 };
 </script>
+
+
 <style scoped>
 .background {
   background-image: url('@/assets/images/re.jpg');
