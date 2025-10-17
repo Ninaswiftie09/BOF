@@ -2,6 +2,8 @@ import json
 import string
 import random
 from decimal import Decimal
+import re
+
 
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.models import User, Group
@@ -355,6 +357,45 @@ def send_verification_code(request):
 
     return JsonResponse({'message': 'Método no permitido'}, status=405)
 
+@csrf_exempt
+def verify_and_reset_password(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            email = data.get('email')
+            code = data.get('code')
+            new_password = data.get('new_password')
+
+            if not email or not code or not new_password:
+                return JsonResponse({'message': 'Faltan datos'}, status=400)
+
+            # Validación de contraseña segura
+            if len(new_password) < 6 or \
+                not re.search(r'[a-z]', new_password) or \
+                not re.search(r'[A-Z]', new_password) or \
+                not re.search(r'[0-9]', new_password) or \
+                not re.search(r'[\W_]', new_password):
+                return JsonResponse({'message': 'Contraseña no cumple con requisitos de seguridad'}, status=400)
+
+            stored_code = cache.get(f'verify_code_{email}')
+            if stored_code != code:
+                return JsonResponse({'message': 'Código inválido o expirado'}, status=400)
+
+            try:
+                user = User.objects.get(email=email)
+            except User.DoesNotExist:
+                return JsonResponse({'message': 'Usuario no encontrado'}, status=404)
+
+            user.set_password(new_password)
+            user.save()
+            cache.delete(f'verify_code_{email}')
+
+            return JsonResponse({'message': 'Contraseña restablecida con éxito'}, status=200)
+
+        except Exception as e:
+            return JsonResponse({'message': f'Error: {str(e)}'}, status=500)
+
+    return JsonResponse({'message': 'Método no permitido'}, status=405)
 
 
 # =======================
