@@ -44,26 +44,20 @@ export default {
   },
   methods: {
     async handleSubmit() {
-      if (!this.email) {
-        this.success = false;
-        this.message = "Por favor ingresa tu correo.";
-        return;
-      }
-
-      try {
-        const data = await apiFetch('/api/forgot-password/', 'POST', { email: this.email })
-        this.success = true
-        this.message = data?.message || "Solicitud enviada. Redirigiendo..."
-        setTimeout(() => {
-          this.$router.push('/newpass'); // Redirige a la página para ingresar el código
-        }, 1500);
-
-
-      } catch (error) {
-        console.error("Error:", error)
-        this.success = false
-        this.message = error?.message || "Error al conectar con el servidor."
-      }
+  fetch(`${BASE_URL}/auth/send-code/`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email: this.email })
+  })
+    .then(res => res.json())
+    .then(data => {
+      alert('Código enviado a tu correo');
+      this.$router.push({ name: 'NewPassView', query: { email: this.email } });
+    })
+    .catch(err => {
+      console.error(err);
+      alert('Error al enviar código');
+    });
     }
   }
 };
