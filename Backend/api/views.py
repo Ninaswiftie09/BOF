@@ -14,6 +14,9 @@ from django.shortcuts import get_object_or_404
 from django.template.loader import render_to_string
 from django.utils.crypto import get_random_string
 from django.views.decorators.csrf import csrf_exempt
+from datetime import timedelta
+from django.utils import timezone
+from django.core.cache import cache
 
 from rest_framework import status, viewsets
 from rest_framework.filters import SearchFilter
@@ -317,6 +320,8 @@ def forgot_password(request):
             return JsonResponse({'message': f'Error: {str(e)}'}, status=500)
 
     return JsonResponse({'message': 'Método no permitido'}, status=405)
+
+
 
 
 # =======================
