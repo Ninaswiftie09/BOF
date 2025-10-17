@@ -31,7 +31,6 @@
 </template>
 
 <script>
-import { apiFetch } from '@/utils/api'
 
 export default {
   name: "ForgotPasswordView",  

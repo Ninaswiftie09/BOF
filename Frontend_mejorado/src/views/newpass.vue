@@ -65,61 +65,53 @@
   </div>
 </template>
 
-<script setup>
-import { ref } from 'vue';
-import { useRouter } from 'vue-router';
+<script>
+import { BASE_URL } from '@/config';
 
-// --- Estado Mínimo para la Interfaz ---
-const pasoActual = ref(1); // Controla qué formulario se ve
-const codigo = ref('');
-const nuevaContrasena = ref('');
-const confirmarContrasena = ref('');
-const message = ref('');
-const messageType = ref('');
+export default {
+  name: 'NewPassView',
+  data() {
+    return {
+      email: this.$route.query.email || "",  // se recibe por query desde forgotpass.vue
+      code: "",
+      newPassword: ""
+    };
+  },
+  methods: {
+    async handleSubmit() {
+      if (!this.email || !this.code || !this.newPassword) {
+        alert("Por favor, completa todos los campos.");
+        return;
+      }
 
-const router = useRouter();
+      try {
+        const response = await fetch(`${BASE_URL}/auth/reset-password/`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email: this.email,
+            code: this.code,
+            new_password: this.newPassword
+          })
+        });
 
-// --- Lógica Mínima para Probar el Flujo ---
+        const data = await response.json();
 
-function handleVerificarCodigo() {
-  message.value = '';
-  if (!codigo.value) {
-    message.value = 'Por favor, ingresa el código.';
-    messageType.value = 'error';
-    return;
+        if (response.ok) {
+          alert("Contraseña restablecida con éxito. Ahora puedes iniciar sesión.");
+          this.$router.push({ name: "Login" }); // Asegúrate de que exista esta ruta
+        } else {
+          alert(data.message || "Error al restablecer la contraseña.");
+        }
+      } catch (error) {
+        console.error(error);
+        alert("Ocurrió un error. Inténtalo de nuevo más tarde.");
+      }
+    }
   }
-
-  // Simulacion
-  console.log('Simulando verificación del código:', codigo.value);
-  message.value = 'Código verificado.';
-  messageType.value = 'success';
-
-  // Pasa luego de 1 seg
-  setTimeout(() => {
-    pasoActual.value = 2;
-    message.value = '';
-  }, 1000);
-}
-
-function handleNuevaContrasena() {
-  message.value = '';
-  if (nuevaContrasena.value !== confirmarContrasena.value) {
-    message.value = 'Las contraseñas no coinciden.';
-    messageType.value = 'error';
-    return;
-  }
-  
-  // SIMULACIÓN: Siempre funciona.
-  console.log('Simulando cambio de contraseña...');
-  message.value = 'Contraseña cambiada con éxito.';
-  messageType.value = 'success';
-
-  // Después de 2 segundos, redirige al login.
-  setTimeout(() => {
-    router.push('/login');
-  }, 2000);
-}
+};
 </script>
+
 
 <style scoped>
 .background {
