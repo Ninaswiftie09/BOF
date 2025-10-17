@@ -65,53 +65,73 @@
   </div>
 </template>
 
-<script>
+<script setup>
+import { ref } from 'vue';
+import { useRouter, useRoute } from 'vue-router';
 import { BASE_URL } from '@/config';
 
-export default {
-  name: 'NewPassView',
-  data() {
-    return {
-      email: this.$route.query.email || "", 
-      code: "",
-      newPassword: ""
-    };
-  },
-  methods: {
-    async handleSubmit() {
-      if (!this.email || !this.code || !this.newPassword) {
-        alert("Por favor, completa todos los campos.");
-        return;
-      }
+const pasoActual = ref(1);
+const codigo = ref('');
+const nuevaContrasena = ref('');
+const confirmarContrasena = ref('');
+const message = ref('');
+const messageType = ref('');
 
-      try {
-        const response = await fetch(`${BASE_URL}/auth/reset-password/`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            email: this.email,
-            code: this.code,
-            new_password: this.newPassword
-          })
-        });
+const router = useRouter();
+const route = useRoute();
+const email = route.query.email || '';  // Email viene desde forgotpass.vue
 
-        const data = await response.json();
+async function handleVerificarCodigo() {
+  message.value = '';
 
-        if (response.ok) {
-          alert("Contraseña restablecida con éxito. Ahora puedes iniciar sesión.");
-          this.$router.push({ name: "Login" }); 
-        } else {
-          alert(data.message || "Error al restablecer la contraseña.");
-        }
-      } catch (error) {
-        console.error(error);
-        alert("Ocurrió un error. Inténtalo de nuevo más tarde.");
-      }
-    }
+  if (!codigo.value) {
+    message.value = 'Por favor, ingresa el código.';
+    messageType.value = 'error';
+    return;
   }
-};
-</script>
 
+  // ⚠️ no hacemos nada más aquí,
+  // solo pasamos al siguiente paso
+  pasoActual.value = 2;
+  message.value = '';
+}
+
+async function handleNuevaContrasena() {
+  message.value = '';
+
+  if (nuevaContrasena.value !== confirmarContrasena.value) {
+    message.value = 'Las contraseñas no coinciden.';
+    messageType.value = 'error';
+    return;
+  }
+
+  try {
+    const response = await fetch(`${BASE_URL}/api/auth/verify-reset/`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email,
+        code: codigo.value,
+        new_password: nuevaContrasena.value
+      })
+    });
+
+    const result = await response.json();
+
+    if (response.ok) {
+      message.value = 'Contraseña cambiada con éxito. Redirigiendo...';
+      messageType.value = 'success';
+      setTimeout(() => router.push('/login'), 2000);
+    } else {
+      message.value = result.message || 'Error al cambiar contraseña.';
+      messageType.value = 'error';
+    }
+  } catch (error) {
+    message.value = 'Error de red.';
+    messageType.value = 'error';
+  }
+}
+</script>
 
 <style scoped>
 .background {

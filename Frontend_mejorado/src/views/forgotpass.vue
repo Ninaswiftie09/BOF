@@ -21,9 +21,8 @@
         </div>
 
         <!-- color -->
-        <div v-if="message" :style="{ color: success ? 'green' : 'red', marginTop: '10px' }">  
-          {{ message }}
-        </div>
+        <div v-if="mensaje" style="color: green; margin-bottom: 10px;">{{ mensaje }}</div>
+        <div v-if="error" style="color: red; margin-bottom: 10px;">{{ error }}</div>
 
       </form>
     </div>
@@ -31,46 +30,47 @@
 </template>
 
 <script>
-import { BASE_URL } from '@/config';
+import { BASE_URL } from "@/config";
 
 export default {
   name: "ForgotPasswordView",
   data() {
     return {
-      email: ""
+      email: "",
+      mensaje: "",
+      error: ""
     };
   },
   methods: {
     async handleSubmit() {
-      if (!this.email) {
-        alert("Por favor ingresa tu correo electrónico.");
-        return;
-      }
+      this.error = "";
+      this.mensaje = "";
 
       try {
-        const response = await fetch(`${BASE_URL}/auth/forgot-password/`, {
+        const response = await fetch(`${BASE_URL}/api/auth/send-code/`, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email: this.email })
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ email: this.email }),
         });
 
-        const data = await response.json();
-
-        if (response.ok) {
-          alert("Código de verificación enviado a tu correo.");
-          // Redirigir a la vista donde se introduce el código y la nueva contraseña
-          this.$router.push({ name: 'NewPassword', query: { email: this.email } });
-        } else {
-          alert(data.message || "Error al enviar el correo.");
+        if (!response.ok) {
+          const errData = await response.json();
+          throw new Error(errData.message || "Error desconocido");
         }
+
+        this.mensaje = "Código enviado. Revisa tu correo.";
+        // Redirige a la página de verificación con el correo
+        this.$router.push({ name: "newpass", query: { email: this.email } });
       } catch (error) {
-        console.error("Error en la solicitud:", error);
-        alert("Ocurrió un error. Intenta nuevamente.");
+        this.error = `Error: ${error.message}`;
       }
     }
   }
 };
 </script>
+
 
 
 <style scoped>

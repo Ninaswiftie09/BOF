@@ -101,7 +101,7 @@ urlpatterns = [
     path("login/", login_user, name='login'),
     path("forgot-password/", forgot_password, name='forgot-password'),
     path('auth/send-code/', send_verification_code, name='send-code'),
-    path('auth/reset-password/', verify_and_reset_password, name='reset-password'),
+    path('auth/verify-reset/', verify_and_reset_password, name='verify-reset'),
 
 
 
