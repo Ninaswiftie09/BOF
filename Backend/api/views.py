@@ -353,6 +353,43 @@ def enviar_codigo_recuperacion(request):
 
     return JsonResponse({'message': 'Método no permitido'}, status=405)
 
+@csrf_exempt
+def verificar_codigo_y_cambiar_contraseña(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            email = data.get("email")
+            codigo = data.get("codigo")
+            nueva_contrasena = data.get("password")
+
+            if not email or not codigo or not nueva_contrasena:
+                return JsonResponse({'message': 'Datos incompletos'}, status=400)
+
+            clave_cache = f"codigo_recuperacion_{email}"
+            codigo_guardado = cache.get(clave_cache)
+
+            if codigo != codigo_guardado:
+                return JsonResponse({'message': 'Código incorrecto o expirado'}, status=400)
+
+            if len(nueva_contrasena) < 6 or \
+               not any(c.islower() for c in nueva_contrasena) or \
+               not any(c.isupper() for c in nueva_contrasena) or \
+               not any(c.isdigit() for c in nueva_contrasena) or \
+               not any(c in string.punctuation for c in nueva_contrasena):
+                return JsonResponse({'message': 'La contraseña no cumple con los requisitos'}, status=400)
+
+            user = User.objects.get(email=email)
+            user.set_password(nueva_contrasena)
+            user.save()
+
+            cache.delete(clave_cache)
+
+            return JsonResponse({'message': 'Contraseña restablecida exitosamente'}, status=200)
+
+        except Exception as e:
+            return JsonResponse({'message': f'Error: {str(e)}'}, status=500)
+
+    return JsonResponse({'message': 'Método no permitido'}, status=405)
 
 
 # =======================
