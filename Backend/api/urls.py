@@ -100,6 +100,9 @@ urlpatterns = [
     path("register/", register_user, name='register'),
     path("login/", login_user, name='login'),
     path("forgot-password/", forgot_password, name='forgot-password'),
+    path('auth/enviar-codigo/', enviar_codigo_recuperacion, name='enviar-codigo'),
+    path('auth/restablecer-contrasena/', verificar_codigo_y_cambiar_contraseña, name='restablecer-contrasena'),
+
 
     # --- VENTAS ---
     path("ventas/crear/", CrearVentaAPIView.as_view(), name="crear-venta"),
