@@ -321,6 +321,37 @@ def forgot_password(request):
 
     return JsonResponse({'message': 'Método no permitido'}, status=405)
 
+@csrf_exempt
+def enviar_codigo_recuperacion(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            email = data.get("email")
+
+            if not email:
+                return JsonResponse({'message': 'Correo requerido'}, status=400)
+
+            try:
+                user = User.objects.get(email=email)
+            except User.DoesNotExist:
+                return JsonResponse({'message': 'No existe un usuario con ese correo'}, status=404)
+
+            codigo = ''.join(random.choices(string.digits, k=6))
+            clave_cache = f"codigo_recuperacion_{email}"
+            cache.set(clave_cache, codigo, timeout=180)  # 3 minutos
+
+            subject = 'Código de verificación - Abril Uniformes'
+            html_message = render_to_string('emails/codigo_verificacion.html', {
+                'nombre': user.first_name,
+                'codigo': codigo
+            })
+            send_mail(subject, '', None, [email], html_message=html_message)
+
+            return JsonResponse({'message': 'Código enviado al correo'}, status=200)
+        except Exception as e:
+            return JsonResponse({'message': f'Error: {str(e)}'}, status=500)
+
+    return JsonResponse({'message': 'Método no permitido'}, status=405)
 
 
 
