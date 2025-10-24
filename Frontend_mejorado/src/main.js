@@ -22,5 +22,12 @@ app.use(VCalendar, {
   componentPrefix: 'V'
 })
 
+
+//deshabilitar devtools en desarrollo y produccion  
+app.config.devtools = false 
+app.config.performance = false 
+
+
+
 // Monta la app
 app.mount('#app')

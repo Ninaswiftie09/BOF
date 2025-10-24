@@ -1,12 +1,19 @@
 
-// vite.config.js
 import { fileURLToPath, URL } from 'node:url'
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
-import vueDevTools from 'vite-plugin-vue-devtools'
 
 export default defineConfig({
-  plugins: [vue(), vueDevTools()],
+  plugins: [vue(), 
+
+  ],
+  define: {
+    __VUE_PROD_DEVTOOLS__: false, 
+    __VUE_PROD_HYDRATION_MISMATCH_DETAILS__: false 
+
+
+
+  }, 
   resolve: {
     alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) },
   },
@@ -15,12 +22,11 @@ export default defineConfig({
     allowedHosts: ['localhost', '127.0.0.1', 'abriluniformes.shop'],
     proxy: {
       '/api': {
-        target: 'http://backend:8000',   // 👈 servicio del backend en docker
+        target: 'http://backend:8000',
         changeOrigin: true,
         secure: false,
         configure: (proxy) => {
           proxy.on('proxyReq', (proxyReq) => {
-            // 🔑 truco: quita el Origin para que Django no haga el "origin check"
             proxyReq.removeHeader('origin')
           })
         },
