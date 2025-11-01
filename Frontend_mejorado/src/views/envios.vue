@@ -530,10 +530,29 @@ export default {
         const detalles = (this.formData.detalles || []).filter(
           d => d.producto && d.cantidad > 0
         )
-        
+
         if (detalles.length === 0) {
           alert('Agrega al menos un detalle con un uniforme válido.')
           return
+        }
+
+        // Verificar stock antes de continuar
+        for (const d of detalles) {
+          const uniforme = this.todosUniformes.find(u => u.id === d.producto)
+          if (!uniforme) {
+            alert(`El uniforme con ID ${d.producto} no existe.`)
+            return
+          }
+
+          if ((uniforme.stock || 0) === 0) {
+            alert(`El uniforme "${uniforme.tipo}" está agotado y no se puede vender.`)
+            return
+          }
+
+          if (d.cantidad > uniforme.stock) {
+            alert(`No hay suficiente stock para "${uniforme.tipo}". Solo quedan ${uniforme.stock} unidades.`)
+            return
+          }
         }
 
         const payload = {
@@ -547,31 +566,46 @@ export default {
               cantidad: Number(d.cantidad),
               precio_unitario: Number((+d.precio_unitario || 0).toFixed(2))
             }
-            
-            if (this.accion === 'editar' && d.id) {
-              detalle.id = d.id
-            }
-            
+            if (this.accion === 'editar' && d.id) detalle.id = d.id
             return detalle
           })
         }
+
+        let created = null
 
         if (this.accion === 'editar' && this.formData.id) {
           await this.req(ORDEN_EDITAR(this.formData.id), 'PUT', payload)
           this.guardarMetodoPago(this.formData.id, this.formData.metodo_pago)
         } else {
-          const created = await this.req(ORDENES_LIST, 'POST', payload)
+          created = await this.req(ORDENES_LIST, 'POST', payload)
           if (created?.id)
             this.guardarMetodoPago(created.id, this.formData.metodo_pago)
         }
 
+        // Descontar stock de uniformes vendidos
+        for (const d of detalles) {
+          try {
+            const uniforme = await this.req(UNIFORME_SHOW(d.producto), 'GET')
+            if (uniforme && typeof uniforme.stock === 'number') {
+              const nuevoStock = Math.max(0, uniforme.stock - d.cantidad)
+              await this.req(UNIFORME_SHOW(d.producto), 'PUT', { ...uniforme, stock: nuevoStock })
+              console.log(`🧾 Stock actualizado de ${uniforme.tipo}: ${uniforme.stock} → ${nuevoStock}`)
+            }
+          } catch (err) {
+            console.warn(`No se pudo actualizar el stock del uniforme #${d.producto}`, err)
+          }
+        }
+
         this.formVisible = false
+        await this.cargarTodosUniformes()
         await this.cargarFilas()
       } catch (e) {
         console.error('Error:', e)
         alert('Ocurrió un error. Por favor verifica los datos e intenta nuevamente.')
       }
     }
+
+
   }
 }
 </script>
