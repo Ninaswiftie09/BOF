@@ -130,11 +130,12 @@ export default {
 
         // Tabla
         const rows = (venta.detalles || []).map(d => [
-          d.producto?.nombre ?? '',
+          `${d.producto?.tipo || '—'} - ${d.producto?.talla || '—'} - ${d.producto?.color || '—'}`,
           d.cantidad,
-          `Q${d.precio_unitario}`,
-          `Q${d.subtotal}`
+          `Q${Number(d.precio_unitario || 0).toFixed(2)}`,
+          `Q${Number(d.subtotal || d.cantidad * d.precio_unitario || 0).toFixed(2)}`
         ])
+
         autoTable(doc, {
           head: [['Producto', 'Cantidad', 'Precio U.', 'Subtotal']],
           body: rows,
