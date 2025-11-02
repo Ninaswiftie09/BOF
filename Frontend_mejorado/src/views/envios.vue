@@ -366,13 +366,17 @@ export default {
       const list = Array.isArray(hist) ? hist : (hist?.results || [])
 
       for (const o of list) {
-        const mp = this.leerMetodoPago(o.id)
+        const mp = o.metodo_pago || 'efectivo'
+
+        this.guardarMetodoPago(o.id, mp)
+
         const detalles = Array.isArray(o.detalles) ? o.detalles : []
 
         const clienteNombre =
           typeof o.cliente === 'number'
             ? this.clientesMap[o.cliente] || `Cliente #${o.cliente}`
             : o.cliente || '—'
+
 
         for (const d of detalles) {
           let productoNombre = '—'

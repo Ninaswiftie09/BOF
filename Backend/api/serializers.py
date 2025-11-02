@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from .models import (
     Empresa, Cliente, Pedido, PedidoDetalle, CuentaPagada,
-    Categoria, Hilo, Tela, Uniforme, Producto, Venta, DetalleVenta,
+    Categoria, Hilo, Tela, Uniforme, Venta, DetalleVenta,
     Proveedor, Compra, CompraDetalle, Operacion, Orden, DetalleOrden
 )
 
@@ -159,14 +159,6 @@ class CategoriaSerializer(serializers.ModelSerializer):
         model = Categoria
         fields = '__all__'
 
-
-class ProductoSerializer(serializers.ModelSerializer):
-    categoria = serializers.PrimaryKeyRelatedField(queryset=Categoria.objects.all())
-    categoria_nombre = serializers.CharField(source='categoria.nombre', read_only=True)
-
-    class Meta:
-        model = Producto
-        fields = ['id', 'nombre', 'categoria', 'categoria_nombre', 'precio', 'descripcion']
 
 
 class DetalleVentaSerializer(serializers.ModelSerializer):

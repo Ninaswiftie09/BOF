@@ -34,14 +34,13 @@ from .utils.roles import get_role
 
 from .models import (
     Empresa, Cliente, Pedido, PedidoDetalle, CuentaPagada,
-    Categoria, Compra, DetalleVenta, Hilo, Operacion, Orden,
-    Producto, Proveedor, Tela, Uniforme, Venta, CompraDetalle
+    Categoria, Compra, DetalleVenta, Hilo, Operacion, Orden, Proveedor, Tela, Uniforme, Venta, CompraDetalle
 )
 
 from .serializers import (
     EmpresaSerializer, ClienteSerializer, PedidoSerializer, PedidoDetalleSerializer,
     CuentaPagadaSerializer, CategoriaSerializer, CompraSerializer, DetalleVentaSerializer,
-    HiloSerializer, OperacionSerializer, OrdenSerializer, ProductoSerializer, ProveedorSerializer,
+    HiloSerializer, OperacionSerializer, OrdenSerializer, ProveedorSerializer,
     TelaSerializer, UniformeSerializer, VentaSerializer, VentaDetalleSerializer, CompraDetalleSerializer
 )
 
@@ -548,8 +547,22 @@ class EvolucionVentasAPIView(APIView):
 
 class ProductosMasVendidosAPIView(APIView):
     def get(self, request):
-        productos = DetalleVenta.objects.values('producto__nombre').annotate(total_vendido=Sum('cantidad')).order_by('-total_vendido')[:5]
-        return Response(list(productos), status=status.HTTP_200_OK)
+        categorias = (
+            DetalleVenta.objects
+            .values('producto__categoria__nombre')
+            .annotate(total_vendido=Sum('cantidad'))
+            .order_by('-total_vendido')[:5]
+        )
+
+        data = [
+            {
+                "categoria": c["producto__categoria__nombre"] or "Sin categoría",
+                "total_vendido": c["total_vendido"]
+            }
+            for c in categorias
+        ]
+        return Response(data, status=status.HTTP_200_OK)
+
 
 
 class MetodosPagoUsadosAPIView(APIView):

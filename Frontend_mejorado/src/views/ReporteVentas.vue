@@ -56,58 +56,6 @@
         </div>
       </div>
 
-      <!-- Tabla -->
-      <div class="table-container">
-        <h2>Tabla de Ventas Detalladas</h2>
-
-        <!-- se agrega un color -->
-        <div v-if="errorMsg" class="no-data" style="color:#fca5a5">{{ errorMsg }}</div>
-
-        <table v-if="ventas.length" class="dark-table">
-          <thead>
-            <tr>
-              <th>ID Venta</th>
-              <th>Producto</th>
-              <th>Cliente</th>
-              <th>Cantidad</th>
-              <th>Precio Unitario</th>
-              <th>Total</th>
-              <th>Método Pago</th>
-              <th>Fecha</th>
-            </tr>
-          </thead>
-          <tbody>
-            <template v-for="venta in ventas" :key="venta.id">
-              <tr v-for="(detalle, i) in venta.detalles" :key="`${venta.id}-${i}`">
-                <td>{{ venta.id }}</td>
-                <td>{{ detalle.producto.nombre }}</td>
-                <td>{{ venta.cliente_id || 'No registrado' }}</td>
-                <td>{{ detalle.cantidad }}</td>
-                <td>Q{{ detalle.precio_unitario }}</td>
-                <td>Q{{ detalle.subtotal }}</td>
-                <td>{{ venta.metodo_pago }}</td>
-                <td>{{ formatearFecha(venta.fecha) }}</td>
-              </tr>
-            </template>
-          </tbody>
-        </table>
-
-        <div v-else-if="cargando" class="loading">
-          <div class="spinner"></div>
-          <p>Cargando ventas...</p>
-        </div>
-        <p v-else class="no-data">No se encontraron ventas para el periodo seleccionado</p>
-
-        <div class="pagination">
-          <button :disabled="paginaActual === 1" @click="cambiarPagina(paginaActual - 1)">
-            « Anterior
-          </button>
-          <span>Página {{ paginaActual }} de {{ totalPaginas }}</span>
-          <button :disabled="paginaActual === totalPaginas" @click="cambiarPagina(paginaActual + 1)">
-            Siguiente »
-          </button>
-        </div>
-      </div>
     </main>
   </div>
 </template>
@@ -271,7 +219,7 @@ export default {
       this.productosChartInstance = new Chart(ctx, {
         type: 'bar',
         data: {
-          labels: data.map((item) => item.producto__nombre),
+          labels: data.map((item) => item.categoria),
           datasets: [
             {
               label: 'Cantidad Vendida',
