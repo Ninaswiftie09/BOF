@@ -67,13 +67,9 @@
 
 <script setup>
 import { ref } from 'vue';
-import { useRouter, useRoute } from 'vue-router';
-import { BASE_URL } from '@/config';
+import { useRouter } from 'vue-router';
 
-<<<<<<< Updated upstream
-=======
 // --- Estado Mínimo para la Interfaz ---
->>>>>>> Stashed changes
 const pasoActual = ref(1);
 const codigo = ref('');
 const nuevaContrasena = ref('');
@@ -82,60 +78,36 @@ const message = ref('');
 const messageType = ref('');
 
 const router = useRouter();
-const route = useRoute();
-const email = route.query.email || '';  // Email viene desde forgotpass.vue
 
-async function handleVerificarCodigo() {
+// --- Lógica Mínima para Probar el Flujo ---
+
+function handleVerificarCodigo() {
   message.value = '';
-
   if (!codigo.value) {
     message.value = 'Por favor, ingresa el código.';
     messageType.value = 'error';
     return;
   }
 
-  // ⚠️ no hacemos nada más aquí,
-  // solo pasamos al siguiente paso
-  pasoActual.value = 2;
-  message.value = '';
+  // Simulacion
+  console.log('Simulando verificación del código:', codigo.value);
+  message.value = 'Código verificado.';
+  messageType.value = 'success';
+
+  // Pasa luego de 1 seg
+  setTimeout(() => {
+    pasoActual.value = 2;
+    message.value = '';
+  }, 1000);
 }
 
-async function handleNuevaContrasena() {
+function handleNuevaContrasena() {
   message.value = '';
-
   if (nuevaContrasena.value !== confirmarContrasena.value) {
     message.value = 'Las contraseñas no coinciden.';
     messageType.value = 'error';
     return;
   }
-<<<<<<< Updated upstream
-
-  try {
-    const response = await fetch(`${BASE_URL}/api/auth/verify-reset/`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        email,
-        code: codigo.value,
-        new_password: nuevaContrasena.value
-      })
-    });
-
-    const result = await response.json();
-
-    if (response.ok) {
-      message.value = 'Contraseña cambiada con éxito. Redirigiendo...';
-      messageType.value = 'success';
-      setTimeout(() => router.push('/login'), 2000);
-    } else {
-      message.value = result.message || 'Error al cambiar contraseña.';
-      messageType.value = 'error';
-    }
-  } catch (error) {
-    message.value = 'Error de red.';
-    messageType.value = 'error';
-  }
-=======
 
   // SIMULACIÓN: Siempre funciona.
   console.log('Simulando cambio de contraseña...');
@@ -145,7 +117,6 @@ async function handleNuevaContrasena() {
   setTimeout(() => {
     router.push('/login');
   }, 2000);
->>>>>>> Stashed changes
 }
 </script>
 
