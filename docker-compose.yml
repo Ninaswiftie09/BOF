@@ -1,7 +1,7 @@
 services:
   backend:
     build: ./Backend
-    container_name: django_backend
+    container_name: backend
     volumes:
       - ./Backend:/app
     ports:
@@ -17,17 +17,15 @@ services:
 
   frontend:
     build: ./Frontend_mejorado
-    container_name: vue_frontend
+    container_name: frontend
     volumes:
-      - ./Frontend_mejorado:/app
       - /app/node_modules
     ports:
-      - "5173:5173"
-    command: npm run dev
+      - "5173:80"
 
   db:
     image: postgres:15
-    container_name: postgres_db
+    container_name: postgres
     environment:
       POSTGRES_DB: proyecto
       POSTGRES_USER: user
