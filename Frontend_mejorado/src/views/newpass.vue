@@ -1,18 +1,18 @@
 <template>
   <div class="background">
     <div class="auth-card">
-
-    <!-- VERIFICAR CÓDIGO -->
+      
+      <!-- VERIFICAR CÓDIGO -->
       <div v-if="pasoActual === 1">
         <h1>Verificar Código</h1>
         <form @submit.prevent="handleVerificarCodigo">
-          <div class="form-group">
+          <div class="form-field">
             <label for="codigo" class="form-label">Código de Verificación</label>
             <input
               type="text"
               id="codigo"
               v-model.trim="codigo"
-              class="form-input"
+              class="input--auth"
               placeholder="Ingresa el código que recibiste"
               required
             />
@@ -22,29 +22,29 @@
         </form>
       </div>
 
-      <!-- NUEVA CONTRASEÑA -->
+      <!-- PASO 2: NUEVA CONTRASEÑA -->
       <div v-if="pasoActual === 2">
         <h1>Establecer Nueva Contraseña</h1>
         <form @submit.prevent="handleNuevaContrasena">
-          <div class="form-group">
+          <div class="form-field">
             <label for="password" class="form-label">Nueva Contraseña</label>
             <input
               type="password"
               id="password"
               v-model="nuevaContrasena"
-              class="form-input"
+              class="input--auth"
               placeholder="Ingresa tu nueva contraseña"
               required
             />
           </div>
-
-          <div class="form-group">
+          
+          <div class="form-field">
             <label for="confirm-password" class="form-label">Confirmar Contraseña</label>
             <input
               type="password"
               id="confirm-password"
               v-model="confirmarContrasena"
-              class="form-input"
+              class="input--auth"
               placeholder="Vuelve a escribir la contraseña"
               required
             />
@@ -55,10 +55,10 @@
       </div>
 
       <!-- Mensaje de feedback -->
-      <div v-if="message" class="message" :class="messageType === 'success' ? 'success-dark' : 'error-dark'">
+      <div v-if="message" class="feedback" :class="messageType">
         {{ message }}
       </div>
-
+      
       <router-link to="/login" class="auth-link">Volver al inicio de sesión</router-link>
 
     </div>
@@ -70,10 +70,6 @@ import { ref } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { BASE_URL } from '@/config';
 
-<<<<<<< Updated upstream
-=======
-// --- Estado Mínimo para la Interfaz ---
->>>>>>> Stashed changes
 const pasoActual = ref(1);
 const codigo = ref('');
 const nuevaContrasena = ref('');
@@ -108,7 +104,6 @@ async function handleNuevaContrasena() {
     messageType.value = 'error';
     return;
   }
-<<<<<<< Updated upstream
 
   try {
     const response = await fetch(`${BASE_URL}/api/auth/verify-reset/`, {
@@ -135,17 +130,6 @@ async function handleNuevaContrasena() {
     message.value = 'Error de red.';
     messageType.value = 'error';
   }
-=======
-
-  // SIMULACIÓN: Siempre funciona.
-  console.log('Simulando cambio de contraseña...');
-  message.value = 'Contraseña cambiada con éxito.';
-  messageType.value = 'success';
-
-  setTimeout(() => {
-    router.push('/login');
-  }, 2000);
->>>>>>> Stashed changes
 }
 </script>
 
@@ -159,9 +143,20 @@ async function handleNuevaContrasena() {
   place-items: center;
 }
 
-.form-group + .form-group,
-.form-group + .btn {
-  margin-top: var(--spacing-md);
+.form-field + .form-field,
+.form-field + .btn {
+  margin-top: 1rem;
 }
 
+.feedback {
+  margin-top: 1rem;
+  text-align: center;
+  font-weight: bold;
+}
+.feedback.success {
+  color: #a7f3d0;
+}
+.feedback.error {
+  color: #fca5a5;
+}
 </style>
