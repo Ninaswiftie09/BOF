@@ -39,67 +39,47 @@ const finalProfileImg = computed(() => props.profileImg || profileImage)
 </script>
 
 <style scoped>
-/* Este bloque scoped se queda, pero con los valores referenciando a NuevoStyles.css */
-
-.top-bar {
+/* Barra NO fija: sin position sticky/fixed */
+.top-bar{
   position: relative;
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-md); /* Usando variable global */
-  padding: var(--spacing-sm) var(--spacing-xl); /* Usando variables globales */
-  background: var(--navbar-background); /* Usando variable global */
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-  min-height: clamp(64px, 9vw, 100px);
+  display:flex; align-items:center;
+  gap:1rem;
+  padding: .75rem 2rem;
+  background: var(--color-primary);
+  border-bottom: 1px solid rgba(255,255,255,.06);
+  min-height: clamp(64px, 9vw, 100px); /* altura cómoda para logo grande */
 }
 
-.logo {
+/* Logo más grande y responsive */
+.logo{
   height: clamp(56px, 8vw, 96px);
-  width: auto;
-  cursor: pointer;
+  width:auto; cursor:pointer;
 }
 
-.title-wrap {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  pointer-events: none;
+/* Título centrado “real”  */
+.title-wrap{
+  position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+  pointer-events:none; /* deja clicables logo/acciones debajo si se solapa */
 }
-.title {
-  margin: 0;
-  /* Usando la fuente global para títulos (Archivo Black) o si prefieres Kollektif para títulos de navbar, tendrías que sobrescribir explícitamente aquí o hacer una nueva variable. Por defecto, h1 usa Archivo Black */
-  font-family: 'Archivo Black', sans-serif; /* Mantenido aquí si quieres que el título de la navbar sea distinto del h1 global */
-  font-weight: var(--font-weight-bold); /* Usando variable global */
-  letter-spacing: 0.3px;
+.title{
+  margin:0;
+  font-family:'Segoe UI',sans-serif;
+  font-weight:800;
+  letter-spacing:.3px;
   font-size: clamp(22px, 2.4vw, 34px);
-  color: var(--color-text-light-primary); /* Usando variable global */
-  text-align: center;
+  color: var(--color-novenary);
+  text-align:center;
 }
 
-.actions {
-  margin-left: auto;
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-sm); /* Usando variable global */
-}
+/* Acciones a la derecha */
+.actions{ margin-left:auto; display:flex; align-items:center; gap:.75rem; }
 
-.avatar-btn {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background: var(--color-text-light-primary); /* Si el fondo del avatar es blanco como antes */
-  overflow: hidden;
-  border: none;
-  padding: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
+/* Avatar/círculo (solo en Home por v-if) */
+.avatar-btn{
+  width:36px; height:36px; border-radius:50%;
+  background: var(--color-novenary);
+  overflow:hidden; border:none; padding:0;
+  display:flex; align-items:center; justify-content:center; cursor:pointer;
 }
-.avatar-img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
+.avatar-img{ width:100%; height:100%; object-fit:cover; }
 </style>
