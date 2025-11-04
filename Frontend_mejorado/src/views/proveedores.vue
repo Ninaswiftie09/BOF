@@ -1,81 +1,62 @@
 <template>
-  <div class="page-container">
+  <div class="page">
     <NavBar title="PROVEEDORES">
       <template #actions>
         <input
           v-model="searchQuery"
-          class="input-dark"
+          class="input--white"
           placeholder="Buscar proveedores…"
-          style="max-width: 300px;"
         />
       </template>
     </NavBar>
 
-    <div class="page-content">
+    <div class="container">
       <section class="module">
-        
-        <div class="table-wrapper">
-          <table class="table">
-            <thead>
-              <tr>
-                <th v-for="col in columns" :key="col.key">{{ col.label }}</th>
-                <th style="width:140px; text-align: right;">Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="proveedor in filteredProveedores" :key="proveedor.id">
-                <td v-for="col in columns" :key="col.key">
-                  {{ proveedor[col.key] }}
-                </td>
-                <td class="actions" style="justify-content: flex-end;">
-                  <button class="icon-btn edit" title="Editar" @click="open('proveedor', proveedor)">✎</button>
-                  <button class="icon-btn delete" title="Eliminar" @click="eliminarProveedor(proveedor.id)">✕</button>
-                </td>
-              </tr>
-              <tr v-if="filteredProveedores.length === 0">
-                <td :colspan="columns.length + 1" class="muted-text" style="text-align:center; padding: 1.2rem 0;">
-                  No hay proveedores para mostrar
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+        <Tablas
+          :columns="columns"
+          :rows="filteredProveedores"
+          :center="true"
+          :searchable="false"                    
+          :actions="{ edit:true, delete:true }"
+          @edit="(row) => open('proveedor', row)"
+          @delete="(row) => eliminarProveedor(row.id)"
+        />
 
-        <div class="footer-actions">
-          <button class="btn btn-primary" @click="open('proveedor')">Agregar Proveedor</button>
+        <div class="footer-actions" style="justify-content:flex-end; gap:.5rem">
+          <button class="btn" @click="open('proveedor')">Agregar Proveedores</button>
         </div>
       </section>
     </div>
 
     <!-- Modal: nuevo/editar proveedor -->
     <div v-if="modal.visible && modal.type === 'proveedor'" class="modal-overlay" @click.self="close">
-      <div class="modal-content-dark">
+      <div class="modal-content modal--compact">
         <h3>{{ currentProveedor ? 'Editar Proveedor' : 'Nuevo Proveedor' }}</h3>
 
-        <form @submit.prevent="saveProveedor">
-          <div class="form-group">
-            <label for="nombre" class="form-label">Nombre</label>
-            <input id="nombre" class="form-input" v-model="proveedorForm.nombre" required />
+        <form class="form-vertical" @submit.prevent="saveProveedor">
+          <div class="form-field">
+            <label>Nombre</label>
+            <input class="input--dark" v-model="proveedorForm.nombre" required />
           </div>
 
-          <div class="form-group">
-            <label for="correo" class="form-label">Correo</label>
-            <input id="correo" class="form-input" v-model="proveedorForm.correo" type="email" />
+          <div class="form-field">
+            <label>Correo</label>
+            <input class="input--dark" v-model="proveedorForm.correo" type="email" />
           </div>
 
-          <div class="form-group">
-            <label for="telefono" class="form-label">Teléfono</label>
-            <input id="telefono" class="form-input" v-model="proveedorForm.telefono" />
+          <div class="form-field">
+            <label>Teléfono</label>
+            <input class="input--dark" v-model="proveedorForm.telefono" />
           </div>
 
-          <div class="form-group">
-            <label for="direccion" class="form-label">Dirección</label>
-            <input id="direccion" class="form-input" v-model="proveedorForm.direccion" />
+          <div class="form-field">
+            <label>Dirección</label>
+            <input class="input--dark" v-model="proveedorForm.direccion" />
           </div>
 
           <div class="modal-actions">
-            <button type="button" class="btn btn-secondary" @click="close">Cancelar</button>
-            <button type="submit" class="btn btn-primary">Guardar</button>
+            <button type="submit" class="btn">Guardar</button>
+            <button type="button" class="btn btn--muted" @click="close">Cancelar</button>
           </div>
         </form>
       </div>
@@ -86,6 +67,7 @@
 <script setup>
 import { reactive, ref, computed, onMounted } from 'vue'
 import NavBar from '@/components/NavBar.vue'
+import Tablas from '@/components/Reutilizacion/Tablas.vue'
 import { apiFetch } from '@/utils/api'
 
 /* UI / estado */
@@ -94,6 +76,7 @@ const currentProveedor = ref(null)
 const proveedores = ref([])
 const searchQuery = ref('')
 
+/* Columnas que se muestran en la tabla */
 const columns = [
   { key: 'nombre',    label: 'Nombre' },
   { key: 'correo',    label: 'Correo' },
@@ -187,19 +170,7 @@ onMounted(fetchProveedores)
 </script>
 
 <style scoped>
-.page-container {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-}
-
-.footer-actions {
-  display: flex;
-  justify-content: flex-end;
-  margin-top: var(--spacing-lg);
-}
-
-.form-group + .form-group {
-  margin-top: var(--spacing-md);
-}
+.page{ min-height:100vh; background:var(--color-octonary); color:#fff; }
+.container{ max-width:1100px; margin:0 auto; padding:20px; }
+.module{ background:#0d1130; border:2px solid #1e2236; border-radius:16px; padding:16px; }
 </style>

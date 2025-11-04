@@ -1,60 +1,46 @@
 <template>
-  <div class="page-container">
+  <div class="reporte-ventas">
+    <!-- NavBar unificado -->
     <NavBar title="REPORTE DE VENTAS" />
 
-    <main class="page-content">
+    <main class="main-content">
       <!-- FILTROS -->
-      <section class="filters-container">
-        <div class="filter-group">
+      <div class="filtros-container">
+        <div class="filtro">
           <label for="fecha-inicio">Desde</label>
-          <input type="date" id="fecha-inicio" class="input-dark" v-model="filtroFechaInicio" />
+          <input type="date" id="fecha-inicio" v-model="filtroFechaInicio" />
         </div>
-        <div class="filter-group">
+        <div class="filtro">
           <label for="fecha-fin">Hasta</label>
-          <input type="date" id="fecha-fin" class="input-dark" v-model="filtroFechaFin" />
+          <input type="date" id="fecha-fin" v-model="filtroFechaFin" />
         </div>
-        <div class="flex-group" style="margin-left: auto;">
-          <button class="btn btn-secondary" @click="resetFiltros" :disabled="cargando">Limpiar</button>
-          <button class="btn btn-primary" @click="filtrarDatos" :disabled="cargando">Filtrar</button>
-        </div>
-      </section>
-
-      <!-- KPIs -->
-      <section class="summary-grid">
-        <div class="summary-card">
-          <h3>Total de Ventas</h3>
-          <p class="valor">Q{{ totalVentas.toLocaleString() }}</p>
-        </div>
-        <div class="summary-card">
-          <h3>Número de Facturas</h3>
-          <p class="valor">{{ numeroFacturas }}</p>
-        </div>
-      </section>
-
-      <!-- Gráficas -->
-      <div class="chart-grid">
-        <div class="chart-container">
-          <h2 class="module-title">Evolución de Ventas</h2>
-          <div class="chart-placeholder">
-            <canvas id="evolucionVentasChart"></canvas>
-          </div>
-        </div>
-
-        <div class="chart-container">
-          <h2 class="module-title">Productos más vendidos</h2>
-          <div class="chart-placeholder">
-            <canvas id="productosMasVendidosChart"></canvas>
-          </div>
-        </div>
-        
-        <div class="chart-container">
-          <h2 class="module-title">Métodos de pago utilizados</h2>
-          <div class="chart-placeholder">
-            <canvas id="metodosPagoChart"></canvas>
-          </div>
+        <div class="filtro-actions">
+          <button class="btn btn--primary" @click="filtrarDatos" :disabled="cargando">Filtrar</button>
+          <button class="btn btn--muted" @click="resetFiltros" :disabled="cargando">Limpiar</button>
         </div>
       </div>
-<<<<<<< Updated upstream
+
+      <!-- KPIs -->
+      <div class="kpi-container">
+        <div class="kpi-card principal">
+          <h3>Total de Ventas</h3>
+          <p class="valor">Q{{ totalVentas }}</p>
+          <p class="descripcion">Solo ventas</p>
+        </div>
+        <div class="kpi-card principal">
+          <h3>Número de Facturas</h3>
+          <p class="valor">{{ numeroFacturas }}</p>
+          <p class="descripcion">Tickets de venta emitidos</p>
+        </div>
+      </div>
+
+      <!-- Gráficas -->
+      <div class="chart-container">
+        <h2>Evolución de Ventas</h2>
+        <div class="chart-placeholder">
+          <canvas id="evolucionVentasChart"></canvas>
+        </div>
+      </div>
 
       <div class="chart-container">
         <h2>Productos más vendidos</h2>
@@ -70,83 +56,64 @@
         </div>
       </div>
 
-=======
-      
-      <!-- Tabla -->
-      <section class="module">
-        <h2 class="module-title" style="margin-bottom: 1rem;">Tabla de Ventas Detalladas</h2>
-        <div class="table-wrapper">
-          <div v-if="errorMsg" class="message error-dark">{{ errorMsg }}</div>
-
-          <table v-if="ventas.length" class="table">
-            <thead>
-              <tr>
-                <th>ID Venta</th>
-                <th>Producto</th>
-                <th>Cliente</th>
-                <th>Cantidad</th>
-                <th>Precio U.</th>
-                <th>Total</th>
-                <th>Método Pago</th>
-                <th>Fecha</th>
-              </tr>
-            </thead>
-            <tbody>
-              <template v-for="venta in ventas" :key="venta.id">
-                <tr v-for="(detalle, i) in venta.detalles" :key="`${venta.id}-${i}`">
-                  <td>{{ venta.id }}</td>
-                  <td>{{ detalle.producto.nombre }}</td>
-                  <td>{{ venta.cliente_id || 'N/A' }}</td>
-                  <td>{{ detalle.cantidad }}</td>
-                  <td>Q{{ detalle.precio_unitario }}</td>
-                  <td>Q{{ detalle.subtotal }}</td>
-                  <td>{{ venta.metodo_pago }}</td>
-                  <td>{{ formatearFecha(venta.fecha) }}</td>
-                </tr>
-              </template>
-            </tbody>
-          </table>
-
-          <div v-else-if="cargando" class="loading-state">
-            Cargando ventas...
-          </div>
-          <p v-else class="muted-text" style="text-align: center; padding: 2rem;">
-            No se encontraron ventas para el periodo seleccionado
-          </p>
-        </div>
-      </section>
->>>>>>> Stashed changes
     </main>
   </div>
 </template>
 
-<script setup>
-import { ref, onMounted, onBeforeUnmount } from 'vue';
-import Chart from 'chart.js/auto';
-import NavBar from '@/components/NavBar.vue';
-import { apiFetch } from '@/utils/api';
+<script>
+import Chart from 'chart.js/auto'
+import NavBar from '@/components/NavBar.vue'
+import { apiFetch } from '@/utils/api'
 
-const filtroFechaInicio = ref('');
-const filtroFechaFin = ref('');
-const totalVentas = ref(0);
-const numeroFacturas = ref(0);
-const ventas = ref([]);
-const cargando = ref(false);
-const errorMsg = ref('');
+export default {
+  components: { NavBar },
+  data() {
+    return {
+      // filtros/fechas
+      fechaInicio: '',
+      fechaFin: '',
+      filtroFechaInicio: '',
+      filtroFechaFin: '',
+      // KPI/tabla
+      totalVentas: 0,
+      numeroFacturas: 0,
+      ventas: [],
+      // ui
+      cargando: false,
+      errorMsg: '',
+      paginaActual: 1,
+      totalPaginas: 1,
+      // charts
+      evolucionChartInstance: null,
+      productosChartInstance: null,
+      metodosPagoChartInstance: null,
+    }
+  },
 
-let evolucionChartInstance = null;
-let productosChartInstance = null;
-let metodosPagoChartInstance = null;
+  mounted() {
+    // Rango: mes actual por defecto
+    const hoy = new Date()
+    const primerDia = new Date(hoy.getFullYear(), hoy.getMonth(), 1)
+    const ultimoDia = new Date(hoy.getFullYear(), hoy.getMonth() + 1, 0)
+    const fmt = (f) =>
+      `${f.getFullYear()}-${String(f.getMonth() + 1).padStart(2, '0')}-${String(f.getDate()).padStart(2, '0')}`
+    this.filtroFechaInicio = fmt(primerDia)
+    this.filtroFechaFin = fmt(ultimoDia)
+    this.filtrarDatos()
+  },
 
-// --- Helper para obtener variables CSS ---
-const getCssVar = (varName) => getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
+  beforeUnmount() {
+    this.evolucionChartInstance?.destroy?.()
+    this.productosChartInstance?.destroy?.()
+    this.metodosPagoChartInstance?.destroy?.()
+  },
 
-const formatearFecha = (fecha) => {
-  if (!fecha) return '';
-  return new Date(fecha).toLocaleDateString('es-GT');
-};
+  methods: {
+    formatearFecha(fecha) {
+      if (!fecha) return ''
+      return new Date(fecha).toLocaleDateString('es-GT')
+    },
 
-<<<<<<< Updated upstream
     async filtrarDatos() {
       this.errorMsg = ''
       this.fechaInicio = this.filtroFechaInicio
@@ -312,200 +279,142 @@ const formatearFecha = (fecha) => {
       this.filtroFechaFin = fmt(ultimoDia)
       this.filtrarDatos()
     }
-=======
-const filtrarDatos = async () => {
-  errorMsg.value = '';
-  if (!filtroFechaInicio.value || !filtroFechaFin.value) {
-    errorMsg.value = 'Por favor, seleccione ambas fechas.';
-    return;
->>>>>>> Stashed changes
   }
-  await Promise.all([
-    cargarVentas(),
-    cargarEvolucionVentas(),
-    cargarProductosMasVendidos(),
-    cargarMetodosPago()
-  ]);
-};
-
-const cargarVentas = async () => {
-  cargando.value = true;
-  errorMsg.value = '';
-  try {
-    const data = await apiFetch(`/api/ventas/por-fecha/?fecha_inicio=${filtroFechaInicio.value}&fecha_fin=${filtroFechaFin.value}`);
-    totalVentas.value = data.total_ventas ?? 0;
-    numeroFacturas.value = data.numero_facturas ?? 0;
-    ventas.value = data.ventas ?? [];
-  } catch (err) {
-    console.error('Error al obtener las ventas:', err);
-    errorMsg.value = 'No se pudieron cargar las ventas.';
-  } finally {
-    cargando.value = false;
-  }
-};
-
-const cargarEvolucionVentas = async () => {
-  try {
-    const data = await apiFetch(`/api/ventas/evolucion/?fecha_inicio=${filtroFechaInicio.value}&fecha_fin=${filtroFechaFin.value}`);
-    renderEvolucionChart(data || []);
-  } catch (error) { console.error('Error al cargar evolución de ventas:', error); }
-};
-
-const cargarProductosMasVendidos = async () => {
-  try {
-    const data = await apiFetch(`/api/ventas/productos-mas-vendidos/?fecha_inicio=${filtroFechaInicio.value}&fecha_fin=${filtroFechaFin.value}`);
-    renderProductosChart(data || []);
-  } catch (error) { 
-    console.error('Error al cargar productos más vendidos:', error); 
-    renderProductosChart([]); 
-  }
-};
-
-const cargarMetodosPago = async () => {
-  try {
-    const data = await apiFetch('/api/ventas/metodos-pago/');
-    renderMetodosPagoChart(data || []);
-  } catch (error) { console.error('Error al cargar métodos de pago:', error); }
-};
-
-// --- Métodos para renderizar las gráficas ---
-const renderEvolucionChart = (data) => {
-  evolucionChartInstance?.destroy?.();
-  const ctx = document.getElementById('evolucionVentasChart')?.getContext('2d');
-  if (!ctx) return;
-
-  const textColor = getCssVar('--color-text-light-primary');
-  const primaryColor = getCssVar('--color-action-primary');
-  const primaryColorTransparent = 'rgba(43, 92, 168, 0.2)'; // Versión transparente de --color-action-primary
-
-  evolucionChartInstance = new Chart(ctx, {
-    type: 'line',
-    data: {
-      labels: data.map((item) => formatearFecha(item.dia)),
-      datasets: [{
-        label: 'Total de Ventas por Día',
-        data: data.map((item) => item.total),
-        borderColor: primaryColor,
-        backgroundColor: primaryColorTransparent,
-        tension: 0.1,
-        fill: true
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      scales: {
-        y: { ticks: { color: textColor } },
-        x: { ticks: { color: textColor } }
-      },
-      plugins: { legend: { labels: { color: textColor } } }
-    }
-  });
-};
-
-const renderProductosChart = (data) => {
-  productosChartInstance?.destroy?.();
-  const ctx = document.getElementById('productosMasVendidosChart')?.getContext('2d');
-  if (!ctx) return;
-
-  const textColor = getCssVar('--color-text-light-primary');
-
-  productosChartInstance = new Chart(ctx, {
-    type: 'bar',
-    data: {
-      labels: data.map((item) => item.producto__nombre),
-      datasets: [{
-        label: 'Cantidad Vendida',
-        data: data.map((item) => item.total_vendido),
-        backgroundColor: [
-          getCssVar('--color-action-primary'),
-          getCssVar('--color-action-secondary'),
-          getCssVar('--color-icon-edit'),
-          getCssVar('--navbar-background'),
-          getCssVar('--color-action-danger'),
-        ]
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      indexAxis: 'y',
-      scales: {
-        y: { ticks: { color: textColor } },
-        x: { ticks: { color: textColor } }
-      },
-      plugins: { legend: { labels: { color: textColor } } }
-    }
-  });
-};
-
-const renderMetodosPagoChart = (data) => {
-  metodosPagoChartInstance?.destroy?.();
-  const ctx = document.getElementById('metodosPagoChart')?.getContext('2d');
-  if (!ctx) return;
-
-  const textColor = getCssVar('--color-text-light-primary');
-
-  metodosPagoChartInstance = new Chart(ctx, {
-    type: 'doughnut',
-    data: {
-      labels: data.map((item) => item.metodo_pago),
-      datasets: [{
-        data: data.map((item) => item.cantidad),
-        backgroundColor: [
-          getCssVar('--color-action-primary'),
-          getCssVar('--color-action-secondary'),
-          getCssVar('--color-icon-edit'),
-          getCssVar('--color-action-danger'),
-        ]
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: { legend: { position: 'top', labels: { color: textColor } } }
-    }
-  });
-};
-
-const resetFiltros = () => {
-  const hoy = new Date();
-  const primerDia = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
-  const ultimoDia = new Date(hoy.getFullYear(), hoy.getMonth() + 1, 0);
-  const fmt = (f) => f.toISOString().slice(0, 10);
-  filtroFechaInicio.value = fmt(primerDia);
-  filtroFechaFin.value = fmt(ultimoDia);
-  filtrarDatos();
-};
-
-onMounted(() => {
-  resetFiltros();
-});
-
-onBeforeUnmount(() => {
-  evolucionChartInstance?.destroy?.();
-  productosChartInstance?.destroy?.();
-  metodosPagoChartInstance?.destroy?.();
-});
+}
 </script>
 
 <style scoped>
-.page-container {
+.reporte-ventas{
+  background: var(--color-octonary); /*fondo pantalla reporteventas*/
+  color: #fff; /*texto "pagina 1 de 1" */
   min-height: 100vh;
-  display: flex;
-  flex-direction: column;
+  font-family: 'Kollektif', sans-serif;
 }
 
-.chart-grid {
+.main-content{
+  padding: 20px;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-  gap: var(--spacing-xl);
-  margin-bottom: var(--spacing-xl);
+  gap: 20px;
 }
 
-.loading-state {
-  text-align: center;
-  padding: 2rem;
-  color: var(--color-text-light-secondary);
+/* FILTROS */
+.filtros-container{
+  display: flex; flex-wrap: wrap; gap: 14px 20px;
+  align-items: end;
+  background: #1e293b; /*fondo cuadro filtros*/
+  border: 1px solid #223043; /*borde cuadro filtros*/
+  border-radius: 12px;
+  padding: 14px 16px;
 }
+.filtro{ display:flex; flex-direction:column; gap:6px; min-width: 220px; }
+.filtro label{
+  font-weight: 800;
+  color: #fff; /*texto filtro "desde, hasta" */
+}
+.filtro input{
+  padding: 10px 12px; border-radius: 10px;
+  border: 1px solid #334155; /*borde input filtro fecha*/
+  background: #0b1326; /*fondo input filtro fecha*/
+  color: #fff; /*texto input filtro fecha*/
+  outline: none;
+}
+.filtro input:focus{
+  border-color: var(--color-quinary); /*borde interior input filtro fecha seleccionado*/
+  box-shadow: 0 0 0 3px rgba(43,92,168,.25); /*borde exterior input filtro fecha seleccionado*/
+}
+.filtro-actions{ display:flex; gap:10px; margin-left: auto; }
+.btn{ padding:10px 14px; border-radius:10px; font-weight:800; border:none; cursor:pointer; }
+.btn--primary{
+  background: var(--color-quinary); /*fondo boton "filtrar" */
+  color:#fff; /*texto "filtrar" */
+}
+.btn--muted{
+  background: #334155; /*fondo boton "limpiar" */
+  color:#fff; /*texto "limpiar"*/
+}
+
+/* KPIs */
+.kpi-container{ display:flex; gap:20px; flex-wrap: wrap; }
+.kpi-card{
+  background:#1e2236; /*fondo tarjetas "total ventas, numero facturas"*/
+  padding:20px; border-radius:12px;
+  border:1px solid #223043; /*borde tarjetas "total ventas, numero facturas"*/
+}
+.kpi-card.principal{ flex:1; min-width:260px; }
+.kpi-card h3{
+  margin:0;
+  color: var(--color-quinary); /*titulo tarjetas "total ventas, numero facturas"*/
+}
+.kpi-card .valor{
+  font-size:2rem; font-weight:800;
+  color:#fff; /*numeros tarjetas "total ventas, numero facturas"*/
+}
+.kpi-card .descripcion{
+  font-size:.9rem;
+  color:#cbd5e1; /*subtexto tarjetas "total ventas, numero facturas"*/
+}
+
+/* Charts */
+.chart-container{
+  background:#1e2236; /*fondo tarjetas con graficas "evolucion ventas, productos vendidos, metodos pago"*/
+  padding:20px; border-radius:12px;
+  border:1px solid #223043; /*borde tarjetas con graficas "evolucion ventas, productos vendidos, metodos pago"*/
+}
+.chart-container h2{ margin-top:0; color:#fff; } /*titulos graficas "evolucion ventas, productos vendidos, metodos pago" */
+.chart-placeholder{
+  background:#2c3148; /*fondo de graficas*/
+  border-radius:10px; height:280px;
+  display:flex; align-items:center; justify-content:center; overflow:hidden;
+}
+.chart-placeholder.shorter{ height:200px; }
+.chart-placeholder canvas{ width:100% !important; height:100% !important; }
+
+/* Tabla */
+.table-container{
+  background:#1e2236; /*fondo ficha "tabla de ventas detalladas" */
+  padding:20px; border-radius:12px;
+  border:1px solid #223043; /*borde ficha "tabla de ventas detalladas" */
+  overflow-x:auto;
+}
+table{ width:100%; border-collapse: collapse; }
+th, td{
+  padding:12px;
+  border:1px solid #2c3148; /*opciones bordes tabla "tabla de ventas detalladas" */
+}
+th{
+  background: var(--color-senary); /*nada*/
+  color:#fff; /*nada*/
+  text-align:left;
+}
+tr:nth-child(even){ background:#2b2f40; } /*nada*/
+tr:nth-child(odd){ background:#1f2336; } /*asdf*/
+tr:hover{ background:#3c4c6e; } /*nada*/
+
+/* Paginación */
+.pagination{
+  display:flex; justify-content:center; gap:12px; margin-top:16px; align-items:center;
+}
+.pagination button{
+  background: var(--color-quinary); /*nada*/
+  color:#fff; /*texto botones "anterior/siguiente"*/
+  border:none;
+  padding:8px 14px; border-radius:8px; cursor:pointer;
+}
+.pagination button:disabled{ background:#475569; /*fondo botones "anterior/siguiente" */
+  cursor:not-allowed;
+}
+
+.loading{ display:grid; place-items:center; gap:8px; padding:20px; }
+.spinner{
+  width:28px; height:28px; border-radius:50%;
+  border:3px solid rgba(255,255,255,.25); /*nada*/
+  border-top-color:#fff; /*nada*/
+  animation: spin 1s linear infinite;
+}
+@keyframes spin{ to { transform: rotate(360deg); } }
+
+.no-data{
+  color:#cbd5e1; /*nada*/
+  text-align:center;
+  }
 </style>
