@@ -1,85 +1,78 @@
 <template>
-  <div class="page-container">
+  <div class="contabilidad-container">
     <NavBar title="SISTEMA DE CONTABILIDAD">
       <template #actions>
-        <input v-model="search" class="input-dark" placeholder="Buscar operaciones…" />
+        <input v-model="search" class="input--white" placeholder="Buscar operaciones…" />
       </template>
     </NavBar>
 
-    <div class="page-content">
-      <!-- Resumen -->
-      <section class="summary-grid">
-        <div class="summary-card">
-          <h3>INGRESOS</h3>
-          <p>Q{{ summary.ingresos.toLocaleString() }}</p>
-        </div>
-        <div class="summary-card">
-          <h3>GASTOS</h3>
-          <p>Q{{ summary.egresos.toLocaleString() }}</p>
-        </div>
-        <div class="summary-card">
-          <h3>BALANCE</h3>
-          <p>Q{{ summary.balance.toLocaleString() }}</p>
-        </div>
-        <div class="summary-card">
-          <h3>OPERACIONES</h3>
-          <p>{{ summary.total }}</p>
-        </div>
-      </section>
+    <!-- Resumen -->
+    <div class="summary-section">
+      <div class="summary-card">
+        <h3>INGRESOS</h3>
+        <p>Q{{ summary.ingresos.toLocaleString() }}</p>
+      </div>
+      <div class="summary-card">
+        <h3>GASTOS</h3>
+        <p>Q{{ summary.egresos.toLocaleString() }}</p>
+      </div>
+      <div class="summary-card">
+        <h3>BALANCE</h3>
+        <p>Q{{ summary.balance.toLocaleString() }}</p>
+      </div>
+      <div class="summary-card">
+        <h3>OPERACIONES</h3>
+        <p>{{ summary.total }}</p>
+      </div>
+    </div>
 
-      <!-- Tabla principal -->
-      <section class="module">
-        <div class="module-header">
-          <h2 class="module-title">OPERACIONES RECIENTES</h2>
-          <div class="flex-group">
-            <button class="btn btn-secondary" @click="abrirVerTodos">VER TODO</button>
-            <button class="btn btn-primary" @click="openNew">AGREGAR MOVIMIENTO</button>
-          </div>
+    <!-- Tabla principal -->
+    <div class="operations-section">
+      <div class="section-header">
+        <h2 class="section-title">OPERACIONES RECIENTES</h2>
+        <div class="section-buttons">
+          <button class="btn" @click="openNew">AGREGAR MOVIMIENTO</button>
+          <button class="btn btn--muted" @click="abrirVerTodos">VER TODO</button>
         </div>
+      </div>
 
-        <div class="table-wrapper">
-          <table class="table">
-            <thead>
-              <tr>
-                <th v-for="col in columns" :key="col.key">{{ col.label }}</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="row in tableRows.slice(0,6)" :key="row.id">
-                <td v-for="col in columns" :key="col.key">{{ row[col.key] }}</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </section>
+      <Tablas
+        :columns="columns"
+        :rows="tableRows.slice(0,6)"
+        :center="true"
+        :searchable="false"
+        :actions="{ edit:false, delete:false }"
+      />
     </div>
 
     <!-- Modal: nueva operación -->
     <div v-if="modalOpen" class="modal-overlay" @click.self="closeModal">
-      <div class="modal-content-dark">
+      <div class="modal-content modal--compact">
         <h3>NUEVA OPERACIÓN</h3>
-        <form @submit.prevent="addOperation">
-          <div class="form-group">
-            <label class="form-label">Tipo</label>
-            <select class="form-input" v-model="newOperation.tipo" required>
-              <option value="ingreso">Ingreso</option>
-              <option value="egreso">Egreso</option>
-            </select>
+        <form class="form-vertical" @submit.prevent="addOperation">
+          <div class="form-field">
+            <label>Tipo</label>
+            <div class="select-wrap">
+              <select class="select--dark" v-model="newOperation.tipo" required>
+                <option value="ingreso">Ingreso</option>
+                <option value="egreso">Egreso</option>
+              </select>
+            </div>
           </div>
 
-          <div class="form-group">
-            <label class="form-label">Monto (Q)</label>
-            <input class="form-input" type="number" step="0.01" min="0.01" v-model.number="newOperation.monto" required />
+          <div class="form-field">
+            <label>Monto (Q)</label>
+            <input class="input--dark" type="number" step="0.01" min="0.01" v-model.number="newOperation.monto" required />
           </div>
 
-          <div class="form-group">
-            <label class="form-label">Concepto</label>
-            <textarea class="form-input" v-model="newOperation.concepto" maxlength="250" required style="min-height: 80px;"></textarea>
+          <div class="form-field">
+            <label>Concepto</label>
+            <textarea class="input--dark" v-model="newOperation.concepto" maxlength="250" required></textarea>
           </div>
 
           <div class="modal-actions">
-            <button type="button" class="btn btn-secondary" @click="closeModal">Cancelar</button>
-            <button type="submit" class="btn btn-primary">Guardar</button>
+            <button type="submit" class="btn">Guardar</button>
+            <button type="button" class="btn btn--muted" @click="closeModal">Cancelar</button>
           </div>
         </form>
       </div>
@@ -87,13 +80,11 @@
 
     <!-- Modal: Ver Todo -->
     <div v-if="verTodosVisible" class="modal-overlay" @click.self="cerrarVerTodos">
-      <div class="modal-content-dark modal-wide">
-        <div class="modal-header">
-          <h3>OPERACIONES - LISTA COMPLETA</h3>
-          <button class="icon-btn" @click="cerrarVerTodos" title="Cerrar">✕</button>
-        </div>
-        <div class="table-wrapper" style="max-height: 70vh; overflow-y: auto;">
-          <table class="table">
+      <div class="modal-content modal--wide full-table-modal">
+        <button class="close-btn-top" @click="cerrarVerTodos">✕</button>
+        <h3>OPERACIONES - LISTA COMPLETA</h3>
+        <div class="table-wrapper">
+          <table class="table dark-table table--center">
             <thead>
               <tr>
                 <th v-for="col in columns" :key="col.key">{{ col.label }}</th>
@@ -101,137 +92,176 @@
             </thead>
             <tbody>
               <tr v-for="row in tableRows" :key="row.id">
-                <td v-for="col in columns" :key="col.key">{{ row[col.key] }}</td>
+                <td>{{ row.id }}</td>
+                <td>{{ row.tipo }}</td>
+                <td>{{ row.concepto }}</td>
+                <td>{{ row.monto }}</td>
+                <td>{{ row.fecha }}</td>
               </tr>
             </tbody>
           </table>
+        </div>
+
+        <div class="modal-actions">
+          <button class="btn btn--muted" @click="cerrarVerTodos">Cerrar</button>
         </div>
       </div>
     </div>
   </div>
 </template>
 
-<script setup>
-import { ref, reactive, computed, onMounted, watch, onBeforeUnmount } from 'vue'
+<script>
+import { useRouter } from 'vue-router'
 import { apiFetch } from '@/utils/api'
 import NavBar from '@/components/NavBar.vue'
+import Tablas from '@/components/Reutilizacion/Tablas.vue'
 
-const operations = ref([])
-const summary = reactive({ ingresos: 0, egresos: 0, balance: 0, total: 0 })
-const search = ref('')
-const modalOpen = ref(false)
-const verTodosVisible = ref(false)
-const newOperation = reactive({ tipo: 'ingreso', monto: '', concepto: '' })
-
-const columns = [
-  { key: 'id', label: 'ID' },
-  { key: 'tipo', label: 'TIPO' },
-  { key: 'concepto', label: 'CONCEPTO' },
-  { key: 'monto', label: 'MONTO' },
-  { key: 'fecha', label: 'FECHA' },
-]
-
-const filteredOperations = computed(() => {
-  const q = search.value.trim().toLowerCase()
-  if (!q) return operations.value
-  return operations.value.filter(op => {
-    const monto = Number(op.monto)?.toString() ?? ''
-    return [op.tipo, op.concepto, op.fecha, monto]
-      .some(v => v.toString().toLowerCase().includes(q))
-  })
-})
-
-const tableRows = computed(() =>
-  filteredOperations.value.map(op => ({
-    ...op,
-    tipo: op.tipo === 'ingreso' ? 'Ingreso' : 'Egreso',
-    monto: `Q${Number(op.monto).toLocaleString()}`,
-  }))
-)
-
-const calculateSummary = () => {
-  let ingresos = 0, egresos = 0
-  operations.value.forEach(op => {
-    if (op.tipo === 'ingreso') ingresos += Number(op.monto)
-    else if (op.tipo === 'egreso') egresos += Number(op.monto)
-  })
-  summary.ingresos = ingresos
-  summary.egresos = egresos
-  summary.balance = ingresos - egresos
-  summary.total = operations.value.length
-}
-
-const fetchOperations = async () => {
-  try {
-    const data = await apiFetch('/api/operaciones/')
-    operations.value = Array.isArray(data) ? data : (data?.results || [])
-    calculateSummary()
-  } catch (error) {
-    console.error('Error cargando operaciones:', error)
-  }
-}
-
-const openNew = () => { modalOpen.value = true }
-const closeModal = () => { modalOpen.value = false }
-const abrirVerTodos = () => {
-  document.body.classList.add('modal-open');
-  verTodosVisible.value = true;
-};
-const cerrarVerTodos = () => {
-  document.body.classList.remove('modal-open');
-  verTodosVisible.value = false;
-};
-
-const addOperation = async () => {
-  if (!newOperation.monto || !newOperation.concepto.trim()) {
-    alert('Completa todos los campos'); return
-  }
-  try {
-    const payload = {
-      tipo: newOperation.tipo,
-      monto: parseFloat(newOperation.monto),
-      concepto: newOperation.concepto,
-      fecha: new Date().toISOString().slice(0, 10),
+export default {
+  name: 'AccountingView',
+  components: { NavBar, Tablas },
+  setup() {
+    const router = useRouter()
+    const goHome = () => router.push({ name: 'home' })
+    return { goHome }
+  },
+  data() {
+    return {
+      operations: [],
+      summary: { ingresos: 0, egresos: 0, balance: 0, total: 0 },
+      search: '',
+      modalOpen: false,
+      verTodosVisible: false,
+      newOperation: { tipo: 'ingreso', monto: '', concepto: '' },
+      columns: [
+        { key: 'id', label: 'ID' },
+        { key: 'tipo', label: 'TIPO' },
+        { key: 'concepto', label: 'CONCEPTO' },
+        { key: 'monto', label: 'MONTO' },
+        { key: 'fecha', label: 'FECHA' },
+      ],
     }
-    const data = await apiFetch('/api/operaciones/', 'POST', payload)
-    operations.value.push(data)
-    calculateSummary()
-    closeModal()
-    Object.assign(newOperation, { tipo: 'ingreso', monto: '', concepto: '' })
-  } catch (error) {
-    console.error('Error agregando operación:', error)
-    alert('Error al agregar la operación')
-  }
+  },
+  computed: {
+    filteredOperations() {
+      const q = this.search.trim().toLowerCase()
+      if (!q) return this.operations
+      return this.operations.filter(op => {
+        const monto = Number(op.monto)?.toString() ?? ''
+        return [
+          op.tipo === 'ingreso' ? 'ingreso' : 'egreso',
+          op.concepto ?? '',
+          op.fecha ?? '',
+          monto
+        ].some(v => v.toString().toLowerCase().includes(q))
+      })
+    },
+    tableRows() {
+      return this.filteredOperations.map(op => ({
+        id: op.id,
+        tipo: op.tipo === 'ingreso' ? 'Ingreso' : 'Egreso',
+        concepto: op.concepto,
+        monto: `Q${Number(op.monto).toLocaleString()}`,
+        fecha: op.fecha,
+      }))
+    }
+  },
+  methods: {
+    async fetchOperations() {
+      try {
+        const data = await apiFetch('/api/operaciones/')
+        this.operations = Array.isArray(data) ? data : (data?.results || [])
+        this.calculateSummary()
+      } catch (error) {
+        console.error('Error cargando operaciones:', error)
+      }
+    },
+    calculateSummary() {
+      let ingresos = 0, egresos = 0
+      this.operations.forEach(op => {
+        if (op.tipo === 'ingreso') ingresos += Number(op.monto)
+        else if (op.tipo === 'egreso') egresos += Number(op.monto)
+      })
+      this.summary.ingresos = ingresos
+      this.summary.egresos = egresos
+      this.summary.balance = ingresos - egresos
+      this.summary.total = this.operations.length
+    },
+    openNew() { this.modalOpen = true },
+    closeModal() { this.modalOpen = false },
+    abrirVerTodos() { this.verTodosVisible = true },
+    cerrarVerTodos() { this.verTodosVisible = false },
+    async addOperation() {
+      if (!this.newOperation.monto || !this.newOperation.concepto.trim()) {
+        alert('Completa todos los campos'); return
+      }
+      try {
+        const payload = {
+          tipo: this.newOperation.tipo,
+          monto: parseFloat(this.newOperation.monto),
+          concepto: this.newOperation.concepto,
+          fecha: new Date().toISOString().slice(0, 10),
+        }
+        const data = await apiFetch('/api/operaciones/', 'POST', payload)
+        this.operations.push(data)
+        this.calculateSummary()
+        this.closeModal()
+        this.newOperation = { tipo: 'ingreso', monto: '', concepto: '' }
+      } catch (error) {
+        console.error('Error agregando operación:', error)
+        alert('Error al agregar la operación')
+      }
+    },
+  },
+  mounted() { this.fetchOperations() }
 }
-
-onMounted(fetchOperations);
-
-onBeforeUnmount(() => {
-  document.body.classList.remove('modal-open');
-});
-
 </script>
 
 <style scoped>
-.page-container {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
+.contabilidad-container{
+  min-height:100vh;
+  background:#0a0f2c;
+  color:#fff;
+  display:flex;
+  flex-direction:column;
+  font-family:'Segoe UI',sans-serif;
+  padding-bottom: 2rem;
 }
 
-.module-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: var(--spacing-md);
+.summary-section{
+  display:flex; flex-wrap:wrap; gap:20px;
+  margin: 2rem; margin-bottom:30px;
 }
+.summary-card{
+  flex:1 1 200px;
+  background:#0d1130;
+  border:2px solid #1e2236;
+  border-radius:16px;
+  padding:20px; text-align:center;
+  color:#fff;
+}
+.summary-card h3{ margin:0; text-transform:uppercase; }
+.summary-card p{ font-size:1.5rem; margin-top:10px; font-weight:bold; }
 
-.module-title {
-  font-family: 'Archivo Black', sans-serif;
-  font-size: 1.2rem;
+.operations-section{
+  background:#0d1130;
+  border:2px solid #1e2236;
+  border-radius:16px;
+  padding:20px; color:#fff;
+  margin: 0 2rem;
 }
+.section-header{
+  display:flex; justify-content:space-between; align-items:center;
+  margin-bottom: 16px;
+}
+.section-buttons{
+  display:flex; gap:10px;
+}
+.btn{ font-weight:700; }
 
-.form-group + .form-group {
-  margin-top: var(--spacing-md);
+.close-btn-top{
+  position:absolute; top:10px; right:15px;
+  background:transparent; border:none; font-size:22px;
+  cursor:pointer; font-weight:bold; color:#fff;
 }
+.table-wrapper{ max-height:70vh; overflow:auto; }
 </style>

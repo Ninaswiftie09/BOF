@@ -1,71 +1,67 @@
 <template>
-  <div class="page-container">
+  <div class="crm-home">
     <NavBar title="CLIENTES Y PROVEEDORES" />
 
-    <div class="page-content">
-      <main class="cards-layout">
-        
+    <div class="wrap">
+      <main class="cards">
         <!-- CLIENTES -->
-        <router-link to="/clientesregistro" class="card-link">
-          <div class="module module-interactive">
-            <header class="card-header">
-              <div class="chip">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M17 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
-                </svg>
-                <span>Clientes</span>
+        <button class="card card--click" @click="go('/clientesregistro')">
+          <header>
+            <div class="chip">
+              <!-- currentColor -->
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
+              </svg>
+              Clientes
+            </div>
+            <span class="count">{{ clientesCount }} registrados</span>
+          </header>
+
+          <ul class="list">
+            <li class="row" v-for="c in clientesRecientes" :key="c.name">
+              <div>
+                <strong>{{ c.name }}</strong><br><small>{{ c.meta }}</small>
               </div>
-              <span class="muted-text">{{ clientesCount }} registrados</span>
-            </header>
+              <span class="badge">{{ c.badge }}</span>
+            </li>
+          </ul>
 
-            <ul class="dashed-list" style="flex-grow: 1;">
-              <li class="dashed-list-item" v-for="c in clientesRecientes" :key="c.name">
-                <div>
-                  <strong>{{ c.name }}</strong><br><small>{{ c.meta }}</small>
-                </div>
-                <span class="badge">{{ c.badge }}</span>
-              </li>
-            </ul>
-
-            <footer class="card-footer">
-              <button class="btn btn-primary" @click.prevent="go('/clientesregistro')">Ver más</button>
-            </footer>
+          <div class="footer" @click.stop>
+            <button class="btn btn--primary" @click="go('/clientesregistro')">Ver más</button>
           </div>
-        </router-link>
+        </button>
 
         <!-- PROVEEDORES -->
-        <router-link to="/proveedores" class="card-link">
-          <div class="module module-interactive">
-            <header class="card-header">
-              <div class="chip">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
-                  <path d="M9 3v18M15 3v18M3 9h18M3 15h18"/>
-                </svg>
-                <span>Proveedores</span>
+        <button class="card card--click" @click="go('/proveedores')">
+          <header>
+            <div class="chip chip--green">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                <path d="M9 3v18M15 3v18M3 9h18M3 15h18"/>
+              </svg>
+              Proveedores
+            </div>
+            <span class="count">{{ proveedoresCount }} activos</span>
+          </header>
+
+          <ul class="list">
+            <li class="row" v-for="p in proveedoresRecientes" :key="p.name">
+              <div>
+                <strong>{{ p.name }}</strong><br><small>{{ p.meta }}</small>
               </div>
-              <span class="muted-text">{{ proveedoresCount }} activos</span>
-            </header>
+              <span class="badge">{{ p.badge }}</span>
+            </li>
+          </ul>
 
-            <ul class="dashed-list" style="flex-grow: 1;">
-              <li class="dashed-list-item" v-for="p in proveedoresRecientes" :key="p.name">
-                <div>
-                  <strong>{{ p.name }}</strong><br><small>{{ p.meta }}</small>
-                </div>
-                <span class="badge">{{ p.badge }}</span>
-              </li>
-            </ul>
-
-            <footer class="card-footer">
-              <button class="btn btn-primary" @click.prevent="go('/proveedores')">Ver más</button>
-            </footer>
+          <div class="footer" @click.stop>
+            <button class="btn btn--green" @click="go('/proveedores')">Ver más</button>
           </div>
-        </router-link>
-
+        </button>
       </main>
     </div>
   </div>
 </template>
+
 
 <script setup>
 import { useRouter } from 'vue-router'
@@ -84,7 +80,7 @@ const proveedores = ref([])
 const clientesCount = computed(() => clientes.value.length)
 const proveedoresCount = computed(() => proveedores.value.length)
 
-// “Recientes” (top 3)
+// “Recientes” (top 3) mapeados al mismo shape que usabas
 const clientesRecientes = computed(() =>
   clientes.value.slice(0, 3).map(c => ({
     name: c.nombre || c.name || `Cliente ${c.id ?? ''}`,
@@ -120,35 +116,132 @@ onMounted(fetchData)
 </script>
 
 <style scoped>
-
-.page-container {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
+/* === Paleta y tipografías === */
+:root {
+  --color-primary: #1e293b; /*nada*/
+  --color-tertiary: #84C8C0; /*nada*/
+  --color-quaternary: #C9E8F5; /*nada*/
+  --color-quinary: #2B5CA8; /*nada*/
+  --color-senary: #374666; /*nada*/
+  --color-septenary: #83A4CC; /*nada*/
+  --color-octonary: #0f172a; /*nada*/
+  --color-novenary: #ffffff; /*nada*/
+  --colo-texto-negro: #000000; /*nada*/
+  --colo-texto-blanco: #ffffff; /*nada*/
 }
 
-.cards-layout {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-  justify-content: center;
-  gap: var(--spacing-xl);
-  max-width: 1280px;
-  margin: 0 auto;
+@font-face {
+  font-family: 'Archivo Black';
+  src: url('./fonts/ArchivoBlack-Regular.ttf') format('truetype');
+}
+@font-face {
+  font-family: 'Kollektif';
+  src: url('./fonts/Kollektif.ttf') format('truetype');
+}
+@font-face {
+  font-family: 'Kollektif';
+  src: url('./fonts/Kollektif-Bold.ttf') format('truetype');
+  font-weight: bold;
+}
+@font-face {
+  font-family: 'Kollektif';
+  src: url('./fonts/Kollektif-Italic.ttf') format('truetype');
+  font-style: italic;
+}
+@font-face {
+  font-family: 'Kollektif';
+  src: url('./fonts/Kollektif-BoldItalic.ttf') format('truetype');
+  font-weight: bold;
+  font-style: italic;
 }
 
-.card-link {
-  text-decoration: none;
-  color: inherit;
-  display: block;
+/* === Fondo general === */
+.crm-home{
+  min-height:100vh;
+  background:var(--color-octonary); /*fondo de página*/
+  display:flex; flex-direction:column;
+  color:var(--color-novenary); /*nada*/
+  font-family: 'Kollektif', sans-serif;
 }
 
-.card-header, .card-footer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+.wrap{max-width:1280px; margin:0 auto; padding:28px 20px 80px}
+
+/* === Cards grandes === */
+.cards{
+  display:grid;
+  grid-template-columns: repeat(2, minmax(0, 560px));
+  justify-content:center;
+  gap:28px;
+}
+@media (max-width:1200px){
+  .cards{ grid-template-columns:1fr; }
+}
+.card{
+  background:rgba(255,255,255,.06); /*fondo de tarjetas clientes/proveedores*/
+  border-radius:18px;
+  border:1px solid rgba(255,255,255,.18); /*borde tarjetas clientes/proveedores*/
+  padding:24px;
+  transition:transform .2s ease;
+}
+.card--click{cursor:pointer}
+.card--click:hover{transform:translateY(-4px)}
+
+.card header{
+  display:flex; align-items:center; justify-content:space-between;
+  margin-bottom:14px;
+  font-family: 'Archivo Black', sans-serif;
+}
+.chip{
+  display:inline-flex; align-items:center; gap:10px;
+  padding:12px 14px; border-radius:999px; font-weight:800;
+  background:rgba(255,255,255,.14); /*fondo circulo categoria "clientes" */
+  color:var(--color-novenary); /*letra y logo circulo categoria "clientes" */
+}
+.chip--green{
+  background:rgba(255,255,255,.14); /*fondo circulo categoria "proveedores" */
+  color:#f5f8f6; /*letra y logo circulo categoria "proveedores" */
+}
+.count{
+  color:var(--color-septenary); /*nada*/
+  font-weight:800
 }
 
-.card-footer {
-  margin-top: var(--spacing-md);
+.list{list-style:none; margin:0; padding:8px 0 4px}
+.row{
+  display:grid; grid-template-columns:1fr auto; align-items:center;
+  padding:14px 8px;
+  border-top:1px dashed rgba(255,255,255,.25); /*color línea entrecortada separadora en ambas tarjetas*/
 }
+.row:first-child{ border-top:0 }
+.row small{
+  color:var(--color-septenary); /*color texto "NIT:" y "Tel:" */
+}
+.badge{
+  font-size:.86rem; padding:6px 12px;
+  border-radius:999px;
+  background:rgba(255,255,255,.18); /*fondo boton "activo" y "preferente" */
+  color:var(--color-novenary); /*texto boton "activo" y "preferente" */
+}
+
+.footer{ margin-top:18px; display:flex; gap:12px; flex-wrap:wrap }
+
+/* Botones */
+.btn{
+  padding:12px 16px; border-radius:12px; font-weight:800;
+  border:none; cursor:pointer;
+  font-family:'Kollektif', sans-serif;
+}
+.btn--primary{
+  background:linear-gradient(180deg,#2B5CA8,#83A4CC); /*fondo boton "ver mas" en tarjeta "clientes" (color de fondo, color gradiente de abajo a arriba)*/
+  color:var(--color-novenary); /*texto "ver mas" en tarjeta "clientes" */
+}
+.btn--green{
+  background:linear-gradient(180deg,#2B5CA8,#83A4CC); /*fondo boton "ver mas" en tarjeta "proveedores" (color de fondo, color gradiente de abajo a arriba)*/
+  color:var(--color-novenary); /*texto "ver mas" en tarjeta "proveedores"*/
+}
+
+.btn:hover{
+  background:var(--color-quaternary); /*color fondo "ver mas" con cursor arriba*/
+  color:var(--colo-texto-negro); /*color texto "ver mas" con cursor arriba*/
+  }
 </style>
