@@ -1,70 +1,70 @@
 <template>
-  <div class="page">
+  <div class="page-container">
     <NavBar title="PEDIDOS">
       <template #actions>
-        <input v-model="tablaQuery" class="input input--white" placeholder="Buscar pedidos…" />
+        <input v-model="tablaQuery" class="input-dark" placeholder="Buscar pedidos…" style="max-width: 300px;" />
       </template>
     </NavBar>
 
-    <div class="container">
+    <div class="page-content">
       <section class="module">
-        <h2 class="section-title">Historial de pedidos</h2>
+        <h2 class="module-title">Historial de pedidos</h2>
 
-        <!-- Tabla principal (limitada a 6) -->
-        <TablaBase
-          class="table--center"
-          :columns="columns"
-          :rows="filasMostradas"
-          row-key="key"
-          :actions="{ edit:true, delete:true }"
-          :searchable="true"
-          v-model:search="tablaQuery"
-          :useLocalFilter="false"
-          :showAddButton="false"
-          addLabel="Agregar pedido"
-          :show-see-all="false"
-          :auto-limit="6"
-          @add="abrirFormulario('agregar')"
-          @edit="(row)=>abrirFormulario('editar', row)"
-          @delete="(row)=>abrirFormulario('eliminar', row)"
-        />
+        <div class="table-wrapper">
+          <table class="table">
+            <thead>
+              <tr>
+                <th v-for="col in columns" :key="col.key">{{ col.label }}</th>
+                <th class="text-right">Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="fila in filasMostradas" :key="fila.key">
+                <td v-for="col in columns" :key="col.key">{{ fila[col.key] }}</td>
+                <td class="actions">
+                  <button class="icon-btn edit" title="Editar" @click="abrirFormulario('editar', fila)">✎</button>
+                  <button class="icon-btn delete" title="Eliminar" @click="abrirFormulario('eliminar', fila)">✕</button>
+                </td>
+              </tr>
+              <tr v-if="!filas.length && !cargando">
+                <td :colspan="columns.length + 1" class="muted-text" style="text-align:center; padding: 1.5rem;">
+                  No se encontraron pedidos.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
 
-        <!-- Pie con los botones (a la derecha) -->
         <div class="footer-actions">
-          <button class="btn" @click="abrirFormulario('agregar')">Agregar pedido</button>
-          <button class="btn btn--muted" @click="abrirVerTodos">Ver Todos</button>
+          <button class="btn btn-secondary" @click="abrirVerTodos">Ver Todos</button>
+          <button class="btn btn-primary" @click="abrirFormulario('agregar')">Agregar Pedido</button>
         </div>
       </section>
     </div>
 
     <!-- Modal CRUD -->
     <div v-if="formVisible" class="modal-overlay" @click.self="cerrarFormulario">
-      <div class="modal-window" :class="{'modal--wide': accion!=='eliminar'}">
-        <h3 v-if="accion==='agregar'">Agregar nueva orden</h3>
-        <h3 v-else-if="accion==='editar'">Editar orden #{{ formData.id }}</h3>
-        <h3 v-else>Eliminar orden #{{ formData.id }}</h3>
+      <div class="modal-content-dark modal-wide">
+        <h3 v-if="accion==='agregar'">Agregar Nuevo Pedido</h3>
+        <h3 v-else-if="accion==='editar'">Editar Pedido #{{ formData.id }}</h3>
+        <h3 v-else>Eliminar Pedido #{{ formData.id }}</h3>
 
-        <!-- AGREGAR / EDITAR -->
-        <form v-if="accion!=='eliminar'" class="form-vertical" @submit.prevent="submitFormulario">
-          <div class="form-field">
-            <label>Cliente</label>
-            <div class="select-wrap">
-              <select v-model.number="formData.cliente" class="select--dark" required>
+        <form v-if="accion!=='eliminar'" @submit.prevent="submitFormulario">
+          <div class="form-grid" style="grid-template-columns: 2fr 1fr 1fr; margin-bottom: 1.5rem;">
+            <div class="form-group">
+              <label class="form-label">Cliente</label>
+              <select v-model.number="formData.cliente" class="form-input" required>
                 <option :value="''" disabled>Selecciona un cliente</option>
                 <option v-for="c in clientes" :key="c.id" :value="c.id">{{ c.nombre }}</option>
               </select>
             </div>
-          </div>
-
-          <div class="form-field">
-            <label>Fecha</label>
-            <input type="date" v-model="formData.fecha" class="input--dark" />
-          </div>
-
-          <div class="form-field">
-            <label>Método de pago</label>
-            <div class="select-wrap">
-              <select v-model="formData.metodo_pago" class="select--dark" required>
+            <div class="form-group">
+              <label class="form-label">Fecha</label>
+              <input type="date" v-model="formData.fecha" class="form-input" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Método de pago</label>
+              <select v-model="formData.metodo_pago" class="form-input" required>
                 <option value="efectivo">Efectivo</option>
                 <option value="transferencia">Transferencia</option>
                 <option value="tarjeta">Tarjeta</option>
@@ -73,85 +73,58 @@
             </div>
           </div>
 
-          <h4 class="detalle-title">Detalles de la orden</h4>
-
-          <!-- Encabezados de detalles -->
-          <div class="detalle-grid-doble detalle-header">
-            <span>ID</span>
+          <h4 class="module-title" style="font-size: 1.2rem; margin-bottom: 1rem;">Detalles del Pedido</h4>
+          <div class="details-grid details-grid-header">
             <span>Producto</span>
             <span>Cantidad</span>
-            <span>Precio unitario</span>
+            <span>Precio Unitario</span>
             <span>Total</span>
             <span></span>
           </div>
 
-          <!-- Filas de detalle -->
-          <div v-for="(d, i) in formData.detalles" :key="i" class="detalle-grid-doble">
-            <!-- Campo ID -->
-            <div class="select-wrap">
-              <input
-                type="number"
-                min="1"
-                v-model.number="d.producto"
-                class="input--dark"
-                placeholder="ID"
-                @input="onIdChange(i)"
-              />
-            </div>
-
-            <!-- Campo Producto (Select con búsqueda) -->
-            <div class="select-wrap">
-              <select 
-                v-model.number="d.producto" 
-                class="select--dark"
-                @change="onProductoSelectChange(i)"
-              >
-                <option :value="null" disabled>Selecciona un producto</option>
-              <option v-for="u in uniformesFiltrados(d.searchQuery)" :key="u.id" :value="u.id">
-              {{ u.tipo }} - Stock: {{ u.stock }}
-              </option>  
-              </select>
-            </div>
-
-            <input type="number" min="1" v-model.number="d.cantidad" class="input--dark" @input="recalcularTotales" />
-            <input type="number" step="0.01" min="0" v-model.number="d.precio_unitario" class="input--dark" @input="recalcularTotales" />
-
-            <div class="cell-total">Q{{ toMoney((d.cantidad || 0) * (d.precio_unitario || 0)) }}</div>
-
-            <button type="button" class="mini-btn danger" @click="quitarDetalle(i)">Quitar</button>
+          <div v-for="(d, i) in formData.detalles" :key="i" class="details-grid">
+            <select v-model.number="d.producto" class="form-input">
+              <option :value="null" disabled>Selecciona un producto</option>
+              <option v-for="u in todosUniformes" :key="u.id" :value="u.id">{{ u.tipo }} (Stock: {{ u.stock }})</option>
+            </select>
+            <input type="number" min="1" v-model.number="d.cantidad" class="form-input" @input="recalcularTotales" />
+            <input type="number" step="0.01" min="0" v-model.number="d.precio_unitario" class="form-input" @input="recalcularTotales" placeholder="Q0.00" />
+            <div class="details-grid-cell total">Q{{ toMoney((d.cantidad || 0) * (d.precio_unitario || 0)) }}</div>
+            <button type="button" class="icon-btn delete" @click="quitarDetalle(i)">✕</button>
           </div>
 
-          <button type="button" class="mini-btn" @click="agregarDetalle">+ Agregar línea</button>
+          <button type="button" class="btn btn-secondary" @click="agregarDetalle" style="margin-top: 1rem;">+ Agregar línea</button>
 
-          <div class="totales">
-            <div class="total-row"><span>Subtotal:</span><strong>Q{{ toMoney(subtotal) }}</strong></div>
-            <div class="total-row total-final"><span>Total:</span><strong>Q{{ toMoney(formData.precio_total) }}</strong></div>
+          <div class="totals-section">
+            <div class="totals-row"><span>Subtotal:</span><strong>Q{{ toMoney(subtotal) }}</strong></div>
+            <div class="totals-row final"><span>Total:</span><strong>Q{{ toMoney(formData.precio_total) }}</strong></div>
           </div>
 
           <div class="modal-actions">
-            <button type="submit" class="btn"> {{ accion==='agregar' ? 'Guardar' : 'Actualizar' }} </button>
-            <button type="button" class="btn secondary" @click="cerrarFormulario">Cancelar</button>
+            <button type="button" class="btn btn-secondary" @click="cerrarFormulario">Cancelar</button>
+            <button type="submit" class="btn btn-primary">{{ accion==='agregar' ? 'Guardar' : 'Actualizar' }}</button>
           </div>
         </form>
 
-        <!-- ELIMINAR -->
-        <div v-else class="form-vertical">
-          <p>¿Seguro que deseas eliminar la orden <strong>#{{ formData.id }}</strong>?</p>
+        <div v-else>
+          <p>¿Seguro que deseas eliminar el pedido <strong>#{{ formData.id }}</strong>?</p>
           <div class="modal-actions">
-            <button class="btn btn--danger" @click="submitFormulario">Eliminar</button>
-            <button class="btn secondary" @click="cerrarFormulario">Cancelar</button>
+            <button type="button" class="btn btn-secondary" @click="cerrarFormulario">Cancelar</button>
+            <button class="btn btn-danger" @click="submitFormulario">Confirmar Eliminación</button>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Modal VER TODOS (lista completa) -->
+    <!-- Modal VER TODOS -->
     <div v-if="verTodosVisible" class="modal-overlay" @click.self="cerrarVerTodos">
-      <div class="modal-window modal--wide">
-        <button class="close-btn-top" @click="cerrarVerTodos">✕</button>
-        <h3>Pedidos - Lista Completa</h3>
-        <div class="table-wrapper">
-          <table class="table dark-table table--center">
+      <div class="modal-content-dark modal-wide">
+        <div class="modal-header">
+          <h3>Pedidos - Lista Completa</h3>
+          <button class="icon-btn" @click="cerrarVerTodos" title="Cerrar">✕</button>
+        </div>
+        <div class="table-wrapper" style="max-height: 70vh; overflow-y: auto;">
+          <table class="table">
             <thead>
               <tr>
                 <th v-for="c in columns" :key="c.key">{{ c.label }}</th>
@@ -159,491 +132,220 @@
             </thead>
             <tbody>
               <tr v-for="r in filasFiltradas" :key="r.key">
-                <td>{{ r.cliente_nombre }}</td>
-                <td>{{ r.fecha_fmt }}</td>
-                <td>{{ r.metodo_pago }}</td>
-                <td>{{ r.producto }}</td>
-                <td style="text-align:right;">{{ r.precio_unitario_fmt }}</td>
-                <td style="text-align:right;">{{ r.subtotal_fmt }}</td>
-                <td style="text-align:right;">{{ r.total_fmt }}</td>
+                <td v-for="c in columns" :key="c.key">{{ r[c.key] }}</td>
               </tr>
             </tbody>
           </table>
-        </div>
-        <div class="modal-actions">
-          <button class="btn secondary" @click="cerrarVerTodos">Cerrar</button>
         </div>
       </div>
     </div>
   </div>
 </template>
 
-<script>
-import { useRouter } from 'vue-router'
-import NavBar from '@/components/NavBar.vue'
-import TablaBase from '@/components/Reutilizacion/Tablas.vue'
+<script setup>
+import { ref, reactive, computed, onMounted, watch, onBeforeUnmount } from 'vue';
+import { apiFetch } from '@/utils/api';
+import NavBar from '@/components/NavBar.vue';
 
-// Clientes
-const CLIENTES_A = `/api/clientes/`
-const CLIENTES_B = `/api/clientes/`
+const tablaQuery = ref('');
+const verTodosVisible = ref(false);
+const formVisible = ref(false);
+const accion = ref('agregar');
+const cargando = ref(false);
+const filas = ref([]);
+const clientes = ref([]);
+const todosUniformes = ref([]);
 
-// Ventas 
-const ORDENES_LIST = `/api/ventas/crear/`
-const ORDEN_EDITAR = id => `/api/ventas/editar/${id}/`
-const ORDEN_ELIMINAR = id => `/api/ventas/eliminar/${id}/`
-const ORDEN_RECIBO = id => `/api/ventas/${id}/recibo/`
-const ORDENES_HIST = `/api/ventas/detalles/`
+const columns = [
+  { key: 'cliente_nombre', label: 'Cliente' },
+  { key: 'fecha_fmt', label: 'Fecha' },
+  { key: 'metodo_pago', label: 'Método' },
+  { key: 'producto', label: 'Producto' },
+  { key: 'total_fmt', label: 'Total' }
+];
 
-// Inventario 
-const UNIFORME_SHOW = id => `/api/uniformes/${id}/`
-const UNIFORME_LIST = `/api/uniformes/`
+const formData = reactive({
+  id: null, cliente: '', fecha: '', metodo_pago: 'efectivo', detalles: [], precio_total: 0
+});
 
-export default {
-  components: { NavBar, TablaBase },
-  setup() {
-    const router = useRouter()
-    const goHome = () => router.push({ name: 'home' })
-    return { goHome }
-  },
-  data() {
-    return {
-      tablaQuery: '',
-      verTodosVisible: false,
-      cargando: false,
-      columns: [
-        { key: 'cliente_nombre', label: 'Cliente' },
-        { key: 'fecha_fmt', label: 'Fecha' },
-        { key: 'metodo_pago', label: 'Método de pago' },
-        { key: 'producto', label: 'Producto' },
-        { key: 'precio_unitario_fmt', label: 'Precio unitario', align: 'right' },
-        { key: 'subtotal_fmt', label: 'Subtotal', align: 'right' },
-        { key: 'total_fmt', label: 'Total', align: 'right' }
-      ],
-      filas: [],
-      formVisible: false,
-      accion: 'agregar',
-      formData: {
-        id: null,
-        cliente: '',
-        fecha: '',
-        metodo_pago: 'efectivo',
-        detalles: [],
-        precio_total: 0
-      },
-      clientes: [],
-      clientesMap: {},
-      uniformesCache: {},
-      todosUniformes: []
-    }
-  },
-  computed: {
-    filasFiltradas() {
-      const q = this.tablaQuery.trim().toLowerCase()
-      if (!q) return this.filas
-      return this.filas.filter(r =>
-        [r.cliente_nombre, r.fecha_fmt, r.metodo_pago, r.producto,
-        r.precio_unitario_fmt, r.subtotal_fmt, r.total_fmt]
-          .some(v => (v || '').toString().toLowerCase().includes(q))
-      )
-    },
-    filasMostradas() { return this.filasFiltradas },
-    subtotal() {
-      return (this.formData.detalles || []).reduce(
-        (acc, d) => acc + (Number(d.cantidad) || 0) * (Number(d.precio_unitario) || 0), 0
-      )
-    }
-  },
-  watch: { subtotal(v) { this.formData.precio_total = v } },
-  async mounted() {
-    await this.cargarClientes()
-    await this.cargarTodosUniformes()
-    await this.cargarFilas()
-  },
-  methods: {
-    toMoney(n) { const v = Number(n || 0); return v.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) },
-    formatFecha(iso) { if (!iso) return ''; const d = new Date(iso); return d.toLocaleDateString('es-MX', { year: 'numeric', month: 'short', day: '2-digit' }) },
+const toMoney = (n) => Number(n || 0).toLocaleString('es-GT', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const formatFecha = (iso) => iso ? new Date(iso).toLocaleDateString('es-GT') : '';
 
-    getCSRF() {
-      const name = 'csrftoken'; const cookies = document.cookie?.split(';') || []
-      for (const c of cookies) { const t = c.trim(); if (t.startsWith(name + '=')) return decodeURIComponent(t.slice(name.length + 1)) }
-      return null
-    },
+const filasFiltradas = computed(() => {
+  const q = tablaQuery.value.trim().toLowerCase();
+  if (!q) return filas.value;
+  return filas.value.filter(r =>
+    Object.values(r).some(v => String(v).toLowerCase().includes(q))
+  );
+});
+
+const filasMostradas = computed(() => filasFiltradas.value.slice(0, 6));
+
+const subtotal = computed(() =>
+  (formData.detalles || []).reduce((acc, d) => acc + (Number(d.cantidad) || 0) * (Number(d.precio_unitario) || 0), 0)
+);
+
+watch(subtotal, (val) => { formData.precio_total = val; });
+
+const cargarClientes = async () => {
+  try {
+    const data = await apiFetch('/api/clientes/');
+    clientes.value = Array.isArray(data) ? data : (data?.results || []);
+  } catch (e) { console.error("Error cargando clientes", e); }
+};
+
+const cargarTodosUniformes = async () => {
+  try {
+    const data = await apiFetch('/api/uniformes/');
+    todosUniformes.value = Array.isArray(data) ? data : (data?.results || []);
+  } catch (e) { console.error("Error cargando uniformes", e); }
+};
+
+const cargarFilas = async () => {
+  cargando.value = true;
+  try {
+    const data = await apiFetch('/api/ventas/detalles/');
+    const list = Array.isArray(data) ? data : (data?.results || []);
     
-    async req(url, method = 'GET', data) {
-      const opts = { method, credentials: 'include', headers: {} }
-      if (method !== 'GET' && method !== 'HEAD') {
-        opts.headers['Content-Type'] = 'application/json'
-        const csrf = this.getCSRF()
-        if (csrf) opts.headers['X-CSRFToken'] = csrf
-        if (data !== undefined) opts.body = JSON.stringify(data)
-      }
-      
-      const r = await fetch(url, opts)
-      
-      // Manejo especial para DELETE (puede retornar 204 o 500 pero funciona)
-      if (method === 'DELETE' && (r.status === 204 || r.status === 500)) {
-        return null
-      }
-      
-      if (!r.ok) {
-        const txt = await r.text().catch(() => '')
-        throw new Error(`${r.status} ${r.statusText} - ${txt}`)
-      }
-      
-      const ct = r.headers.get('content-type') || ''
-      return ct.includes('application/json') ? r.json() : null
-    },
-    
-    async safeGet(url) { try { return await this.req(url, 'GET') } catch (_) { return null } },
+    filas.value = list.map(venta => ({
+      key: `venta-${venta.id}`,
+      id: venta.id,
+      cliente_nombre: venta.cliente_nombre || 'N/A',
+      fecha: venta.fecha,
+      fecha_fmt: formatFecha(venta.fecha),
+      metodo_pago: venta.metodo_pago,
+      producto: venta.detalles?.map(d => d.producto.nombre || d.producto.tipo).join(', ') || 'N/A',
+      total: venta.total,
+      total_fmt: `Q${toMoney(venta.total)}`
+    })).sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
 
-    mpKey(id) { return `mp_orden_${id}` },
-    leerMetodoPago(id) { return localStorage.getItem(this.mpKey(id)) || 'efectivo' },
-    guardarMetodoPago(id, metodo) { localStorage.setItem(this.mpKey(id), metodo || 'efectivo') },
-    borrarMetodoPago(id) { localStorage.removeItem(this.mpKey(id)) },
+  } catch (e) { console.error("Error cargando pedidos", e); }
+  finally { cargando.value = false; }
+};
 
-    async cargarClientes() {
-      let data = await this.safeGet(CLIENTES_A)
-      if (!data) data = await this.safeGet(CLIENTES_B)
-      this.clientes = Array.isArray(data) ? data : (data?.results || [])
-      this.clientesMap = Object.fromEntries((this.clientes || []).map(c => [c.id, c.nombre]))
-    },
-
-    async cargarTodosUniformes() {
-      try {
-        const data = await this.req(UNIFORME_LIST, 'GET')
-        this.todosUniformes = Array.isArray(data) ? data : (data?.results || [])
-      } catch (e) {
-        console.warn('No se pudieron cargar los uniformes', e)
-        this.todosUniformes = []
-      }
-    },
-
-    uniformesFiltrados(query) {
-      return this.todosUniformes
-    },
-
-    onIdChange(index) {
-      const d = this.formData.detalles[index]
-      const id = d.producto
-      
-      if (!id) {
-        d.nombre = null
-        return
-      }
-
-      const uniforme = this.todosUniformes.find(u => u.id === id)
-      if (uniforme) {
-        d.nombre = `${uniforme.tipo} - ${uniforme.talla} - ${uniforme.color}`
-        this.uniformesCache[id] = { nombre: d.nombre }
-      } else {
-        d.nombre = null
-      }
-      
-      this.recalcularTotales()
-    },
-
-    onProductoSelectChange(index) {
-      const d = this.formData.detalles[index]
-      const id = d.producto
-      
-      if (!id) return
-
-      const uniforme = this.todosUniformes.find(u => u.id === id)
-      if (uniforme) {
-        d.nombre = `${uniforme.tipo} - ${uniforme.talla} - ${uniforme.color}`
-        this.uniformesCache[id] = { nombre: d.nombre }
-      }
-      
-      this.recalcularTotales()
-    },
-
-    async cargarFilas() {
-      this.cargando = true
-      const rows = []
-      let k = 1
-
-      const hist = await this.safeGet(ORDENES_HIST)
-      const list = Array.isArray(hist) ? hist : (hist?.results || [])
-
-      for (const o of list) {
-        const mp = o.metodo_pago || 'efectivo'
-
-        this.guardarMetodoPago(o.id, mp)
-
-        const detalles = Array.isArray(o.detalles) ? o.detalles : []
-
-        const clienteNombre =
-          typeof o.cliente === 'number'
-            ? this.clientesMap[o.cliente] || `Cliente #${o.cliente}`
-            : o.cliente || '—'
-
-
-        for (const d of detalles) {
-          let productoNombre = '—'
-          if (typeof d.producto === 'object' && d.producto !== null) {
-            productoNombre = d.producto.nombre || d.producto.tipo || `Uniforme #${d.producto.id || ''}`
-          } else {
-            productoNombre = d.producto || '—'
-          }
-
-          const pu = Number(d.precio_unitario ?? d.precio ?? 0)
-          const sub = Number((Number(d.cantidad || 0) * pu) - Number(d.descuento || 0))
-
-          const row = {
-            key: `orden-${o.id}-${d.id || k++}`,
-            id: o.id,
-            cliente_nombre: clienteNombre,
-            fecha: o.fecha,
-            metodo_pago: mp,
-            producto: productoNombre,
-            precio_unitario: pu,
-            subtotal: sub,
-            total: Number(o.total || 0)
-          }
-
-          row.fecha_fmt = this.formatFecha(row.fecha)
-          row.precio_unitario_fmt = `Q${this.toMoney(row.precio_unitario)}`
-          row.subtotal_fmt = `Q${this.toMoney(row.subtotal)}`
-          row.total_fmt = `Q${this.toMoney(row.total)}`
-          rows.push(row)
-        }
-      }
-
-      this.filas = rows.sort((a, b) => (new Date(b.fecha || 0)) - (new Date(a.fecha || 0)))
-      this.cargando = false
-    },
-
-    abrirFormulario(accion, row = null) {
-      this.accion = accion
-      this.formVisible = true
-
-      if (accion === 'agregar') {
-        this.formData = {
-          id: null,
-          cliente: '',
-          fecha: new Date().toISOString().slice(0, 10),
-          metodo_pago: 'efectivo',
-          detalles: [{ 
-            producto: null, 
-            nombre: null, 
-            cantidad: 1, 
-            precio_unitario: 0,
-            searchQuery: ''
-          }],
-          precio_total: 0
-        }
-        return
-      }
-
-      if (!row) return
-
-      if (accion === 'editar') {
-        this.formData = {
-          id: row.id,
-          cliente: 0,
-          fecha: (row.fecha || '').slice(0, 10),
-          metodo_pago: this.leerMetodoPago(row.id),
-          detalles: [],
-          precio_total: Number(row.total || 0)
-        }
-        this.cargarOrden(row.id)
-      }
-
-      if (accion === 'eliminar') {
-        this.formData = { id: row.id }
-      }
-    },
-    cerrarFormulario() { this.formVisible = false },
-
-    async cargarOrden(id) {
-      try {
-        const data = await this.req(ORDEN_RECIBO(id), 'GET')
-        const dets = Array.isArray(data.detalles) ? data.detalles : []
-        
-        this.formData.detalles = dets.map(d => {
-          let productoId = null
-          let productoNombre = null
-          
-          if (typeof d.producto === 'object' && d.producto !== null) {
-            productoId = d.producto.id
-            productoNombre = d.producto.tipo || d.producto.nombre || `Uniforme #${d.producto.id}`
-          } else if (typeof d.producto === 'number') {
-            productoId = d.producto
-            productoNombre = `Uniforme #${d.producto}`
-          }
-          
-          return {
-            id: d.id,
-            producto: productoId,
-            nombre: productoNombre,
-            cantidad: Number(d.cantidad || 1),
-            precio_unitario: Number(d.precio_unitario || d.precio || 0),
-            searchQuery: ''
-          }
-        })
-        
-        this.formData.cliente = data.cliente?.id || data.cliente || ''
-        this.recalcularTotales()
-      } catch (e) {
-        console.warn('No se pudo cargar la orden', e)
-        this.formData.detalles = [{ 
-          producto: null, 
-          nombre: null, 
-          cantidad: 1, 
-          precio_unitario: 0,
-          searchQuery: ''
-        }]
-      }
-    },
-
-    agregarDetalle() {
-      if (!Array.isArray(this.formData.detalles)) this.formData.detalles = []
-      this.formData.detalles.push({ 
-        producto: null, 
-        nombre: null, 
-        cantidad: 1, 
-        precio_unitario: 0,
-        searchQuery: ''
-      })
-    },
-    quitarDetalle(i) {
-      if (Array.isArray(this.formData.detalles)) this.formData.detalles.splice(i, 1)
-      this.recalcularTotales()
-    },
-    recalcularTotales() { this.formData.detalles = [...this.formData.detalles] },
-
-    abrirVerTodos() { this.verTodosVisible = true },
-    cerrarVerTodos() { this.verTodosVisible = false },
-
-    async submitFormulario() {
-      try {
-        if (this.accion === 'eliminar') {
-          if (!this.formData.id) { alert('Sin ID'); return }
-          await this.req(ORDEN_ELIMINAR(this.formData.id), 'DELETE')
-          this.borrarMetodoPago(this.formData.id)
-          this.formVisible = false
-          await this.cargarFilas()
-          return
-        }
-
-        if (!this.formData.cliente) {
-          alert('Selecciona un cliente')
-          return
-        }
-
-        const detalles = (this.formData.detalles || []).filter(
-          d => d.producto && d.cantidad > 0
-        )
-
-        if (detalles.length === 0) {
-          alert('Agrega al menos un detalle con un uniforme válido.')
-          return
-        }
-
-        // Verificar stock antes de continuar
-        for (const d of detalles) {
-          const uniforme = this.todosUniformes.find(u => u.id === d.producto)
-          if (!uniforme) {
-            alert(`El uniforme con ID ${d.producto} no existe.`)
-            return
-          }
-
-          if ((uniforme.stock || 0) === 0) {
-            alert(`El uniforme "${uniforme.tipo}" está agotado y no se puede vender.`)
-            return
-          }
-
-          if (d.cantidad > uniforme.stock) {
-            alert(`No hay suficiente stock para "${uniforme.tipo}". Solo quedan ${uniforme.stock} unidades.`)
-            return
-          }
-        }
-
-        const payload = {
-          cliente: this.formData.cliente,
-          fecha: this.formData.fecha,
-          metodo_pago: this.formData.metodo_pago,
-          estado: 'completada',
-          detalles: detalles.map(d => {
-            const detalle = {
-              producto: Number(d.producto),
-              cantidad: Number(d.cantidad),
-              precio_unitario: Number((+d.precio_unitario || 0).toFixed(2))
-            }
-            if (this.accion === 'editar' && d.id) detalle.id = d.id
-            return detalle
-          })
-        }
-
-        let created = null
-
-        if (this.accion === 'editar' && this.formData.id) {
-          await this.req(ORDEN_EDITAR(this.formData.id), 'PUT', payload)
-          this.guardarMetodoPago(this.formData.id, this.formData.metodo_pago)
-        } else {
-          created = await this.req(ORDENES_LIST, 'POST', payload)
-          if (created?.id)
-            this.guardarMetodoPago(created.id, this.formData.metodo_pago)
-        }
-
-        // Descontar stock de uniformes vendidos
-        for (const d of detalles) {
-          try {
-            const uniforme = await this.req(UNIFORME_SHOW(d.producto), 'GET')
-            if (uniforme && typeof uniforme.stock === 'number') {
-              const nuevoStock = Math.max(0, uniforme.stock - d.cantidad)
-              await this.req(UNIFORME_SHOW(d.producto), 'PUT', { ...uniforme, stock: nuevoStock })
-              console.log(`🧾 Stock actualizado de ${uniforme.tipo}: ${uniforme.stock} → ${nuevoStock}`)
-            }
-          } catch (err) {
-            console.warn(`No se pudo actualizar el stock del uniforme #${d.producto}`, err)
-          }
-        }
-
-        this.formVisible = false
-        await this.cargarTodosUniformes()
-        await this.cargarFilas()
-      } catch (e) {
-        console.error('Error:', e)
-        alert('Ocurrió un error. Por favor verifica los datos e intenta nuevamente.')
-      }
-    }
-
-
-  }
+/*
+// Lógica para autocompletar precio (cuando ya haya una tabla de precios en backend)
+const onProductoSelectChange = (index) => {
+//1. encontrar detalle y producto
+const detalle = formData.detalles[index];
+const productoSeleccionado = todosUniformes.value.find(u => u.id === detalle.producto);
+//2. si se encontro se asigna
+if (productoSeleccionado) {
+    // cambiar 'precio' por nombre real del campo en backend
+    detalle.precio_unitario = productoSeleccionado.precio || 0; 
 }
+      recalcularTotales();
+};
+*/
+
+const recalcularTotales = () => { formData.precio_total = subtotal.value; };
+
+const abrirFormulario = async (acc, row = null) => {
+  document.body.classList.add('modal-open');
+  accion.value = acc;
+  if (acc === 'agregar') {
+    Object.assign(formData, {
+      id: null, cliente: '', fecha: new Date().toISOString().slice(0, 10),
+      metodo_pago: 'efectivo', detalles: [{ producto: null, cantidad: 1, precio_unitario: 0 }], precio_total: 0
+    });
+  } else if (row) {
+    if (acc === 'eliminar') {
+        Object.assign(formData, { id: row.id });
+    } else { // Editar
+        const data = await apiFetch(`/api/ventas/${row.id}/recibo/`);
+        Object.assign(formData, {
+            id: data.id,
+            cliente: data.cliente.id,
+            fecha: data.fecha,
+            metodo_pago: data.metodo_pago,
+            detalles: data.detalles.map(d => ({...d, producto: d.producto.id})),
+            precio_total: data.total
+        });
+    }
+  }
+  formVisible.value = true;
+};
+
+const cerrarFormulario = () => { document.body.classList.remove('modal-open'); formVisible.value = false; };
+const agregarDetalle = () => { formData.detalles.push({ producto: null, cantidad: 1, precio_unitario: 0 }); };
+const quitarDetalle = (i) => { formData.detalles.splice(i, 1); recalcularTotales(); };
+const abrirVerTodos = () => { document.body.classList.add('modal-open'); verTodosVisible.value = true; };
+const cerrarVerTodos = () => { document.body.classList.remove('modal-open'); verTodosVisible.value = false; };
+
+const submitFormulario = async () => {
+  try {
+    if (accion.value === 'eliminar') {
+      await apiFetch(`/api/ventas/eliminar/${formData.id}/`, 'DELETE');
+    } else {
+      const detalles = (formData.detalles || []).filter(d => d.producto && d.cantidad > 0 && d.precio_unitario >= 0);
+      if (detalles.length === 0) {
+        alert("Agregue al menos un producto válido con cantidad y precio."); return;
+      }
+      
+      for (const d of detalles) {
+        const uniforme = todosUniformes.value.find(u => u.id === d.producto);
+        if (!uniforme) {
+          alert(`El producto con ID ${d.producto} no existe.`); return;
+        }
+        if (d.cantidad > uniforme.stock) {
+          alert(`No hay suficiente stock para "${uniforme.tipo}". Solo quedan ${uniforme.stock} unidades.`); return;
+        }
+      }
+
+      const payload = {
+        cliente: formData.cliente,
+        fecha: formData.fecha,
+        metodo_pago: formData.metodo_pago,
+        estado: 'completada',
+        detalles: detalles.map(d => ({
+          producto: Number(d.producto),
+          cantidad: Number(d.cantidad),
+          precio_unitario: Number((+d.precio_unitario || 0).toFixed(2)),
+          ...(accion.value === 'editar' && d.id && { id: d.id })
+        }))
+      };
+
+      if (accion.value === 'editar') {
+        await apiFetch(`/api/ventas/editar/${formData.id}/`, 'PUT', payload);
+      } else {
+        await apiFetch(`/api/ventas/crear/`, 'POST', payload);
+      }
+    }
+    cerrarFormulario();
+    await cargarFilas();
+    await cargarTodosUniformes();
+  } catch (e) {
+    console.error("Error al guardar pedido:", e);
+    alert("Ocurrió un error. Verifique los datos.");
+  }
+};
+
+onMounted(async () => {
+  await cargarClientes();
+  await cargarTodosUniformes();
+  await cargarFilas();
+});
+
+onBeforeUnmount(() => {
+  document.body.classList.remove('modal-open');
+});
 </script>
 
 <style scoped>
-.page{ min-height:100vh; background:var(--color-octonary); color:#fff; }
-.container{ padding: 24px; }
-.module{ background:#0d1130; border:2px solid #1e2236; border-radius:16px; padding:16px; }
-.section-title{ color:#fff; margin:0 0 12px 0; }
-
-.detalle-title{ margin-top:18px; font-weight:700; }
-
-.detalle-grid-doble{ 
-  display:grid; 
-  grid-template-columns: 80px 2fr 1fr 1fr 1fr auto; 
-  align-items:center; 
-  gap:10px; 
-  margin-top:10px; 
+.page-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
-
-.detalle-header{ font-weight:700; background:var(--color-senary); color:#fff; padding:8px 6px; border-radius:6px; }
-.detalle-header span{ text-align:center; }
-.detalle-nombre{ color:#10b981; display:block; margin-top:4px; font-weight:500; }
-.cell-total{ text-align:right; padding-right:8px; }
-
-.totales{ margin-top:14px; display:flex; flex-direction:column; gap:6px; align-items:flex-end; }
-.total-row{ display:flex; gap:16px; align-items:center; }
-.total-final{ font-size:18px; }
-
-.modal-window{ background:#1e293b; color:#fff; padding:20px; border-radius:14px; min-width:560px; max-width:90%; max-height:90vh; overflow:auto; position:relative; }
-.modal--wide{ min-width:860px; }
-.modal-actions{ display:flex; justify-content:flex-end; gap:10px; margin-top:12px; }
-.close-btn-top{ position:absolute; top:10px; right:15px; background:transparent; border:none; font-size:22px; cursor:pointer; font-weight:bold; color:#fff; }
-.table-wrapper{ max-height:70vh; overflow:auto; }
-
-.footer-actions{ display:flex; justify-content:flex-end; gap:10px; margin-top:10px; }
+.footer-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--spacing-sm);
+  margin-top: var(--spacing-lg);
+}
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--spacing-md);
+}
 </style>

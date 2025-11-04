@@ -1,28 +1,30 @@
 <template>
   <div class="background">
-    <div class="login-container">
+    <div class="auth-card">
       <h1>Inicio de sesión</h1>
 
       <form @submit.prevent="handleSubmit">
-        <div class="input-group">
-          <label for="email">Correo electrónico</label>
+        <div class="form-group">
+          <label for="email" class="form-label">Correo electrónico</label>
           <input
-            type="email"
+            type="text" 
             id="email"
             v-model.trim="email"
-            placeholder="Ingresa tu correo electrónico"
+            class="form-input"
+            placeholder="Ingresa tu correo"
             required
             autocomplete="username"
           />
         </div>
 
-        <div class="input-group">
-          <label for="password">Contraseña</label>
+        <div class="form-group">
+          <label for="password" class="form-label">Contraseña</label>
           <div class="password-field">
             <input
               :type="showPass ? 'text' : 'password'"
               id="password"
               v-model="password"
+              class="form-input"
               placeholder="Ingresa tu contraseña"
               required
               autocomplete="current-password"
@@ -34,153 +36,113 @@
               :aria-label="showPass ? 'Ocultar contraseña' : 'Mostrar contraseña'"
               :title="showPass ? 'Ocultar' : 'Mostrar'"
             >
-              <!-- 👁️ ver -->
-              <svg
-                v-if="!showPass"
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                width="26"
-                height="26"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                aria-hidden="true"
-              >
-                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-                <circle cx="12" cy="12" r="3"/>
-              </svg>
-              <!-- 🚫👁️ ocultar -->
-              <svg
-                v-else
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                width="26"
-                height="26"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                aria-hidden="true"
-              >
-                <path d="M17.94 17.94A10.94 10.94 0 0 1 12 20C5 20 1 12 1 12a21.8 21.8 0 0 1 5.06-6.94"/>
-                <path d="M10.58 10.58a3 3 0 0 0 4.24 4.24"/>
-                <path d="M12 6a10.94 10.94 0 0 1 7.94 5.06 21.8 21.8 0 0 1-2.29 3.12"/>
-                <line x1="1" y1="1" x2="23" y2="23"/>
-              </svg>
+              <!-- Iconos SVG para mostrar/ocultar -->
+              <svg v-if="!showPass" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              <svg v-else xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.94 10.94 0 0 1 12 20C5 20 1 12 1 12a21.8 21.8 0 0 1 5.06-6.94"/><path d="M10.58 10.58a3 3 0 0 0 4.24 4.24"/><path d="M12 6a10.94 10.94 0 0 1 7.94 5.06 21.8 21.8 0 0 1-2.29 3.12"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
             </button>
           </div>
         </div>
 
-        <button type="submit" :disabled="loading">
+        <button type="submit" class="btn btn-primary" :disabled="loading">
           {{ loading ? 'Ingresando…' : 'Iniciar sesión' }}
         </button>
 
-        <div class="forgot-password">
-          <router-link to="/forgotpass">¿Olvidaste tu contraseña?</router-link>
-        </div>
+        <router-link to="/forgotpass" class="auth-link">¿Olvidaste tu contraseña?</router-link>
       </form>
 
-      <div v-if="message" class="msg" :class="messageType">
+      <div v-if="message" class="message" :class="messageType === 'success' ? 'success-dark' : 'error-dark'">
         <p>{{ message }}</p>
       </div>
     </div>
   </div>
 </template>
 
-<script>
-import { apiFetch } from '@/utils/api'
-import { useAuthStore } from '@/stores/auth'
-import { useCatalogsStore } from '@/stores/catalogs'
+<script setup>
+import { ref } from 'vue';
+import { useRouter, useRoute } from 'vue-router';
+import { apiFetch } from '@/utils/api';
+import { useAuthStore } from '@/stores/auth';
+import { useCatalogsStore } from '@/stores/catalogs';
 
-const LOGIN_URL = '/api/login/'
+const router = useRouter();
+const route = useRoute();
 
-export default {
-  name: 'LoginView',
-  data() {
-    return {
-      email: '',
-      password: '',
-      showPass: false,
-      loading: false,
-      message: '',
-      messageType: '', // 'error' | 'success'
+const email = ref('');
+const password = ref('');
+const showPass = ref(false);
+const loading = ref(false);
+const message = ref('');
+const messageType = ref('');
+
+const toggleShowPass = () => {
+  showPass.value = !showPass.value;
+};
+
+const handleSubmit = async () => {
+  message.value = '';
+  messageType.value = '';
+
+  if (!email.value || !password.value) {
+    messageType.value = 'error';
+    message.value = 'Ingresa tu correo y contraseña.';
+    return;
+  }
+
+  loading.value = true;
+  try {
+    // 1. Hacer login (establece cookie de sesión)
+    const payload = { email: email.value, password: password.value };
+    await apiFetch('/api/login/', 'POST', payload);
+
+    // 2. Guardar en sessionStorage para compatibilidad
+    sessionStorage.setItem('isLoggedIn', 'true');
+
+    // 3. Obtener datos del usuario desde /api/me/
+    const userResponse = await fetch('/api/me/', { 
+      credentials: 'include'
+    });
+    
+    if (!userResponse.ok) {
+      throw new Error('No se pudieron obtener los datos del usuario tras el login.');
     }
-  },
-  methods: {
-    async handleSubmit() {
-      this.message = ''
-      this.messageType = ''
+    
+    const userData = await userResponse.json();
+    console.log('📦 Datos de /api/me/:', userData);
 
-      const email = this.email?.trim()
-      const password = this.password?.trim()
-      if (!email || !password) {
-        this.messageType = 'error'
-        this.message = 'Ingresa tu correo y contraseña.'
-        return
-      }
+    // 4. Guardar en Pinia
+    const authStore = useAuthStore();
+    const catalogsStore = useCatalogsStore();
 
-      this.loading = true
-      try {
-        // 1. Hacer login (establece cookie de sesión)
-        const payload = { email, password }
-        const data = await apiFetch(LOGIN_URL, 'POST', payload)
+    authStore.setAuth({
+      token: 'session-cookie',
+      user: {
+        id: userData.id,
+        email: userData.email,
+        nombre: userData.first_name,
+        rol: userData.role
+      },
+      role: userData.role
+    });
 
-        // 2. Guardar en sessionStorage (compatibilidad con sistema anterior)
-        sessionStorage.setItem('isLoggedIn', 'true')
+    // 5. Pre-cargar catálogos en segundo plano
+    catalogsStore.fetchAll().catch(err => {
+      console.warn('No se pudieron cargar catálogos:', err);
+    });
 
-        // 3. ✅ NUEVO: Obtener datos del usuario desde /api/me/
-        const userResponse = await fetch('/api/me/', { 
-          credentials: 'include' // importante para enviar cookies
-        })
-        
-        if (!userResponse.ok) {
-          throw new Error('No se pudieron obtener los datos del usuario')
-        }
-        
-        const userData = await userResponse.json()
-        console.log('📦 Datos de /api/me/:', userData)
+    messageType.value = 'success';
+    message.value = '¡Bienvenido! Inicio de sesión exitoso.';
+    
+    const next = route.query?.next || '/home';
+    router.replace(next);
 
-        // 4. ✅ NUEVO: Guardar en Pinia
-        const authStore = useAuthStore()
-        const catalogsStore = useCatalogsStore()
-
-        authStore.setAuth({
-          token: 'session-cookie', // No usamos JWT, usamos cookies
-          user: {
-            id: userData.id,
-            email: userData.email,
-            nombre: userData.first_name,
-            rol: userData.role // "admin" o "empleado"
-          },
-          role: userData.role
-        })
-
-        // 5. Pre-cargar catálogos en background
-        catalogsStore.fetchAll().catch(err => {
-          console.warn('No se pudieron cargar catálogos:', err)
-        })
-
-        this.messageType = 'success'
-        this.message = '¡Bienvenida! Inicio de sesión exitoso.'
-        
-        const next = this.$route?.query?.next || '/home'
-        this.$router.replace(next)
-      } catch (err) {
-        this.messageType = 'error'
-        this.message = err?.message || 'No se pudo iniciar sesión.'
-        console.error('Error en login:', err)
-      } finally {
-        this.loading = false
-      }
-    },
-    toggleShowPass() {
-      this.showPass = !this.showPass
-    },
-  },
-}
+  } catch (err) {
+    messageType.value = 'error';
+    message.value = err?.message || 'Credenciales incorrectas o error al iniciar sesión.';
+    console.error('Error en login:', err);
+  } finally {
+    loading.value = false;
+  }
+};
 </script>
 
 <style scoped>
@@ -188,137 +150,51 @@ export default {
   background-image: url('@/assets/images/fondo.jpg');
   background-size: cover;
   background-position: center;
-  background-repeat: no-repeat;
   min-height: 100vh;
   display: grid;
   place-items: center;
-  overflow: hidden;
 }
 
-.login-container {
-  width: 100%;
-  max-width: 400px;
-  padding: 30px;
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
-}
-
-h1 {
-  font-family: 'Archivo Black', sans-serif;
-  color: var(--colo-texto-negro);
-  text-align: center;
-  margin-bottom: 20px;
-}
-
-.input-group { margin-bottom: 15px; }
-
-.input-group label {
-  font-family: 'Kollektif', sans-serif;
-  color: var(--colo-texto-negro);
-  font-weight: bold;
-  display: block;
-  margin-bottom: 5px;
-}
-
-.input-group input {
-  width: 100%;
-  padding: 10px;
-  font-family: 'Kollektif', sans-serif;
-  font-size: 16px;
-  color: var(--colo-texto-negro);
-  background-color: var(--color-septenary);
-  border: 1px solid var(--color-quinary);
-  border-radius: 4px;
+.form-group + .form-group {
+  margin-top: var(--spacing-md);
 }
 
 .password-field {
   position: relative;
 }
 
-.password-field input {
+.password-field .form-input {
   padding-right: 52px;
 }
 
 .toggle-pass {
   position: absolute;
-  right: 6px;
+  right: var(--spacing-xs);
   top: 50%;
   transform: translateY(-50%);
   border: none;
   background: transparent;
   cursor: pointer;
-  padding: 6px;
+  padding: var(--spacing-xxs);
   width: 36px;
   height: 36px;
   line-height: 0;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  color: var(--colo-texto-negro);
+  color: var(--color-text-light-secondary);
+  transition: color 0.2s ease;
 }
 
 .toggle-pass:hover {
-  opacity: 0.9;
+  color: var(--color-text-light-primary);
 }
 
 .toggle-pass:focus-visible {
-  outline: 2px solid var(--color-quinary);
+  outline: 2px solid var(--color-action-primary);
   border-radius: 6px;
 }
-
-button {
-  background-color: var(--color-secondary);
-  color: #fff;
-  padding: 10px 20px;
-  border: none;
-  cursor: pointer;
-  font-family: 'Kollektif', sans-serif;
-  width: 100%;
-  transition: background-color .2s ease;
-}
-
-button[disabled] { opacity: .7; cursor: not-allowed; }
-
-button:hover:not([disabled]) {
-  background-color: var(--color-quaternary);
-}
-
-.forgot-password { text-align: center; margin-top: 10px; }
-
-.forgot-password a {
-  font-family: 'Kollektif', sans-serif;
-  color: var(--color-quinary);
-  text-decoration: none;
-}
-
-.forgot-password a:hover {
-  color: var(--colo-texto-negro);
-}
-
-.msg {
-  margin-top: 16px;
-  text-align: center;
-  font-family: 'Kollektif', sans-serif;
-  font-weight: bold;
-}
-
-.msg.success {
-  color: #0f5132;
-  background: #d1e7dd;
-  border: 1px solid #badbcc;
-  padding: 8px;
-  border-radius: 8px;
-}
-
-.msg.error {
-  color: #842029;
-  background: #f8d7da;
-  border: 1px solid #f5c2c7;
-  padding: 8px;
-  border-radius: 8px;
+.message {
+  margin-top: var(--spacing-md);
 }
 </style>
