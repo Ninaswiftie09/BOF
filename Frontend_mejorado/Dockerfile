@@ -1,21 +1,21 @@
-# frontend/Dockerfile
-
-FROM node:22-alpine
+# Etapa 1: Build de producción
+FROM node:22-alpine as build-stage
 
 WORKDIR /app
 
-# Copia los archivos de dependencias primero (para usar la cache)
 COPY package*.json ./
-
-# Instala dependencias
-RUN npm cache clean --force && npm ci
-
-#RUN npm cache clean --force && npm install
-
-#RUN npm install
-
-# Copia el resto del código del proyecto
+RUN npm install
 COPY . .
+RUN npm run build
 
-# Inicia el servidor de desarrollo (Vue CLI)
-CMD ["npm", "run", "serve"]
+# Etapa 2: Servir con Nginx
+FROM nginx:stable-alpine as production-stage
+
+COPY --from=build-stage /app/dist /usr/share/nginx/html
+
+# Opcional: copia una config nginx si tienes
+# COPY nginx.conf /etc/nginx/conf.d/default.conf
+
+EXPOSE 80
+
+CMD ["nginx", "-g", "daemon off;"]
