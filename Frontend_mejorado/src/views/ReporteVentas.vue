@@ -54,6 +54,23 @@
           </div>
         </div>
       </div>
+<<<<<<< Updated upstream
+
+      <div class="chart-container">
+        <h2>Productos más vendidos</h2>
+        <div class="chart-placeholder">
+          <canvas id="productosMasVendidosChart"></canvas>
+        </div>
+      </div>
+
+      <div class="chart-container">
+        <h2>Métodos de pago utilizados</h2>
+        <div class="chart-placeholder shorter">
+          <canvas id="metodosPagoChart"></canvas>
+        </div>
+      </div>
+
+=======
       
       <!-- Tabla -->
       <section class="module">
@@ -98,6 +115,7 @@
           </p>
         </div>
       </section>
+>>>>>>> Stashed changes
     </main>
   </div>
 </template>
@@ -128,11 +146,179 @@ const formatearFecha = (fecha) => {
   return new Date(fecha).toLocaleDateString('es-GT');
 };
 
+<<<<<<< Updated upstream
+    async filtrarDatos() {
+      this.errorMsg = ''
+      this.fechaInicio = this.filtroFechaInicio
+      this.fechaFin = this.filtroFechaFin
+      if (!this.fechaInicio || !this.fechaFin) {
+        this.errorMsg = 'Por favor, seleccioná ambas fechas.'
+        return
+      }
+      await Promise.all([
+        this.cargarVentas(),
+        this.cargarEvolucionVentas(),
+        this.cargarProductosMasVendidos(),
+        this.cargarMetodosPago()
+      ])
+    },
+
+    async cargarVentas() {
+      this.cargando = true
+      this.errorMsg = ''
+      try {
+        const data = await apiFetch(
+          `/api/ventas/por-fecha/?fecha_inicio=${this.fechaInicio}&fecha_fin=${this.fechaFin}`
+        )
+        this.totalVentas = data.total_ventas ?? 0
+        this.numeroFacturas = data.numero_facturas ?? 0
+        this.ventas = data.ventas ?? []
+        // si luego hay paginación real, aquí se calculan paginaActual/totalPaginas
+      } catch (err) {
+        console.error('Error al obtener las ventas:', err)
+        this.errorMsg = 'No se pudieron cargar las ventas.'
+      } finally {
+        this.cargando = false
+      }
+    },
+
+    async cargarEvolucionVentas() {
+      try {
+        const data = await apiFetch(
+          `/api/ventas/evolucion/?fecha_inicio=${this.fechaInicio}&fecha_fin=${this.fechaFin}`
+        )
+        this.renderEvolucionChart(data || [])
+      } catch (error) {
+        console.error('Error al cargar evolución de ventas:', error)
+      }
+    },
+
+    async cargarProductosMasVendidos() {
+      try {
+        const data = await apiFetch('/api/ventas/productos-mas-vendidos/')
+        this.renderProductosChart(data || [])
+      } catch (error) {
+        console.error('Error al cargar productos más vendidos:', error)
+      }
+    },
+
+    async cargarMetodosPago() {
+      try {
+        const data = await apiFetch('/api/ventas/metodos-pago/')
+        this.renderMetodosPagoChart(data || [])
+      } catch (error) {
+        console.error('Error al cargar métodos de pago:', error)
+      }
+    },
+
+    renderEvolucionChart(data) {
+      this.evolucionChartInstance?.destroy?.()
+      const ctx = document.getElementById('evolucionVentasChart')?.getContext('2d')
+      if (!ctx) return
+      this.evolucionChartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: data.map((item) => this.formatearFecha(item.dia)),
+          datasets: [
+            {
+              label: 'Total de Ventas por Día',
+              data: data.map((item) => item.total),
+              /*color en script*/
+              borderColor: '#2AA68F',
+              backgroundColor: 'rgba(42, 166, 143, 0.2)',
+              tension: 0.1,
+              fill: true
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            /*color en script*/
+            y: { ticks: { color: '#FFF' } },
+            x: { ticks: { color: '#FFF' } }
+          },
+          /*color en script*/
+          plugins: { legend: { labels: { color: '#FFF' } } }
+        }
+      })
+    },
+
+    renderProductosChart(data) {
+      this.productosChartInstance?.destroy?.()
+      const ctx = document.getElementById('productosMasVendidosChart')?.getContext('2d')
+      if (!ctx) return
+      this.productosChartInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: data.map((item) => item.categoria),
+          datasets: [
+            {
+              label: 'Cantidad Vendida',
+              data: data.map((item) => item.total_vendido),
+              /*color en script*/
+              backgroundColor: ['#2B5CA8', '#374666', '#83A4CC', '#C9E8F5', '#84C8C0']
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          indexAxis: 'y',
+          scales: {
+            y: { ticks: { color: '#FFF' } },
+            x: { ticks: { color: '#FFF' } }
+          },
+          plugins: { legend: { labels: { color: '#FFF' } } }
+        }
+      })
+    },
+
+    renderMetodosPagoChart(data) {
+      this.metodosPagoChartInstance?.destroy?.()
+      const ctx = document.getElementById('metodosPagoChart')?.getContext('2d')
+      if (!ctx) return
+      this.metodosPagoChartInstance = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: data.map((item) => item.metodo_pago),
+          datasets: [
+            {
+              data: data.map((item) => item.cantidad),
+              /*color en script*/
+              backgroundColor: ['#839A2D', '#2AA68F', '#2B5CA8', '#C9E8F5']
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { labels: { color: '#FFF' } } }
+        }
+      })
+    },
+
+    // paginación futura (placeholder)
+    cambiarPagina(nueva) { this.paginaActual = nueva },
+
+    resetFiltros() {
+      const hoy = new Date()
+      const primerDia = new Date(hoy.getFullYear(), hoy.getMonth(), 1)
+      const ultimoDia = new Date(hoy.getFullYear(), hoy.getMonth() + 1, 0)
+      const fmt = (f) =>
+        `${f.getFullYear()}-${String(f.getMonth() + 1).padStart(2, '0')}-${String(f.getDate()).padStart(2, '0')}`
+      this.filtroFechaInicio = fmt(primerDia)
+      this.filtroFechaFin = fmt(ultimoDia)
+      this.filtrarDatos()
+    }
+=======
 const filtrarDatos = async () => {
   errorMsg.value = '';
   if (!filtroFechaInicio.value || !filtroFechaFin.value) {
     errorMsg.value = 'Por favor, seleccione ambas fechas.';
     return;
+>>>>>>> Stashed changes
   }
   await Promise.all([
     cargarVentas(),

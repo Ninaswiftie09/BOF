@@ -63,6 +63,63 @@ const filteredInvoices = computed(() => {
   )
 })
 
+<<<<<<< Updated upstream
+        const doc = new jsPDF()
+
+        // Encabezado
+        doc.setFontSize(16)
+        doc.text('Abril Uniformes y Bordados', 20, 20)
+        doc.setFontSize(10)
+        doc.text('Ciudad, Huehuetenango 13001', 20, 26)
+
+        doc.setFontSize(11)
+        doc.text(`Recibo No: ${venta.no_recibo}`, 150, 20, { align: 'right' })
+        doc.text(`Fecha: ${venta.fecha}`, 150, 26, { align: 'right' })
+
+        // Cliente
+        doc.setFontSize(12)
+        const cliente = venta.cliente || {}
+        const clienteNombre = cliente.nombre || 'Cliente no registrado'
+        const clienteNit = cliente.nit || 'C/F'
+        const clienteDireccion = cliente.direccion || cliente.direccion_entrega || 'Sin dirección'
+        const clienteTelefono = cliente.telefono || 'Sin teléfono'
+        const clienteCorreo = cliente.email || 'Sin correo'
+
+        doc.text(`Cliente: ${clienteNombre}`, 20, 40)
+        doc.text(`NIT: ${clienteNit}`, 20, 46)
+        doc.text(`Dirección: ${clienteDireccion}`, 20, 52)
+        doc.text(`Teléfono: ${clienteTelefono}`, 20, 58)
+        doc.text(`Correo: ${clienteCorreo}`, 20, 64)
+
+        doc.text(`Método de pago: ${venta.metodo_pago || 'No especificado'}`, 20, 74)
+        doc.text(`Estado: ${venta.estado || 'No especificado'}`, 20, 80)
+
+        // Tabla
+        const rows = (venta.detalles || []).map(d => [
+          `${d.producto?.tipo || '—'} - ${d.producto?.talla || '—'} - ${d.producto?.color || '—'}`,
+          d.cantidad,
+          `Q${Number(d.precio_unitario || 0).toFixed(2)}`,
+          `Q${Number(d.subtotal || d.cantidad * d.precio_unitario || 0).toFixed(2)}`
+        ])
+
+        autoTable(doc, {
+          head: [['Producto', 'Cantidad', 'Precio U.', 'Subtotal']],
+          body: rows,
+          startY: 90
+        })
+
+        // Total
+        const y = (doc.lastAutoTable?.finalY ?? 90) + 10
+        doc.setFontSize(12)
+        doc.text(`Total: Q${venta.total}`, 150, y, { align: 'right' })
+
+        doc.save(`recibo_${venta.no_recibo}.pdf`)
+      } catch (error) {
+        console.error('Error generando recibo:', error)
+        alert('No se pudo generar el recibo')
+      }
+    }
+=======
 async function fetchInvoices() {
   try {
     const data = await apiFetch('/api/ventas/detalles/')
@@ -70,6 +127,7 @@ async function fetchInvoices() {
   } catch (error) {
     console.error('Error cargando facturas:', error)
     invoices.value = []
+>>>>>>> Stashed changes
   }
 }
 
