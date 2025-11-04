@@ -13,8 +13,8 @@ FROM nginx:stable-alpine as production-stage
 
 COPY --from=build-stage /app/dist /usr/share/nginx/html
 
-# Opcional: copia una config nginx si tienes
-# COPY nginx.conf /etc/nginx/conf.d/default.conf
+# ⚠️ Copia la config de nginx si quieres manejar rutas en modo SPA
+COPY nginx.conf /etc/nginx/conf.d/default.conf
 
 EXPOSE 80
 
