@@ -448,6 +448,7 @@ class CrearVentaAPIView(APIView):
         venta = venta_serializer.save(total=0)
         total = Decimal("0")
 
+        # 🔹 Calcula el total de la venta
         for item in detalles_data:
             producto = get_object_or_404(Uniforme, pk=item["producto"])
             cantidad = int(item["cantidad"])
@@ -465,6 +466,15 @@ class CrearVentaAPIView(APIView):
 
         venta.total = total
         venta.save()
+
+        # ✅ Crear el movimiento contable automáticamente
+        Operacion.objects.create(
+            tipo="ingreso",
+            monto=venta.total,     # total de la venta
+            concepto="pedido",     # descripción fija
+            # fecha se crea sola si el modelo tiene auto_now_add=True
+        )
+
         return Response(VentaSerializer(venta).data, status=status.HTTP_201_CREATED)
 
 
