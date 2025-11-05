@@ -272,6 +272,27 @@ const quitarDetalle = (i) => { formData.detalles.splice(i, 1); recalcularTotales
 const abrirVerTodos = () => { document.body.classList.add('modal-open'); verTodosVisible.value = true; };
 const cerrarVerTodos = () => { document.body.classList.remove('modal-open'); verTodosVisible.value = false; };
 
+
+const actualizarInventario = async (detalles) => {
+  try {
+    for (const d of detalles) {
+      const idUniforme = Number(d.producto);
+      const cantidadVendida = Number(d.cantidad);
+      if (!idUniforme || cantidadVendida <= 0) continue;
+
+      // Obtener uniforme actual
+      const uniforme = await apiFetch(`/api/uniformes/${idUniforme}/`);
+      if (!uniforme || typeof uniforme.stock !== 'number') continue;
+
+      // Calcular y actualizar stock
+      const nuevoStock = Math.max(0, uniforme.stock - cantidadVendida);
+      await apiFetch(`/api/uniformes/${idUniforme}/`, 'PUT', { ...uniforme, stock: nuevoStock });
+    }
+  } catch (error) {
+    console.error("Error actualizando inventario:", error);
+  }
+};
+
 const submitFormulario = async () => {
   try {
     if (accion.value === 'eliminar') {
@@ -309,6 +330,8 @@ const submitFormulario = async () => {
         await apiFetch(`/api/ventas/editar/${formData.id}/`, 'PUT', payload);
       } else {
         await apiFetch(`/api/ventas/crear/`, 'POST', payload);
+        //Descontar stock después de crear la venta
+        await actualizarInventario(detalles);
       }
     }
     cerrarFormulario();
