@@ -2,7 +2,12 @@
   <div class="page-container">
     <NavBar title="PEDIDOS">
       <template #actions>
-        <input v-model="tablaQuery" class="input-dark" placeholder="Buscar pedidos…" style="max-width: 300px;" />
+        <input
+          v-model="tablaQuery"
+          class="input-dark"
+          placeholder="Buscar pedidos…"
+          style="max-width: 300px;"
+        />
       </template>
     </NavBar>
 
@@ -49,6 +54,7 @@
         <h3 v-else-if="accion==='editar'">Editar Pedido #{{ formData.id }}</h3>
         <h3 v-else>Eliminar Pedido #{{ formData.id }}</h3>
 
+        <!-- AGREGAR / EDITAR -->
         <form v-if="accion!=='eliminar'" @submit.prevent="submitFormulario">
           <div class="form-grid" style="grid-template-columns: 2fr 1fr 1fr; margin-bottom: 1.5rem;">
             <div class="form-group">
@@ -74,6 +80,8 @@
           </div>
 
           <h4 class="module-title" style="font-size: 1.2rem; margin-bottom: 1rem;">Detalles del Pedido</h4>
+
+          <!-- Encabezado detalles -->
           <div class="details-grid details-grid-header">
             <span>Producto</span>
             <span>Cantidad</span>
@@ -82,10 +90,13 @@
             <span></span>
           </div>
 
+          <!-- Filas de detalle -->
           <div v-for="(d, i) in formData.detalles" :key="i" class="details-grid">
             <select v-model.number="d.producto" class="form-input">
               <option :value="null" disabled>Selecciona un producto</option>
-              <option v-for="u in todosUniformes" :key="u.id" :value="u.id">{{ u.tipo }} (Stock: {{ u.stock }})</option>
+              <option v-for="u in todosUniformes" :key="u.id" :value="u.id">
+                {{ u.tipo }} (Stock: {{ u.stock }})
+              </option>
             </select>
             <input type="number" min="1" v-model.number="d.cantidad" class="form-input" @input="recalcularTotales" />
             <input type="number" step="0.01" min="0" v-model.number="d.precio_unitario" class="form-input" @input="recalcularTotales" placeholder="Q0.00" />
@@ -106,6 +117,7 @@
           </div>
         </form>
 
+        <!-- ELIMINAR -->
         <div v-else>
           <p>¿Seguro que deseas eliminar el pedido <strong>#{{ formData.id }}</strong>?</p>
           <div class="modal-actions">
@@ -155,6 +167,7 @@ const cargando = ref(false);
 const filas = ref([]);
 const clientes = ref([]);
 const todosUniformes = ref([]);
+const detallesOriginales = ref([]); // para manejar stock al editar/eliminar
 
 const columns = [
   { key: 'cliente_nombre', label: 'Cliente' },
@@ -165,40 +178,48 @@ const columns = [
 ];
 
 const formData = reactive({
-  id: null, cliente: '', fecha: '', metodo_pago: 'efectivo', detalles: [], precio_total: 0
+  id: null,
+  cliente: '',
+  fecha: '',
+  metodo_pago: 'efectivo',
+  detalles: [],
+  precio_total: 0
 });
 
-const toMoney = (n) => Number(n || 0).toLocaleString('es-GT', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-const formatFecha = (iso) => iso ? new Date(iso).toLocaleDateString('es-GT') : '';
+const toMoney = n => Number(n || 0).toLocaleString('es-GT', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const formatFecha = iso => (iso ? new Date(iso).toLocaleDateString('es-GT') : '');
 
 const filasFiltradas = computed(() => {
   const q = tablaQuery.value.trim().toLowerCase();
   if (!q) return filas.value;
-  return filas.value.filter(r =>
-    Object.values(r).some(v => String(v).toLowerCase().includes(q))
-  );
+  return filas.value.filter(r => Object.values(r).some(v => String(v).toLowerCase().includes(q)));
 });
 
 const filasMostradas = computed(() => filasFiltradas.value.slice(0, 6));
 
 const subtotal = computed(() =>
-  (formData.detalles || []).reduce((acc, d) => acc + (Number(d.cantidad) || 0) * (Number(d.precio_unitario) || 0), 0)
+  (formData.detalles || []).reduce((acc, d) =>
+    acc + (Number(d.cantidad) || 0) * (Number(d.precio_unitario) || 0), 0)
 );
 
-watch(subtotal, (val) => { formData.precio_total = val; });
+watch(subtotal, val => { formData.precio_total = val; });
 
 const cargarClientes = async () => {
   try {
     const data = await apiFetch('/api/clientes/');
     clientes.value = Array.isArray(data) ? data : (data?.results || []);
-  } catch (e) { console.error("Error cargando clientes", e); }
+  } catch (e) {
+    console.error('Error cargando clientes', e);
+  }
 };
 
 const cargarTodosUniformes = async () => {
   try {
     const data = await apiFetch('/api/uniformes/');
     todosUniformes.value = Array.isArray(data) ? data : (data?.results || []);
-  } catch (e) { console.error("Error cargando uniformes", e); }
+  } catch (e) {
+    console.error('Error cargando uniformes', e);
+  }
 };
 
 const cargarFilas = async () => {
@@ -206,7 +227,6 @@ const cargarFilas = async () => {
   try {
     const data = await apiFetch('/api/ventas/detalles/');
     const list = Array.isArray(data) ? data : (data?.results || []);
-    
     filas.value = list.map(venta => ({
       key: `venta-${venta.id}`,
       id: venta.id,
@@ -218,23 +238,22 @@ const cargarFilas = async () => {
       total: venta.total,
       total_fmt: `Q${toMoney(venta.total)}`
     })).sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
-
-  } catch (e) { console.error("Error cargando pedidos", e); }
-  finally { cargando.value = false; }
+  } catch (e) {
+    console.error('Error cargando pedidos', e);
+  } finally {
+    cargando.value = false;
+  }
 };
 
 /*
-// Lógica para autocompletar precio (cuando ya haya una tabla de precios en backend)
+// Lógica para autocompletar precio (cuando haya tabla de precios en backend)
 const onProductoSelectChange = (index) => {
-//1. encontrar detalle y producto
-const detalle = formData.detalles[index];
-const productoSeleccionado = todosUniformes.value.find(u => u.id === detalle.producto);
-//2. si se encontro se asigna
-if (productoSeleccionado) {
-    // cambiar 'precio' por nombre real del campo en backend
-    detalle.precio_unitario = productoSeleccionado.precio || 0; 
-}
-      recalcularTotales();
+  const detalle = formData.detalles[index];
+  const productoSeleccionado = todosUniformes.value.find(u => u.id === detalle.producto);
+  if (productoSeleccionado) {
+    detalle.precio_unitario = productoSeleccionado.precio || 0;
+  }
+  recalcularTotales();
 };
 */
 
@@ -243,35 +262,73 @@ const recalcularTotales = () => { formData.precio_total = subtotal.value; };
 const abrirFormulario = async (acc, row = null) => {
   document.body.classList.add('modal-open');
   accion.value = acc;
+
   if (acc === 'agregar') {
     Object.assign(formData, {
-      id: null, cliente: '', fecha: new Date().toISOString().slice(0, 10),
-      metodo_pago: 'efectivo', detalles: [{ producto: null, cantidad: 1, precio_unitario: 0 }], precio_total: 0
+      id: null,
+      cliente: '',
+      fecha: new Date().toISOString().slice(0, 10),
+      metodo_pago: 'efectivo',
+      detalles: [{ producto: null, cantidad: 1, precio_unitario: 0 }],
+      precio_total: 0
     });
+    detallesOriginales.value = [];
   } else if (row) {
+    const venta = await apiFetch(`/api/ventas/${row.id}/recibo/`);
+
     if (acc === 'eliminar') {
-        Object.assign(formData, { id: row.id });
-    } else { // Editar
-        const data = await apiFetch(`/api/ventas/${row.id}/recibo/`);
-        Object.assign(formData, {
-            id: data.id,
-            cliente: data.cliente.id,
-            fecha: data.fecha,
-            metodo_pago: data.metodo_pago,
-            detalles: data.detalles.map(d => ({...d, producto: d.producto.id})),
-            precio_total: data.total
-        });
+      Object.assign(formData, { id: row.id });
+      detallesOriginales.value = venta.detalles.map(d => ({
+        producto: d.producto.id,
+        cantidad: d.cantidad
+      }));
+    } else { // editar
+      Object.assign(formData, {
+        id: venta.id,
+        cliente: venta.cliente.id,
+        fecha: venta.fecha,
+        metodo_pago: venta.metodo_pago,
+        detalles: venta.detalles.map(d => ({
+          ...d,
+          producto: d.producto.id
+        })),
+        precio_total: venta.total
+      });
+      detallesOriginales.value = venta.detalles.map(d => ({
+        producto: d.producto.id,
+        cantidad: d.cantidad
+      }));
     }
   }
+
   formVisible.value = true;
 };
 
-const cerrarFormulario = () => { document.body.classList.remove('modal-open'); formVisible.value = false; };
-const agregarDetalle = () => { formData.detalles.push({ producto: null, cantidad: 1, precio_unitario: 0 }); };
-const quitarDetalle = (i) => { formData.detalles.splice(i, 1); recalcularTotales(); };
-const abrirVerTodos = () => { document.body.classList.add('modal-open'); verTodosVisible.value = true; };
-const cerrarVerTodos = () => { document.body.classList.remove('modal-open'); verTodosVisible.value = false; };
+const cerrarFormulario = () => {
+  document.body.classList.remove('modal-open');
+  formVisible.value = false;
+};
 
+const agregarDetalle = () => {
+  formData.detalles.push({ producto: null, cantidad: 1, precio_unitario: 0 });
+};
+
+const quitarDetalle = i => {
+  formData.detalles.splice(i, 1);
+  recalcularTotales();
+};
+
+const abrirVerTodos = () => {
+  document.body.classList.add('modal-open');
+  verTodosVisible.value = true;
+};
+
+const cerrarVerTodos = () => {
+  document.body.classList.remove('modal-open');
+  verTodosVisible.value = false;
+};
+
+/*  Inventario: descontar / restaurar  */
 
 const actualizarInventario = async (detalles) => {
   try {
@@ -280,36 +337,64 @@ const actualizarInventario = async (detalles) => {
       const cantidadVendida = Number(d.cantidad);
       if (!idUniforme || cantidadVendida <= 0) continue;
 
-      // Obtener uniforme actual
       const uniforme = await apiFetch(`/api/uniformes/${idUniforme}/`);
       if (!uniforme || typeof uniforme.stock !== 'number') continue;
 
-      // Calcular y actualizar stock
       const nuevoStock = Math.max(0, uniforme.stock - cantidadVendida);
       await apiFetch(`/api/uniformes/${idUniforme}/`, 'PUT', { ...uniforme, stock: nuevoStock });
     }
   } catch (error) {
-    console.error("Error actualizando inventario:", error);
+    console.error('Error actualizando inventario:', error);
   }
 };
+
+const restaurarInventario = async (detalles) => {
+  try {
+    for (const d of detalles) {
+      const idUniforme = Number(d.producto);
+      const cantidad = Number(d.cantidad);
+      if (!idUniforme || cantidad <= 0) continue;
+
+      const uniforme = await apiFetch(`/api/uniformes/${idUniforme}/`);
+      if (!uniforme || typeof uniforme.stock !== 'number') continue;
+
+      const nuevoStock = uniforme.stock + cantidad;
+      await apiFetch(`/api/uniformes/${idUniforme}/`, 'PUT', { ...uniforme, stock: nuevoStock });
+    }
+  } catch (error) {
+    console.error('Error restaurando inventario:', error);
+  }
+};
+
+/* Guardar / Eliminar */
 
 const submitFormulario = async () => {
   try {
     if (accion.value === 'eliminar') {
+      await restaurarInventario(detallesOriginales.value);
       await apiFetch(`/api/ventas/eliminar/${formData.id}/`, 'DELETE');
     } else {
-      const detalles = (formData.detalles || []).filter(d => d.producto && d.cantidad > 0 && d.precio_unitario >= 0);
-      if (detalles.length === 0) {
-        alert("Agregue al menos un producto válido con cantidad y precio."); return;
+      const detalles = (formData.detalles || []).filter(
+        d => d.producto && d.cantidad > 0 && d.precio_unitario >= 0
+      );
+
+      if (!detalles.length) {
+        alert('Agregue al menos un producto válido con cantidad y precio.');
+        return;
       }
-      
-      for (const d of detalles) {
-        const uniforme = todosUniformes.value.find(u => u.id === d.producto);
-        if (!uniforme) {
-          alert(`El producto con ID ${d.producto} no existe.`); return;
-        }
-        if (d.cantidad > uniforme.stock) {
-          alert(`No hay suficiente stock para "${uniforme.tipo}". Solo quedan ${uniforme.stock} unidades.`); return;
+
+      // Validación estricta sólo en agregar (como lo tenías pensado)
+      if (accion.value === 'agregar') {
+        for (const d of detalles) {
+          const u = todosUniformes.value.find(x => x.id === d.producto);
+          if (!u) {
+            alert(`El producto con ID ${d.producto} no existe.`);
+            return;
+          }
+          if (d.cantidad > u.stock) {
+            alert(`No hay suficiente stock para "${u.tipo}". Solo quedan ${u.stock} unidades.`);
+            return;
+          }
         }
       }
 
@@ -327,19 +412,21 @@ const submitFormulario = async () => {
       };
 
       if (accion.value === 'editar') {
-        await apiFetch(`/api/ventas/editar/${formData.id}/`, 'PUT', payload);
+        await restaurarInventario(detallesOriginales.value); // devolver stock viejo
+        await apiFetch(`/api/ventas/editar/${formData.id}/`, 'PUT', payload); // actualizar venta
+        await actualizarInventario(detalles); // descontar con nuevos valores
       } else {
-        await apiFetch(`/api/ventas/crear/`, 'POST', payload);
-        //Descontar stock después de crear la venta
-        await actualizarInventario(detalles);
+        await apiFetch(`/api/ventas/crear/`, 'POST', payload); // crear
+        await actualizarInventario(detalles); // descontar stock
       }
     }
+
     cerrarFormulario();
     await cargarFilas();
     await cargarTodosUniformes();
   } catch (e) {
-    console.error("Error al guardar pedido:", e);
-    alert("Ocurrió un error. Verifique los datos.");
+    console.error('Error al guardar pedido:', e);
+    alert('Ocurrió un error. Verifique los datos.');
   }
 };
 
