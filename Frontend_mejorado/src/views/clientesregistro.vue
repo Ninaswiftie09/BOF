@@ -1,13 +1,13 @@
 <template>
   <div class="page-container">
-    <NavBar title="CLIENTES">
-      <template #actions>
-        <input v-model="search" class="input-dark" placeholder="Buscar clientes…" style="max-width: 300px;" />
-      </template>
-    </NavBar>
+    <NavBar title="CLIENTES" />
 
     <div class="page-content">
       <section class="module">
+
+        <div class="toolbar">
+          <input v-model="search" class="input-dark" placeholder="Buscar clientes…" style="max-width: 300px;" />
+        </div>
         
         <!-- Reemplazo del componente Tablas.vue -->
         <div class="table-wrapper">
@@ -234,4 +234,11 @@ const filteredClientes = computed(() =>
 .modal-actions {
   grid-column: 1 / -1;
 }
+
+.toolbar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: var(--spacing-lg);
+}
+
 </style>

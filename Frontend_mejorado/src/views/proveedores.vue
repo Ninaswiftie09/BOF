@@ -1,18 +1,19 @@
 <template>
   <div class="page-container">
     <NavBar title="PROVEEDORES">
-      <template #actions>
-        <input
-          v-model="searchQuery"
-          class="input-dark"
-          placeholder="Buscar proveedores…"
-          style="max-width: 300px;"
-        />
-      </template>
     </NavBar>
 
     <div class="page-content">
       <section class="module">
+
+        <div class="toolbar">
+          <input
+            v-model="searchQuery"
+            class="input-dark"
+            placeholder="Buscar proveedores…"
+            style="max-width: 300px;"
+          />
+        </div>
         
         <div class="table-wrapper">
           <table class="table">
@@ -202,4 +203,11 @@ onMounted(fetchProveedores)
 .form-group + .form-group {
   margin-top: var(--spacing-md);
 }
+
+.toolbar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: var(--spacing-lg);
+}
+
 </style>
