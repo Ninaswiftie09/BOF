@@ -158,6 +158,7 @@ class Uniforme(models.Model):
     color = models.CharField(max_length=50)
     material = models.ForeignKey(Tela, on_delete=models.SET_NULL, null=True, blank=True)
     stock = models.PositiveIntegerField(default=0)
+    precio = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
 
     categoria = models.ForeignKey(
         'Categoria',

@@ -14,7 +14,7 @@ import Clientes from '../views/clientes.vue'
 import ClientesRegistro from '../views/clientesregistro.vue'
 import Proveedores from '../views/proveedores.vue'
 import LandingPage from '@/views/LandingPage.vue'
-import Envios from '../views/envios.vue'
+import Pedidos from '../views/pedidos.vue'
 import NewPassView from '../views/newpass.vue'
 
 // ---------- Mini helper para /api/me/ ----------
@@ -37,7 +37,7 @@ const routes = [
   { path: '/clientes', name: 'clientes', component: Clientes, meta: { requiresAuth: true } },
   { path: '/clientesregistro', name: 'clientesregistro', component: ClientesRegistro, meta: { requiresAuth: true } },
   { path: '/proveedores', name: 'proveedores', component: Proveedores, meta: { requiresAuth: true } },
-  { path: '/envios', name: 'Envios', component: Envios, meta: { requiresAuth: true } },
+  { path: '/pedidos', name: 'Pedidos', component: Pedidos, meta: { requiresAuth: true } },
 
   // 🔒 SOLO ADMIN
   { path: '/accounting', name: 'accounting', component: Accounting, meta: { requiresAuth: true, requiresRole: 'admin' } },

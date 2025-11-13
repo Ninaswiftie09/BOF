@@ -134,7 +134,7 @@ class UniformeSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'tipo', 'talla', 'color', 'stock',
             'material', 'material_nombre',
-            'categoria', 'categoria_nombre',
+            'categoria', 'categoria_nombre', 'precio'
         ]
 
     def get_material_nombre(self, obj):
