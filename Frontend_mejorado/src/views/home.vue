@@ -129,7 +129,7 @@ const allNavItems = [
   { label: 'Inventario', icon: IconInventario, route: '/mi_inventario', requiredModule: 'inventario', requiredAction: 'ver' },
   { label: 'Reporte de ventas', icon: IconReporteVentas, route: '/ReporteVentas', requiredModule: 'ventas', requiredAction: 'reportes', adminOnly: true },
   { label: 'Gestión de Usuarios', icon: IconUser, route: '/register', adminOnly: true },
-  { label: 'Pedidos', icon: IconUser, route: '/envios', requiredModule: 'ventas', requiredAction: 'ver' }
+  { label: 'Pedidos', icon: IconUser, route: '/pedidos', requiredModule: 'ventas', requiredAction: 'ver' }
 ]
 
 const navItems = computed(() => {
@@ -304,7 +304,7 @@ watch(showHelp, (isOpen) => {
   border-radius: 50%;
   border: none;
   cursor: pointer;
-  background-color: var(--color-action-primary);
+  background-color: #fff;
 }
 
 .content {
