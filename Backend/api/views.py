@@ -207,59 +207,55 @@ def me(request):
         "group_ids": list(u.groups.values_list("id", flat=True)),  # por si quieres verlo
     })
     
-    
-@csrf_exempt
+@api_view(['POST'])
+@permission_classes([IsAuthenticated, IsAdmin])   
 def register_user(request):
-    if request.method == 'POST':
-        try:
-            data = json.loads(request.body)
-            first_name = data.get('first_name')
-            last_name = data.get('last_name')
-            email = data.get('email')
-            role = data.get('role')
-            password = ''.join(random.choices(string.ascii_letters + string.digits, k=6))
+    try:
+        data = request.data
+        first_name = data.get('first_name')
+        last_name = data.get('last_name')
+        email = data.get('email')
+        role = data.get('role')
+        password = ''.join(random.choices(string.ascii_letters + string.digits, k=6))
 
-            if not first_name or not last_name or not email or not role:
-                return JsonResponse({'message': 'Faltan datos requeridos'}, status=400)
+        if not first_name or not last_name or not email or not role:
+            return Response({'message': 'Faltan datos requeridos'}, status=400)
 
-            if User.objects.filter(email=email).exists():
-                return JsonResponse({'message': 'El correo ya está registrado'}, status=400)
+        if User.objects.filter(email=email).exists():
+            return Response({'message': 'El correo ya está registrado'}, status=400)
 
-            user = User.objects.create(
-                first_name=first_name,
-                last_name=last_name,
-                username=email,
-                email=email,
-            )
-            user.set_password(password)
-            user.save()
+        user = User.objects.create(
+            first_name=first_name,
+            last_name=last_name,
+            username=email,
+            email=email,
+        )
+        user.set_password(password)
+        user.save()
 
-            # Roles
-            admin_group, _ = Group.objects.get_or_create(name='Administrador')
-            employee_group, _ = Group.objects.get_or_create(name='Empleado')
+        admin_group, _ = Group.objects.get_or_create(name='Administrador')
+        employee_group, _ = Group.objects.get_or_create(name='Empleado')
 
-            if role == 'Administrador':
-                user.groups.add(admin_group)
-            elif role == 'Empleado':
-                user.groups.add(employee_group)
-            else:
-                return JsonResponse({'message': 'Rol no válido'}, status=400)
+        if role == 'Administrador':
+            user.groups.add(admin_group)
+        elif role == 'Empleado':
+            user.groups.add(employee_group)
+        else:
+            return Response({'message': 'Rol no válido'}, status=400)
 
-            # Email bienvenida
-            subject = 'Bienvenido a Abril Uniformes y Bordados'
-            html_message = render_to_string('emails/bienvenida.html', {
-                'nombre': first_name,
-                'correo': email,
-                'contraseña': password
-            })
-            send_mail(subject, '', None, [email], html_message=html_message, fail_silently=False)
+        subject = 'Bienvenido a Abril Uniformes y Bordados'
+        html_message = render_to_string('emails/bienvenida.html', {
+            'nombre': first_name,
+            'correo': email,
+            'contraseña': password
+        })
+        send_mail(subject, '', None, [email], html_message=html_message, fail_silently=False)
 
-            return JsonResponse({'message': 'Usuario creado y correo enviado'}, status=201)
+        return Response({'message': 'Usuario creado y correo enviado'}, status=201)
 
-        except Exception as e:
-            return JsonResponse({'message': f'Error: {str(e)}'}, status=500)
+    except Exception as e:
+        return Response({'message': f'Error: {str(e)}'}, status=500)
 
-    return JsonResponse({'message': 'Método no permitido'}, status=405)
 
 
 @csrf_exempt
