@@ -170,10 +170,35 @@ const inventarios = reactive({ Telas: [], Hilos: [], Uniformes: [], Categorias: 
 const titulosVisibles = { Telas: 'Telas', Hilos: 'Hilos', Uniformes: 'Productos', Categorias: 'Categorías' };
 
 const columnsByTipo = {
-    Telas:[{key:'id',label:'ID'},{key:'nombre',label:'Nombre'},{key:'tipo',label:'Tipo'},{key:'color',label:'Color'},{key:'codigo',label:'Código'},{key:'stock',label:'Stock'}],
-    Hilos:[{key:'id',label:'ID'},{key:'nombre',label:'Nombre'},{key:'material',label:'Material'},{key:'color',label:'Color'},{key:'codigo',label:'Código'},{key:'stock',label:'Stock'}],
-    Uniformes:[{key:'id',label:'ID'},{key:'tipo',label:'Tipo'},{key:'talla',label:'Talla'},{key:'color',label:'Color'},{key:'stock',label:'Stock'},{key:'categoria_nombre',label:'Categoría'},{key:'material_nombre',label:'Tela'}],
-    Categorias:[{key:'id',label:'ID'},{key:'nombre',label:'Nombre'}],
+  Telas: [
+    { key: 'id', label: 'ID' },
+    { key: 'nombre', label: 'Nombre' },
+    { key: 'tipo', label: 'Tipo' },
+    { key: 'color', label: 'Color' },
+    { key: 'codigo', label: 'Código' },
+    { key: 'stock', label: 'Stock' }
+  ],
+  Hilos: [
+    { key: 'id', label: 'ID' },
+    { key: 'nombre', label: 'Nombre' },
+    { key: 'material', label: 'Material' },
+    { key: 'color', label: 'Color' },
+    { key: 'codigo', label: 'Código' },
+    { key: 'stock', label: 'Stock' }
+  ],
+  Uniformes: [
+    { key: 'id', label: 'ID' },
+    { key: 'tipo', label: 'Tipo' },
+    { key: 'talla', label: 'Talla' },
+    { key: 'color', label: 'Color' },
+    { key: 'stock', label: 'Stock' },
+    { key: 'categoria_nombre', label: 'Categoría' },
+    { key: 'material_nombre', label: 'Tela' }
+  ],
+  Categorias: [
+    { key: 'id', label: 'ID' },
+    { key: 'nombre', label: 'Nombre' }
+  ]
 };
 
 const formVisible = ref(false);
@@ -181,93 +206,96 @@ const tipoFormulario = ref('');
 const accion = ref('');
 const formData = reactive({});
 const seleccionId = ref(null);
+const categoriasOptions = ref([]);
 
 const verTodosVisible = ref(false);
 const tipoVerTodos = ref('');
-const categoriasOptions = ref([]);
-
-const filteredInventarios = computed(() => {
-  const q = search.value.trim().toLowerCase();
-  if (!q) return inventarios;
-  const result = {};
-  for (const tipo in inventarios) {
-    result[tipo] = inventarios[tipo].filter(item => 
-      Object.values(item).some(val => String(val).toLowerCase().includes(q))
-    );
-  }
-  return result;
-});
 
 const abrirFormulario = (acc, tipo) => {
-  document.body.classList.add('modal-open');
   accion.value = acc;
   tipoFormulario.value = tipo;
   formVisible.value = true;
-  Object.keys(formData).forEach(key => delete formData[key]);
+  Object.keys(formData).forEach(k => delete formData[k]);
   seleccionId.value = null;
   if (tipo === 'Uniformes' || tipo === 'Categorias') cargarCategorias();
 };
 
 const cerrarFormulario = () => {
-  document.body.classList.remove('modal-open');
   formVisible.value = false;
 };
 
 const abrirVerTodos = (tipo) => {
-  document.body.classList.add('modal-open');
   tipoVerTodos.value = tipo;
   verTodosVisible.value = true;
 };
 const cerrarVerTodos = () => {
-  document.body.classList.remove('modal-open');
   verTodosVisible.value = false;
 };
 
 const formatearProducto = (item) => {
-  return tipoFormulario.value === 'Uniformes' ? `${item.id} - ${item.tipo} ${item.talla}` : `${item.id} - ${item.nombre || item.tipo}`;
+  return tipoFormulario.value === 'Uniformes'
+    ? `${item.id} - ${item.tipo} ${item.talla}`
+    : `${item.id} - ${item.nombre || item.tipo}`;
 };
 
 const autoCompletarProducto = () => {
   if (!seleccionId.value) return;
   const item = inventarios[tipoFormulario.value]?.find(p => p.id === seleccionId.value);
-  if (item) {
-    Object.assign(formData, item);
-  }
+  if (item) Object.assign(formData, item);
 };
 
 const submitFormulario = async () => {
   try {
-    const tipo = tipoFormulario.value.slice(0, -1).toLowerCase();
-    const plural = { tela: 'telas', hilo: 'hilos', uniforme: 'uniformes', categoria: 'categorias' }[tipo] || tipo;
-    let url = '', method = '', payload = { ...formData };
+    const tipo = tipoFormulario.value.toLowerCase().slice(0, -1);
+    let method = '', url = '', body = { ...formData };
 
-    if (accion.value === 'agregar') {
-      method = 'POST';
-      url = `/api/${plural}/`;
-      if (tipo === 'uniforme') {
-        payload = { tipo: formData.tipo, talla: formData.talla, color: formData.color, stock: Number(formData.stock || 0), material: Number(formData.material), categoria: Number(formData.categoria) };
+    if (tipo === 'categoria') {
+      if (accion.value === 'agregar') {
+        await apiFetch('/api/inventario/agregar-nueva-categoria/', {
+          method: 'POST',
+          body
+        });
+      } else if (accion.value === 'editar') {
+        await apiFetch(`/api/inventario/editar-categoria/${formData.id}/`, {
+          method: 'PUT',
+          body
+        });
+      } else if (accion.value === 'eliminar') {
+        await apiFetch(`/api/inventario/eliminar-categoria/${seleccionId.value}/`, {
+          method: 'DELETE'
+        });
       }
-    } else if (accion.value === 'editar') {
-      if (!formData.id) return alert('Debe seleccionar un producto para editar');
-      method = 'PUT';
-      url = `/api/${plural}/${formData.id}/`;
-       if (tipo === 'uniforme') {
-        payload = { tipo: formData.tipo, talla: formData.talla, color: formData.color, stock: Number(formData.stock || 0), material: Number(formData.material), categoria: Number(formData.categoria) };
+    } else {
+      const plural = tipoFormulario.value.toLowerCase();
+      if (accion.value === 'agregar') {
+        url = `/api/${plural}/`;
+        method = 'POST';
+      } else if (accion.value === 'editar') {
+        url = `/api/${plural}/${formData.id}/`;
+        method = 'PUT';
+      } else if (accion.value === 'eliminar') {
+        url = `/api/${plural}/${seleccionId.value}/`;
+        method = 'DELETE';
+        body = null;
       }
-    } else if (accion.value === 'eliminar') {
-      if (!seleccionId.value) return alert('Debe seleccionar un producto para eliminar');
-      method = 'DELETE';
-      url = `/api/${plural}/${seleccionId.value}/`;
-      payload = null;
+
+      await apiFetch(url, method, body);
     }
 
-    await apiFetch(url, method, payload);
-    alert(`Operación (${accion.value}) completada con éxito`);
     bus.emit('inventario-actualizado');
     cerrarFormulario();
+    alert('Operación completada correctamente');
+  } catch (err) {
+    console.error('Error en operación:', err);
+    alert(err?.payload?.message || err.message || 'Error desconocido');
+  }
+};
+
+const cargarCategorias = async () => {
+  try {
+    categoriasOptions.value = await apiFetch('/api/categorias/');
   } catch (e) {
-    const detalle = e?.payload ? JSON.stringify(e.payload) : e?.message || 'Error desconocido';
-    alert(`Error en la operación: ${detalle}`);
+    console.error('Error cargando categorías', e);
   }
 };
 
@@ -275,23 +303,40 @@ const obtenerInventario = async (tipo) => {
   try {
     const data = await apiFetch(`/api/${tipo.toLowerCase()}/`);
     inventarios[tipo] = Array.isArray(data) ? data.map(item =>
-      tipo === 'Uniformes' ? { ...item, material_nombre: item.material_nombre || 'N/A', categoria_nombre: item.categoria_nombre || 'N/A' } : item
+      tipo === 'Uniformes'
+        ? {
+            ...item,
+            material_nombre: item.material_nombre || 'N/A',
+            categoria_nombre: item.categoria_nombre || 'N/A'
+          }
+        : item
     ) : [];
-  } catch (e) { console.error(`Error al obtener ${tipo}:`, e); }
+  } catch (e) {
+    console.error(`Error obteniendo ${tipo}:`, e);
+  }
 };
 
-const cargarCategorias = async () => {
-  try {
-    categoriasOptions.value = await apiFetch('/api/categorias/');
-  } catch (e) { console.error('Error cargando categorías', e); }
-};
+const filteredInventarios = computed(() => {
+  const q = search.value.toLowerCase().trim();
+  if (!q) return inventarios;
+  const result = {};
+  for (const tipo in inventarios) {
+    result[tipo] = inventarios[tipo].filter(item =>
+      Object.values(item).some(val =>
+        String(val).toLowerCase().includes(q)
+      )
+    );
+  }
+  return result;
+});
 
 onMounted(() => {
-  const tiposInventario = ['Telas', 'Hilos', 'Uniformes', 'Categorias'];
-  tiposInventario.forEach(obtenerInventario);
-  
+  const tipos = ['Telas', 'Hilos', 'Uniformes', 'Categorias'];
+  tipos.forEach(obtenerInventario);
+  cargarCategorias();
+
   bus.on('inventario-actualizado', () => {
-    tiposInventario.forEach(obtenerInventario);
+    tipos.forEach(obtenerInventario);
     cargarCategorias();
   });
 });
@@ -300,6 +345,7 @@ onBeforeUnmount(() => {
   document.body.classList.remove('modal-open');
 });
 </script>
+
 
 <style scoped>
 .page-container {
