@@ -279,7 +279,11 @@ const submitFormulario = async () => {
         body = null;
       }
 
-      await apiFetch(url, method, body);
+      await apiFetch(url, {
+        method,
+        body
+      });
+
     }
 
     bus.emit('inventario-actualizado');
