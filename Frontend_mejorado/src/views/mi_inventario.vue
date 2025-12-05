@@ -247,23 +247,21 @@ const autoCompletarProducto = () => {
 const submitFormulario = async () => {
   try {
     const tipo = tipoFormulario.value.toLowerCase().slice(0, -1);
-    let method = '', url = '', body = { ...formData };
+    let method = '';
+    let url = '';
+    let body = { ...formData };
 
     if (tipo === 'categoria') {
       if (accion.value === 'agregar') {
-        await apiFetch('/api/inventario/agregar-nueva-categoria/', {
-          method: 'POST',
-          body
-        });
+        method = 'POST';
+        url = '/api/inventario/agregar-nueva-categoria/';
       } else if (accion.value === 'editar') {
-        await apiFetch(`/api/inventario/editar-categoria/${formData.id}/`, {
-          method: 'PUT',
-          body
-        });
+        method = 'PUT';
+        url = `/api/inventario/editar-categoria/${formData.id}/`;
       } else if (accion.value === 'eliminar') {
-        await apiFetch(`/api/inventario/eliminar-categoria/${seleccionId.value}/`, {
-          method: 'DELETE'
-        });
+        method = 'DELETE';
+        url = `/api/inventario/eliminar-categoria/${seleccionId.value}/`;
+        body = null;
       }
     } else {
       const plural = tipoFormulario.value.toLowerCase();
@@ -278,13 +276,12 @@ const submitFormulario = async () => {
         method = 'DELETE';
         body = null;
       }
-
-      await apiFetch(url, {
-        method,
-        body
-      });
-
     }
+
+    await apiFetch(url, {
+      method,
+      body
+    });
 
     bus.emit('inventario-actualizado');
     cerrarFormulario();
@@ -294,6 +291,7 @@ const submitFormulario = async () => {
     alert(err?.payload?.message || err.message || 'Error desconocido');
   }
 };
+
 
 const cargarCategorias = async () => {
   try {
