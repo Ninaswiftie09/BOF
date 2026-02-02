@@ -208,6 +208,7 @@ class VentaDetalleSerializer(serializers.ModelSerializer):
             'descripcion',  
             'estado',
             'no_recibo',
+            'detalles',
         ]
 
     def get_cliente(self, obj):
