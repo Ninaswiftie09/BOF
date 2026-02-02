@@ -44,6 +44,15 @@ class Pedido(models.Model):
     cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE)
     fecha = models.DateTimeField(auto_now_add=True)
     precio_total = models.DecimalField(max_digits=12, decimal_places=2)
+    
+    descripcion = models.TextField(blank=True, null=True)  # ✅ NUEVO
+    anticipo = models.DecimalField(max_digits=12, decimal_places=2, default=0)  # ✅ NUEVO
+    ESTADOS = [
+        ('proceso', 'En proceso'),
+        ('cerrado', 'Cerrado'),
+        ('cancelado', 'Cancelado'),
+    ]
+    estado = models.CharField(max_length=10, choices=ESTADOS, default='proceso')  # ✅ NUEVO
 
     class Meta:
         db_table = "clientes_pedido"
@@ -175,6 +184,7 @@ class Uniforme(models.Model):
 # =======================
 # VENTAS
 # =======================
+from decimal import Decimal
 
 class Categoria(models.Model):
     nombre = models.CharField(max_length=100)
@@ -203,13 +213,19 @@ class Venta(models.Model):
     metodo_pago = models.CharField(max_length=20, choices=METODOS_PAGO)
     total = models.DecimalField(max_digits=10, decimal_places=2)
     estado = models.CharField(max_length=20, choices=ESTADOS_VENTA)
-
+    anticipo = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    descripcion = models.TextField(blank=True, null=True)
     no_recibo = models.PositiveIntegerField(unique=True, editable=False, null=True, blank=True)
 
+    @property
+    def faltante(self):
+        return max(Decimal("0"), self.total - self.anticipo)
+    
     def save(self, *args, **kwargs):
         if not self.no_recibo:
             last = Venta.objects.exclude(no_recibo__isnull=True).order_by('-no_recibo').first()
             self.no_recibo = 1 if not last else last.no_recibo + 1
+            
         super().save(*args, **kwargs)
 
     def __str__(self):

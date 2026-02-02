@@ -56,7 +56,17 @@ class PedidoSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Pedido
-        fields = ['id', 'cliente_id', 'cliente_nombre', 'fecha', 'precio_total', 'detalles']
+        fields = [
+            'id',
+            'cliente_id',
+            'cliente_nombre',
+            'fecha',
+            'precio_total',
+            'descripcion',     
+            'anticipo',        
+            'estado',          
+            'detalles'
+        ]
 
 
 class CuentaPagadaSerializer(serializers.ModelSerializer):
@@ -187,7 +197,18 @@ class VentaDetalleSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Venta
-        fields = ['id', 'fecha', 'cliente', 'metodo_pago', 'total', 'estado', 'detalles', 'no_recibo']
+        fields = [
+            'id',
+            'cliente',
+            'fecha',
+            'metodo_pago',
+            'total',
+            'anticipo',
+            'faltante',      
+            'descripcion',  
+            'estado',
+            'no_recibo',
+        ]
 
     def get_cliente(self, obj):
         if obj.cliente:

@@ -269,6 +269,9 @@ const abrirFormulario = async (acc, row = null) => {
       cliente: '',
       fecha: new Date().toISOString().slice(0, 10),
       metodo_pago: 'efectivo',
+      descripcion: data.descripcion || '',
+      estado: data.estado || 'en_proceso',
+      anticipo: data.anticipo || 0,
       detalles: [{ producto: null, cantidad: 1, precio_unitario: 0 }],
       precio_total: 0
     });
@@ -406,7 +409,7 @@ const submitFormulario = async () => {
         detalles: detalles.map(d => ({
           producto: Number(d.producto),
           cantidad: Number(d.cantidad),
-          precio_unitario: Number((+d.precio_unitario || 0).toFixed(2)),
+          precio_unitario: Number(d.precio_unitario) || 0,
           ...(accion.value === 'editar' && d.id && { id: d.id })
         }))
       };
