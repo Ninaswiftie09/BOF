@@ -75,7 +75,7 @@
                 <option value="otro">Otro</option>
               </select>
             </div>
-            <div class="form-grid" style="margin-bottom: 1.5rem;">
+            <div class="form-grid" style="grid-template-columns: 1fr 1fr; gap: 1rem;">
               <div class="form-group full-width">
                 <label class="form-label">Descripción</label>
                 <textarea class="form-input" v-model="formData.descripcion" placeholder="Escribe una descripción opcional…" :readonly="soloLectura"></textarea>
