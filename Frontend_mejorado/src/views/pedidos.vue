@@ -119,7 +119,7 @@
             </div>
           </div>
 
-          <button type="button" class="btn btn-secondary" @click="agregarDetalle" style="margin-top: 1rem;">+ Agregar línea</button>
+          <button v-if="!soloLectura" type="button" class="btn btn-secondary" @click="agregarDetalle" style="margin-top: 1rem;">+ Agregar línea</button>
 
           <div class="totals-section">
             <div class="totals-row"><span>Subtotal:</span><strong>Q{{ toMoney(subtotal) }}</strong></div>
@@ -197,6 +197,7 @@ const columns = [
   { key: 'metodo_pago', label: 'Método' },
   { key: 'producto', label: 'Producto' },
   { key: 'faltante_fmt', label: 'Faltante' },
+  { key: 'faltante', label: 'Faltante' },
   { key: 'estado', label: 'Estado' }
 ];
 
@@ -242,7 +243,7 @@ const cargarFilas = async () => {
   try {
     const data = await apiFetch('/api/ventas/detalles/');
     const list = Array.isArray(data) ? data : (data?.results || []);
-    
+    const faltante = (Number(venta.total || 0)) - (Number(venta.anticipo || 0));
     filas.value = list.map(venta => ({
       key: `venta-${venta.id}`,
       id: venta.id,
@@ -252,8 +253,9 @@ const cargarFilas = async () => {
       metodo_pago: venta.metodo_pago,
       estado: venta.estado || 'N/A',
       producto: venta.detalles?.map(d => d.producto.nombre || d.producto.tipo).join(', ') || 'N/A',
-      faltante: venta.faltante,
-      faltante_fmt: `Q${toMoney(venta.faltante)}`
+      total: venta.total,
+      total_fmt: `Q${toMoney(venta.total)}`,
+      faltante: `Q${toMoney(faltante)}`
     })).sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
 
   } catch (e) { console.error("Error cargando pedidos", e); }

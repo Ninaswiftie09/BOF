@@ -672,8 +672,8 @@ a:hover {
 
 /* D17. Modal Modifiers */
 .modal-content-dark.modal-wide {
-  max-width: 90vw;
-  width: 1000px;
+  max-height: 90vh;
+  overflow-y: auto;
 }
 
 .modal-header {
