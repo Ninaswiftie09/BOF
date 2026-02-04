@@ -92,7 +92,6 @@
                 <select v-model="formData.estado" class="form-input" :disabled="soloLectura">
                   <option value="en_proceso">En proceso</option>
                   <option value="cerrado">Cerrado</option>
-                  <option value="cancelado">Cancelado</option>
                 </select>
               </div>
             </div>
