@@ -47,7 +47,7 @@
 
     <!-- Modal CRUD -->
     <div v-if="formVisible" class="modal-overlay" @click.self="cerrarFormulario">
-      <div class="modal-content-dark modal-wide">
+      <div class="modal-content-dark modal-wide" style="max-height: 90vh; overflow-y: auto;">
         <h3 v-if="accion==='agregar'">Agregar Nuevo Pedido</h3>
         <h3 v-else-if="accion==='editar'">Editar Pedido #{{ formData.id }}</h3>
         <h3 v-else-if="accion==='ver'">Detalle del Pedido #{{ formData.id }}</h3>
@@ -196,7 +196,6 @@ const columns = [
   { key: 'fecha_fmt', label: 'Fecha' },
   { key: 'metodo_pago', label: 'Método' },
   { key: 'producto', label: 'Producto' },
-  { key: 'faltante_fmt', label: 'Faltante' },
   { key: 'faltante', label: 'Faltante' },
   { key: 'estado', label: 'Estado' }
 ];
@@ -243,24 +242,34 @@ const cargarFilas = async () => {
   try {
     const data = await apiFetch('/api/ventas/detalles/');
     const list = Array.isArray(data) ? data : (data?.results || []);
-    const faltante = (Number(venta.total || 0)) - (Number(venta.anticipo || 0));
-    filas.value = list.map(venta => ({
-      key: `venta-${venta.id}`,
-      id: venta.id,
-      cliente_nombre: venta.cliente_nombre || 'N/A',
-      fecha: venta.fecha,
-      fecha_fmt: formatFecha(venta.fecha),
-      metodo_pago: venta.metodo_pago,
-      estado: venta.estado || 'N/A',
-      producto: venta.detalles?.map(d => d.producto.nombre || d.producto.tipo).join(', ') || 'N/A',
-      total: venta.total,
-      total_fmt: `Q${toMoney(venta.total)}`,
-      faltante: `Q${toMoney(faltante)}`
-    })).sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
 
-  } catch (e) { console.error("Error cargando pedidos", e); }
-  finally { cargando.value = false; }
+    filas.value = list.map(venta => {
+      const faltante = Number(venta.total || 0) - Number(venta.anticipo || 0);
+
+      return {
+        key: `venta-${venta.id}`,
+        id: venta.id,
+        cliente_nombre: venta.cliente_nombre || 'N/A',
+        fecha: venta.fecha,
+        fecha_fmt: formatFecha(venta.fecha),
+        metodo_pago: venta.metodo_pago,
+        estado: venta.estado || 'N/A',
+        producto: venta.detalles?.map(d =>
+          d.producto.nombre || d.producto.tipo
+        ).join(', ') || 'N/A',
+        total: venta.total,
+        total_fmt: `Q${toMoney(venta.total)}`,
+        faltante: `Q${toMoney(faltante)}`
+      };
+    }).sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+
+  } catch (e) {
+    console.error("Error cargando pedidos", e);
+  } finally {
+    cargando.value = false;
+  }
 };
+
 
 
 // Lógica para autocompletar precio (cuando ya haya una tabla de precios en backend)
