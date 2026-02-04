@@ -75,15 +75,16 @@
                 <option value="otro">Otro</option>
               </select>
             </div>
-            <div class="form-grid" style="grid-template-columns: 1fr 1fr; gap: 1rem;">
-              <div class="form-group full-width">
-                <label class="form-label">Descripción</label>
-                <textarea class="form-input" v-model="formData.descripcion" placeholder="Escribe una descripción opcional…" :readonly="soloLectura"></textarea>
-              </div>
 
+            <div class="form-group full-width" style="margin-bottom: 1rem;">
+               <label class="form-label">Descripción</label>
+                <textarea class="form-input" v-model="formData.descripcion" placeholder="Escribe una descripción opcional…" :readonly="soloLectura"></textarea>
+            </div>
+
+            <div class="form-grid" style="grid-template-columns: 1fr 1fr; gap: 1rem;">
               <div class="form-group">
                 <label class="form-label">Anticipo (Q)</label>
-                <input type="number" min="0" class="form-input" v-model.number="formData.anticipo" @input="recalcularTotales" :disabled="soloLectura" />
+                 <input type="number" min="0" class="form-input" v-model.number="formData.anticipo" @input="recalcularTotales" :disabled="soloLectura" />
               </div>
 
               <div class="form-group">
@@ -493,6 +494,12 @@ onBeforeUnmount(() => {
   border-radius: 10px;
   box-sizing: border-box;
 }
+
+:deep(.modal-content-dark.modal-wide) {
+  max-width: 960px;
+  width: 100%;
+}
+
 
 :deep(.details-grid) {
   display: grid;
