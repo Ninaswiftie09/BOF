@@ -372,7 +372,7 @@ onBeforeUnmount(() => {
 .form-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: var(--spacing-md);
+  gap: 1rem;
 }
 
 .form-group.full-width {
