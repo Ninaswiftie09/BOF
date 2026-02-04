@@ -486,9 +486,39 @@ onBeforeUnmount(() => {
   margin-bottom: var(--spacing-md);
 }
 
-.productos-scroll {
-  max-height: 300px;
+:deep(.modal-content-dark) {
+  max-height: 90vh;
   overflow-y: auto;
-  margin-bottom: 1rem;
+  padding: 2rem;
+  border-radius: 10px;
+  box-sizing: border-box;
 }
+
+:deep(.details-grid) {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr auto;
+  gap: 0.5rem;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+:deep(.totals-section) {
+  margin-top: 1rem;
+  border-top: 1px solid var(--gray-dark);
+  padding-top: 1rem;
+}
+
+:deep(.totals-row) {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
+:deep(.totals-row.final) {
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+
+
+
 </style>
